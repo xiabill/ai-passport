@@ -19,7 +19,7 @@ public struct BridgeSettings: Equatable, Codable {
     public static let `default` = BridgeSettings(
         devicePrefix: "FoloVibe",
         outputDevice: "BlackHole 2ch",
-        talkKey: "F19",
+        talkKey: "Fn",
         sendKey: "Return",
         cancelKey: "Escape",
         retapEnabled: true,
@@ -33,7 +33,7 @@ public struct BridgeSettings: Equatable, Codable {
     )
 
     public var talk: Hotkey {
-        Hotkey.named(talkKey, in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[6])
+        Hotkey.named(talkKey, in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[0])
     }
     public var send: Hotkey {
         Hotkey.named(sendKey, in: Hotkey.sendKeys, fallback: Hotkey.sendKeys[0])

@@ -28,7 +28,7 @@ struct SettingsView: View {
                     Picker("取消", selection: cancelBinding) {
                         ForEach(Hotkey.cancelKeys, id: \.name) { Text($0.name).tag($0.name) }
                     }
-                    Text("Typeless 听写快捷键必须和「说话」一致，默认 F19。")
+                    Text("Typeless 听写快捷键必须和「说话」一致，默认 Fn，也支持 F13–F20。")
                         .foregroundColor(.secondary)
                 }
                 Section(header: Text("闭环补按")) {

@@ -8,6 +8,8 @@ AI Passport vibe-typeless 固件的 macOS 伴侣。这是完整应用：总览�
 
 通过 BLE 接收 IMA-ADPCM 麦克风帧，播放到 `BlackHole 2ch`，并按设置里的说话 / 发送 / 取消键，让 Typeless 把文字打进当前焦点应用。
 
+完整的固件、BLE、Typeless、刷机、权限和故障排查教程见 [Vibe 教程](../../docs/development/vibe-typeless.zh_CN.md)。
+
 ## 窗口
 
 | 页 | 内容 |
@@ -25,7 +27,7 @@ cd tools/mac-bridge
 open FoloVibeBridge.app
 ```
 
-`./build.sh` 会先跑 `swift run FoloVibeCoreTests` 再打包。给 FoloVibe Bridge 打开蓝牙和辅助功能。Typeless 听写快捷键与「说话」键一致（默认 F19），麦克风选 `BlackHole 2ch`。
+`./build.sh` 会先跑 `swift run FoloVibeCoreTests` 再打包。不需要完整 Xcode，Swift 5.9+ 工具链和 Apple Command Line Tools 即可。给 FoloVibe Bridge 打开蓝牙和辅助功能。Typeless 听写快捷键与“说话”键一致（默认 Fn，也兼容 F13–F20，包括 F19），麦克风选 `BlackHole 2ch`。
 
 日志：`~/Library/Logs/folovibe-bridge.log`
 

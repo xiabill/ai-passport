@@ -36,17 +36,18 @@ do {
 }
 
 do {
-    expect(BridgeSettings.default.talk.name == "F19", "default talk key")
-    expect(BridgeSettings.default.talk.carbon == 0x50, "F19 carbon")
+    expect(BridgeSettings.default.talk.name == "Fn", "default talk key")
+    expect(BridgeSettings.default.talk.carbon == 0x3F, "Fn carbon")
     var s = BridgeSettings.default
     s.talkKey = "Nope"
-    expect(s.talk.name == "F19", "unknown key fallback")
+    expect(s.talk.name == "Fn", "unknown key fallback")
     let ud = UserDefaults(suiteName: "folovibe.tests.\(UUID().uuidString)")!
     let store = SettingsStore(defaults: ud)
     store.current.talkKey = "F18"
     let again = SettingsStore(defaults: ud)
     expect(again.current.talkKey == "F18", "settings round trip")
     expect(Hotkey.named("F17", in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[0]).carbon == 0x40, "F17 lookup")
+    expect(Hotkey.named("Fn", in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[0]).carbon == 0x3F, "Fn lookup")
 }
 
 do {

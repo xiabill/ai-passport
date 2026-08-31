@@ -8,6 +8,7 @@
 #define UI_PAPER      0xF4F4EA
 #define UI_GRASS      0x82BE2D
 #define UI_GRASS_DARK 0x55951D
+#define UI_GREEN      0x54C95B
 #define UI_YELLOW     0xFFD928
 #define UI_ORANGE     0xFFB23E
 #define UI_RED        0xE43B2F

@@ -48,9 +48,11 @@ static lv_obj_t *ink_box(lv_obj_t *parent, int x, int y, int w, int h, uint32_t 
 
 static lv_obj_t *key_chip(lv_obj_t *parent, int x, int y)
 {
-    lv_obj_t *box = ink_box(parent, x, y, 60, 26, UI_PAPER);
+    lv_obj_t *box = ink_box(parent, x, y, 62, 34, UI_PAPER);
     lv_obj_t *lab = lv_label_create(box);
+    lv_obj_set_width(lab, 56);
     lv_obj_set_style_text_font(lab, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_align(lab, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_text_color(lab, lv_color_hex(UI_INK), 0);
     lv_obj_center(lab);
     lv_label_set_text(lab, "");
@@ -78,7 +80,7 @@ static uint32_t phase_color(vibe_phase_t p)
 static const char *phase_title(vibe_phase_t p)
 {
     switch (p) {
-    case VIBE_PHASE_WAIT: return "LINKING";
+    case VIBE_PHASE_WAIT: return "WAIT";
     case VIBE_PHASE_IDLE: return "READY";
     case VIBE_PHASE_RECORDING: return "REC";
     case VIBE_PHASE_PROCESSING: return "TYPING";
@@ -90,9 +92,9 @@ static const char *tl_title(uint8_t tl)
 {
     switch (tl) {
     case VIBE_TL_RECORDING: return "REC";
-    case VIBE_TL_PROCESSING: return "TYPE";
+    case VIBE_TL_PROCESSING: return "BUSY";
     case VIBE_TL_DOWN: return "OFF";
-    default: return "IDLE";
+    default: return "READY";
     }
 }
 
@@ -128,21 +130,20 @@ static void paint(const vibe_ui_model_t *m)
     }
 
     char line[40];
-    snprintf(line, sizeof(line), "TL %s   BLE %s%s",
-             tl_title(m->typeless),
-             m->linked ? "ON" : "OFF",
-             m->audio_sub ? "  SUB" : "");
+    snprintf(line, sizeof(line), "TYPE %s  LINK %s",
+             tl_title(m->typeless), m->linked ? "OK" : "--");
     lv_label_set_text(s_line_tl, line);
 
     snprintf(line, sizeof(line), "%s", vibe_ble_name());
     lv_label_set_text(s_line_name, line);
 
     if (m->battery >= 0 && m->battery_mv >= 0) {
-        snprintf(line, sizeof(line), "BATT %d%%  %d mV", m->battery, m->battery_mv);
+        snprintf(line, sizeof(line), "BAT %d%%  %d.%02dV", m->battery,
+                 m->battery_mv / 1000, (m->battery_mv % 1000) / 10);
     } else if (m->battery >= 0) {
-        snprintf(line, sizeof(line), "BATT %d%%", m->battery);
+        snprintf(line, sizeof(line), "BAT %d%%", m->battery);
     } else {
-        snprintf(line, sizeof(line), "BATT --");
+        snprintf(line, sizeof(line), "BAT --");
     }
     lv_label_set_text(s_line_batt, line);
     uint32_t batt_color = UI_INK;
@@ -150,8 +151,19 @@ static void paint(const vibe_ui_model_t *m)
     else if (m->battery >= 0 && m->battery <= 30) batt_color = UI_ORANGE;
     lv_obj_set_style_text_color(s_line_batt, lv_color_hex(batt_color), 0);
 
-    snprintf(line, sizeof(line), "TX %lu   DROP %lu",
-             (unsigned long)m->sent, (unsigned long)m->dropped);
+    if (!m->linked) {
+        snprintf(line, sizeof(line), "AUDIO OFFLINE");
+    } else if (!m->audio_sub) {
+        snprintf(line, sizeof(line), "AUDIO WAITING");
+    } else if (m->phase == VIBE_PHASE_RECORDING) {
+        snprintf(line, sizeof(line), "AUDIO LIVE%s",
+                 m->dropped ? "  DROP" : "");
+    } else if (m->dropped) {
+        snprintf(line, sizeof(line), "AUDIO OK  DROP %lu",
+                 (unsigned long)m->dropped);
+    } else {
+        snprintf(line, sizeof(line), "AUDIO READY");
+    }
     lv_label_set_text(s_line_tx, line);
 
     if (m->queued_enter) {
@@ -163,43 +175,43 @@ static void paint(const vibe_ui_model_t *m)
 
     for (int i = 0; i < VIBE_UI_BARS; i++) {
         int h = 3 + (int)m->bars[i] * 2;
-        if (h > 40) h = 40;
+        if (h > 32) h = 32;
         lv_obj_set_height(s_bars[i], h);
-        lv_obj_set_y(s_bars[i], 40 - h);
+        lv_obj_set_y(s_bars[i], 20 - h / 2);
         uint32_t c = UI_MUTED;
-        if (m->phase == VIBE_PHASE_RECORDING) {
-            c = m->bars[i] > 8 ? UI_RED : UI_ORANGE;
-        } else if (m->audio_sub) {
-            c = 0x7BE07A;
+        if (m->audio_sub) {
+            if (m->bars[i] > 10) c = UI_RED;
+            else if (m->bars[i] > 5) c = UI_YELLOW;
+            else c = UI_GREEN;
         }
         lv_obj_set_style_bg_color(s_bars[i], lv_color_hex(c), 0);
     }
 
     switch (m->phase) {
     case VIBE_PHASE_IDLE:
-        set_key(s_key_ok, "OK TALK", UI_YELLOW);
-        set_key(s_key_dn, "DN SEND", UI_PAPER);
-        set_key(s_key_up, "UP ESC", UI_PAPER);
+        set_key(s_key_ok, "OK\nTALK", UI_YELLOW);
+        set_key(s_key_dn, "DOWN\nSEND", UI_PAPER);
+        set_key(s_key_up, "UP\nESC", UI_PAPER);
         break;
     case VIBE_PHASE_RECORDING:
-        set_key(s_key_ok, "OK STOP", UI_RED);
-        set_key(s_key_dn, "DN SEND", UI_YELLOW);
-        set_key(s_key_up, "UP ESC", UI_PAPER);
+        set_key(s_key_ok, "OK\nSTOP", UI_RED);
+        set_key(s_key_dn, "DOWN\nSEND", UI_YELLOW);
+        set_key(s_key_up, "UP\nESC", UI_PAPER);
         break;
     case VIBE_PHASE_PROCESSING:
-        set_key(s_key_ok, "OK --", UI_MUTED);
-        set_key(s_key_dn, m->queued_enter ? "DN WAIT" : "DN SEND", UI_ORANGE);
-        set_key(s_key_up, "UP ESC", UI_PAPER);
+        set_key(s_key_ok, "OK\n--", UI_MUTED);
+        set_key(s_key_dn, m->queued_enter ? "DOWN\nWAIT" : "DOWN\nSEND", UI_ORANGE);
+        set_key(s_key_up, "UP\nESC", UI_PAPER);
         break;
     case VIBE_PHASE_WAIT:
-        set_key(s_key_ok, "OK --", UI_MUTED);
-        set_key(s_key_dn, "DN --", UI_MUTED);
-        set_key(s_key_up, "UP --", UI_MUTED);
+        set_key(s_key_ok, "OK\n--", UI_MUTED);
+        set_key(s_key_dn, "DOWN\n--", UI_MUTED);
+        set_key(s_key_up, "UP\n--", UI_MUTED);
         break;
     default:
-        set_key(s_key_ok, "OK --", UI_MUTED);
-        set_key(s_key_dn, "DN --", UI_MUTED);
-        set_key(s_key_up, "UP --", UI_MUTED);
+        set_key(s_key_ok, "OK\n--", UI_MUTED);
+        set_key(s_key_dn, "DOWN\n--", UI_MUTED);
+        set_key(s_key_up, "UP\n--", UI_MUTED);
         break;
     }
 
@@ -251,7 +263,7 @@ void vibe_ui_start(void)
     lv_obj_align(s_clock, LV_ALIGN_TOP_RIGHT, -2, 0);
     lv_obj_add_flag(s_clock, LV_OBJ_FLAG_HIDDEN);
 
-    s_line_tl = ui_pixel_label(panel, "TL --   BLE OFF", &lv_font_montserrat_14, UI_INK);
+    s_line_tl = ui_pixel_label(panel, "TYPE --  LINK --", &lv_font_montserrat_14, UI_INK);
     lv_obj_set_pos(s_line_tl, 4, 24);
 
     lv_obj_t *meter = lv_obj_create(panel);
@@ -266,8 +278,8 @@ void vibe_ui_start(void)
     for (int i = 0; i < VIBE_UI_BARS; i++) {
         s_bars[i] = lv_obj_create(meter);
         lv_obj_remove_flag(s_bars[i], LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_set_size(s_bars[i], 7, 3);
-        lv_obj_set_pos(s_bars[i], 4 + i * 9, 37);
+        lv_obj_set_size(s_bars[i], 5, 3);
+        lv_obj_set_pos(s_bars[i], 14 + i * 6, 18);
         lv_obj_set_style_radius(s_bars[i], 0, 0);
         lv_obj_set_style_border_width(s_bars[i], 0, 0);
         lv_obj_set_style_pad_all(s_bars[i], 0, 0);
@@ -275,18 +287,22 @@ void vibe_ui_start(void)
     }
 
     s_line_name = ui_pixel_label(panel, "FoloVibe", &lv_font_montserrat_14, UI_INK);
+    lv_obj_set_width(s_line_name, 196);
+    lv_label_set_long_mode(s_line_name, LV_LABEL_LONG_DOT);
     lv_obj_set_pos(s_line_name, 4, 90);
-    s_line_batt = ui_pixel_label(panel, "BATT --", &lv_font_montserrat_14, UI_INK);
+    s_line_batt = ui_pixel_label(panel, "BAT --", &lv_font_montserrat_14, UI_INK);
     lv_obj_set_pos(s_line_batt, 4, 108);
-    s_line_tx = ui_pixel_label(panel, "TX 0   DROP 0", &lv_font_montserrat_14, UI_INK);
+    s_line_tx = ui_pixel_label(panel, "AUDIO WAITING", &lv_font_montserrat_14, UI_INK);
     lv_obj_set_pos(s_line_tx, 4, 126);
     s_line_last = ui_pixel_label(panel, "LAST --", &lv_font_montserrat_14, UI_INK);
     lv_obj_set_pos(s_line_last, 4, 144);
 
     s_key_ok = key_chip(panel, 4, 164);
-    s_key_dn = key_chip(panel, 70, 164);
-    s_key_up = key_chip(panel, 136, 164);
+    s_key_dn = key_chip(panel, 72, 164);
+    s_key_up = key_chip(panel, 140, 164);
 
+    // 沿用官方 VIBE 基线的固定坐标；该屏幕的草地从 y=286 开始，
+    // 38x48 的吉祥物放在 y=248 时正好站在草地上方，且跳跃动画可安全修改 y。
     s_mascot = ui_pixel_mascot_create(s_scr, 101, 248);
     memset(&s_live, 0, sizeof(s_live));
     s_live.battery = -1;

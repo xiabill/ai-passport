@@ -18,6 +18,9 @@ static SemaphoreHandle_t s_mu;
 static vibe_state_t s_st;
 static uint8_t s_bars[VIBE_UI_BARS];
 static uint8_t s_bar_i;
+static uint8_t s_bar_max;
+static uint8_t s_bar_samples;
+static uint8_t s_tail_level;
 static uint8_t s_last_event;
 static bool s_swallow_click;
 static esp_timer_handle_t s_proc_timer;
@@ -107,6 +110,7 @@ esp_err_t vibe_app_start(void)
 void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
 {
     if (ev == BSP_BTN_PRESS) {
+        vibe_audio_beep();
         if (!vibe_power_on_input()) s_swallow_click = true;
         return;
     }
@@ -145,7 +149,24 @@ void vibe_app_on_silence(void)
 void vibe_app_note_peak(uint8_t level)
 {
     xSemaphoreTake(s_mu, portMAX_DELAY);
-    s_bars[s_bar_i] = level;
+    if (level > s_bar_max) s_bar_max = level;
+    if (++s_bar_samples < 4) {
+        xSemaphoreGive(s_mu);
+        return;
+    }
+
+    // 每 4 个 20 ms 音频块合成为一根柱，保留瞬时峰值，波形更细且不抖。
+    uint8_t frame = s_bar_max;
+    s_bar_max = 0;
+    s_bar_samples = 0;
+    if (frame > 0) {
+        s_tail_level = frame;
+    } else if (s_tail_level > 0) {
+        // 停止说话后快速渐隐，避免高电平红柱拖满整段历史。
+        s_tail_level = s_tail_level > 2 ? s_tail_level - 2 : 0;
+        frame = s_tail_level;
+    }
+    s_bars[s_bar_i] = frame;
     s_bar_i = (uint8_t)((s_bar_i + 1) % VIBE_UI_BARS);
     publish_locked();
     xSemaphoreGive(s_mu);

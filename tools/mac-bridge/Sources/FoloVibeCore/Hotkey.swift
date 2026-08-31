@@ -11,6 +11,7 @@ public struct Hotkey: Equatable, Hashable {
     }
 
     public static let talkKeys: [Hotkey] = [
+        Hotkey(name: "Fn", carbon: 0x3F),
         Hotkey(name: "F13", carbon: 0x69),
         Hotkey(name: "F14", carbon: 0x6B),
         Hotkey(name: "F15", carbon: 0x71),

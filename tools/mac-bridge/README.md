@@ -8,6 +8,8 @@ macOS companion for the AI Passport vibe-typeless firmware. It is a full app: st
 
 It receives IMA-ADPCM frames over BLE, plays them into `BlackHole 2ch`, and taps the configured talk / send / cancel keys so Typeless can dictate into the focused app.
 
+For the end-to-end firmware, BLE, Typeless, flashing, permissions, and troubleshooting tutorial, see [the Vibe guide](../../docs/development/vibe-typeless.md).
+
 ## Windows
 
 | Tab | Contents |
@@ -25,7 +27,7 @@ cd tools/mac-bridge
 open FoloVibeBridge.app
 ```
 
-`./build.sh` runs `swift run FoloVibeCoreTests` then packages the app. Grant Bluetooth and Accessibility. Set Typeless dictation to the talk key (default F19) and the Typeless microphone to `BlackHole 2ch`.
+`./build.sh` runs `swift run FoloVibeCoreTests` then packages the app. Full Xcode is not required; a Swift 5.9+ toolchain and Apple Command Line Tools are enough. Grant Bluetooth and Accessibility. Set Typeless dictation to the talk key (default Fn; F13–F20, including F19, are also supported) and the Typeless microphone to `BlackHole 2ch`.
 
 Logs: `~/Library/Logs/folovibe-bridge.log`
 
