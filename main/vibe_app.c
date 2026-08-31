@@ -1,6 +1,7 @@
 #include "vibe_app.h"
 #include "vibe_audio.h"
 #include "vibe_ble.h"
+#include "vibe_power.h"
 #include "vibe_state.h"
 #include "vibe_ui.h"
 
@@ -18,6 +19,7 @@ static vibe_state_t s_st;
 static uint8_t s_bars[VIBE_UI_BARS];
 static uint8_t s_bar_i;
 static uint8_t s_last_event;
+static bool s_swallow_click;
 static esp_timer_handle_t s_proc_timer;
 
 static void apply(vibe_in_t in, uint8_t typeless_byte);
@@ -62,8 +64,17 @@ static void apply(vibe_in_t in, uint8_t typeless_byte)
     publish_locked();
     xSemaphoreGive(s_mu);
 
-    if (o.start_capture) vibe_audio_set_recording(true);
-    if (o.stop_capture) vibe_audio_set_recording(false);
+    if (o.start_capture) {
+        vibe_audio_set_recording(true);
+        vibe_power_set_busy(true);
+        vibe_ble_link_fast(true);
+    }
+    if (o.stop_capture) {
+        vibe_audio_set_recording(false);
+        vibe_power_set_busy(false);
+        vibe_ble_link_fast(false);
+        vibe_power_note_activity();
+    }
     for (uint8_t i = 0; i < o.n_events; i++) {
         vibe_ble_event_send(o.ble_events[i]);
     }
@@ -83,6 +94,7 @@ esp_err_t vibe_app_start(void)
     esp_err_t err = esp_timer_create(&args, &s_proc_timer);
     if (err != ESP_OK) return err;
 
+    vibe_power_init();
     vibe_ui_start();
     err = vibe_audio_start();
     if (err != ESP_OK) return err;
@@ -94,7 +106,16 @@ esp_err_t vibe_app_start(void)
 
 void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
 {
+    if (ev == BSP_BTN_PRESS) {
+        if (!vibe_power_on_input()) s_swallow_click = true;
+        return;
+    }
     if (ev != BSP_BTN_CLICK) return;
+    if (s_swallow_click) {
+        s_swallow_click = false;
+        return;
+    }
+    vibe_power_on_input();
     if (btn == BSP_BTN_OK) apply(VIBE_IN_OK, 0);
     else if (btn == BSP_BTN_DOWN) apply(VIBE_IN_DOWN, 0);
     else if (btn == BSP_BTN_UP) apply(VIBE_IN_UP, 0);
@@ -102,6 +123,7 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
 
 void vibe_app_on_ble_link(bool up)
 {
+    if (up) vibe_power_note_activity();
     apply(up ? VIBE_IN_LINK_UP : VIBE_IN_LINK_DOWN, 0);
 }
 

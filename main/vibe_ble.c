@@ -4,6 +4,7 @@
 #include "demo_radio.h"
 
 #include "esp_log.h"
+#include "esp_timer.h"
 #include "host/ble_att.h"
 #include "host/ble_gap.h"
 #include "host/ble_gatt.h"
@@ -44,6 +45,8 @@ static bool s_event_sub;
 static uint32_t s_sent;
 static uint32_t s_dropped;
 static char s_name[16];
+static int s_gear = -1;  // -1 unknown, 0 idle, 1 fast
+static esp_timer_handle_t s_idle_timer;
 
 static int gap_event(struct ble_gap_event *event, void *arg);
 static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
@@ -129,18 +132,46 @@ static void set_name_from_addr(void)
     ESP_LOGI(TAG, "GAP name %s", s_name);
 }
 
-static void request_fast_link(uint16_t conn)
+static void apply_gear(int gear)
 {
+    if (s_conn == BLE_HS_CONN_HANDLE_NONE) return;
+    if (s_gear == gear) return;
     struct ble_gap_upd_params p = {0};
-    p.itvl_min = 6;   // 7.5 ms
-    p.itvl_max = 12;  // 15 ms
-    p.latency = 0;
-    p.supervision_timeout = 400;  // 4 s
-    p.min_ce_len = 0;
-    p.max_ce_len = 0;
-    int rc = ble_gap_update_params(conn, &p);
-    if (rc != 0 && rc != BLE_HS_EALREADY) {
+    if (gear) {
+        p.itvl_min = 6;   // 7.5 ms
+        p.itvl_max = 12;  // 15 ms
+        p.latency = 0;
+        p.supervision_timeout = 400;
+    } else {
+        p.itvl_min = 24;  // 30 ms
+        p.itvl_max = 40;  // 50 ms
+        p.latency = 20;
+        p.supervision_timeout = 600;  // 6 s > 2*(1+20)*50 ms
+    }
+    int rc = ble_gap_update_params(s_conn, &p);
+    if (rc == 0 || rc == BLE_HS_EALREADY) {
+        s_gear = gear;
+        ESP_LOGI(TAG, "link gear %s", gear ? "fast" : "idle");
+    } else {
         ESP_LOGW(TAG, "conn update rc=%d", rc);
+    }
+}
+
+static void idle_timer_cb(void *arg)
+{
+    (void)arg;
+    apply_gear(0);
+}
+
+void vibe_ble_link_fast(bool fast)
+{
+    if (s_idle_timer) esp_timer_stop(s_idle_timer);
+    if (fast) {
+        apply_gear(1);
+    } else if (s_idle_timer) {
+        esp_timer_start_once(s_idle_timer, 2000000);
+    } else {
+        apply_gear(0);
     }
 }
 
@@ -158,7 +189,8 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         s_audio_sub = false;
         s_event_sub = false;
         ble_att_set_preferred_mtu(185);
-        request_fast_link(s_conn);
+        s_gear = -1;
+        apply_gear(0);
         vibe_app_on_ble_link(true);
         ESP_LOGI(TAG, "connected handle=%u", s_conn);
         return 0;
@@ -168,6 +200,8 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         s_conn = BLE_HS_CONN_HANDLE_NONE;
         s_audio_sub = false;
         s_event_sub = false;
+        s_gear = -1;
+        if (s_idle_timer) esp_timer_stop(s_idle_timer);
         vibe_app_on_audio_sub(false);
         vibe_app_on_ble_link(false);
         advertise();
@@ -245,6 +279,13 @@ esp_err_t vibe_ble_start(void)
     strcpy(s_name, "FoloVibe");
     ble_svc_gap_device_name_set(s_name);
     ble_att_set_preferred_mtu(185);
+    if (!s_idle_timer) {
+        const esp_timer_create_args_t t = {
+            .callback = idle_timer_cb,
+            .name = "ble_idle",
+        };
+        esp_timer_create(&t, &s_idle_timer);
+    }
     nimble_port_freertos_init(host_task);
     return ESP_OK;
 }

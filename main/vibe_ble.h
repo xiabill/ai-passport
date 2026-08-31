@@ -20,6 +20,9 @@ esp_err_t vibe_ble_event_send(uint8_t ev);
 
 void vibe_ble_stats(uint32_t *sent, uint32_t *dropped);
 const char *vibe_ble_name(void);
+// true = 7.5–15 ms for audio; false = idle gear after 2 s so a second press
+// does not thrash the link.
+void vibe_ble_link_fast(bool fast);
 
 #ifdef __cplusplus
 }

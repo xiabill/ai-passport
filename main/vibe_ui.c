@@ -2,6 +2,7 @@
 #include "bsp_battery.h"
 #include "ui_pixel.h"
 #include "vibe_ble.h"
+#include "vibe_power.h"
 #include "vibe_protocol.h"
 #include "lvgl.h"
 #include "freertos/FreeRTOS.h"
@@ -211,6 +212,9 @@ static void paint(const vibe_ui_model_t *m)
 static void on_tick(lv_timer_t *timer)
 {
     (void)timer;
+    vibe_power_tick();
+    if (!vibe_power_screen_on()) return;
+
     vibe_ui_model_t m;
     xSemaphoreTake(s_mu, portMAX_DELAY);
     m = s_live;

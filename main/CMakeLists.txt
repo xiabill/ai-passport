@@ -9,6 +9,7 @@ idf_component_register(
          "vibe_ble.c"
          "vibe_audio.c"
          "vibe_ui.c"
+         "vibe_power.c"
          "vibe_app.c"
     INCLUDE_DIRS "."
     REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer nvs_flash

@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- 设备省电：空闲 18 秒背光降到 20%、60 秒熄屏（第一下按键只唤醒）；BLE 空闲
+  30–50 ms + latency 20，说话时切回 7.5–15 ms。
 - Mac 伴侣做成完整应用：总览、设置、实时日志、调试测试台（`tools/mac-bridge/`）。
 - 新增 vibe-typeless 专用伴侣：开机进入 VIBE 页，经 BLE 推 16 kHz IMA-ADPCM，并配合
   `tools/mac-bridge/` 把声音打进 `BlackHole 2ch` 供 Typeless 听写（`feature/vibe-typeless`）。

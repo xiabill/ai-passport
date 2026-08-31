@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+- Added badge power policy: dim backlight after 18 s idle, off after 60 s
+  (first key only wakes); BLE idle 30–50 ms + latency 20, fast 7.5–15 ms while
+  talking.
 - Expanded the macOS companion into a full app with status, settings, live logs,
   and a debug/test panel (`tools/mac-bridge/`).
 - Added a dedicated vibe-typeless companion: boot opens a VIBE page, streams

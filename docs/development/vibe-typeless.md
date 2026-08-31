@@ -18,6 +18,12 @@ This is a dedicated application: boot skips the hardware demo menu and opens the
 
 Silence below the peak threshold for 30 s also stops a recording.
 
+## Power
+
+- Backlight 100% while in use; 20% after 18 s idle; off after 60 s. The first
+  key press on a dark screen only wakes it.
+- BLE uses 30–50 ms + slave latency 20 when idle, and 7.5–15 ms while talking.
+
 ## On-device acceptance
 
 Do not treat a host-test pass as hardware validation. Record PASS / FAIL / NOT RUN on a real board:

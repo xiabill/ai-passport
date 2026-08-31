@@ -40,6 +40,10 @@ run_static_checks() {
         tests/test_vibe_state.c main/vibe_state.c main/vibe_protocol.c \
         -o "${test_dir}/test_vibe_state"
     "${test_dir}/test_vibe_state"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain -DVIBE_POWER_HOST_TEST \
+        tests/test_vibe_power.c main/vibe_power.c \
+        -o "${test_dir}/test_vibe_power"
+    "${test_dir}/test_vibe_power"
     python3 tests/test_verify_firmware.py
     rm -rf "${test_dir}"
     echo "Host tests: PASS"
