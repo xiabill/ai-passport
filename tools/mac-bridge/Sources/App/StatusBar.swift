@@ -46,7 +46,7 @@ final class StatusBar: NSObject, NSMenuDelegate {
         else { title = "○ Vibe" }
         item.button?.title = title
         phaseItem.title = "设备：\(snap.phase)  \(snap.deviceName)"
-        typelessItem.title = "Typeless：\(m.typelessState.title)"
+        typelessItem.title = "输入：\(m.activeInputTitle)  Typeless：\(m.typelessState.title)"
         if !m.axOK { problemItem.title = "辅助功能未开" }
         else if !m.blackholeOK { problemItem.title = "未找到 BlackHole" }
         else if !m.typelessMicOK { problemItem.title = "Typeless 麦克风不匹配" }

@@ -5,6 +5,7 @@ public struct BridgeSettings: Equatable, Codable {
     public var devicePrefix: String
     public var outputDevice: String
     public var talkKey: String
+    public var doubaoKey: String
     public var sendKey: String
     public var cancelKey: String
     public var retapEnabled: Bool
@@ -20,6 +21,7 @@ public struct BridgeSettings: Equatable, Codable {
         devicePrefix: "FoloVibe",
         outputDevice: "BlackHole 2ch",
         talkKey: "Fn",
+        doubaoKey: "Right Option",
         sendKey: "Return",
         cancelKey: "Escape",
         retapEnabled: true,
@@ -38,8 +40,37 @@ public struct BridgeSettings: Equatable, Codable {
     public var send: Hotkey {
         Hotkey.named(sendKey, in: Hotkey.sendKeys, fallback: Hotkey.sendKeys[0])
     }
+    public var doubao: Hotkey {
+        Hotkey.named(doubaoKey, in: Hotkey.doubaoKeys, fallback: Hotkey.doubaoKeys[0])
+    }
     public var cancel: Hotkey {
         Hotkey.named(cancelKey, in: Hotkey.cancelKeys, fallback: Hotkey.cancelKeys[0])
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case devicePrefix, outputDevice, talkKey, doubaoKey, sendKey, cancelKey
+        case retapEnabled, retapFromSec, retapToSec, retapMax, typelessPollSec
+        case launchAtLogin, startHidden, autoReconnect
+    }
+
+    /// Keep existing installations valid when the Doubao setting is added.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = BridgeSettings.default
+        devicePrefix = try c.decodeIfPresent(String.self, forKey: .devicePrefix) ?? d.devicePrefix
+        outputDevice = try c.decodeIfPresent(String.self, forKey: .outputDevice) ?? d.outputDevice
+        talkKey = try c.decodeIfPresent(String.self, forKey: .talkKey) ?? d.talkKey
+        doubaoKey = try c.decodeIfPresent(String.self, forKey: .doubaoKey) ?? d.doubaoKey
+        sendKey = try c.decodeIfPresent(String.self, forKey: .sendKey) ?? d.sendKey
+        cancelKey = try c.decodeIfPresent(String.self, forKey: .cancelKey) ?? d.cancelKey
+        retapEnabled = try c.decodeIfPresent(Bool.self, forKey: .retapEnabled) ?? d.retapEnabled
+        retapFromSec = try c.decodeIfPresent(Double.self, forKey: .retapFromSec) ?? d.retapFromSec
+        retapToSec = try c.decodeIfPresent(Double.self, forKey: .retapToSec) ?? d.retapToSec
+        retapMax = try c.decodeIfPresent(Int.self, forKey: .retapMax) ?? d.retapMax
+        typelessPollSec = try c.decodeIfPresent(Double.self, forKey: .typelessPollSec) ?? d.typelessPollSec
+        launchAtLogin = try c.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? d.launchAtLogin
+        startHidden = try c.decodeIfPresent(Bool.self, forKey: .startHidden) ?? d.startHidden
+        autoReconnect = try c.decodeIfPresent(Bool.self, forKey: .autoReconnect) ?? d.autoReconnect
     }
 }
 

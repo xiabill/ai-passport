@@ -22,6 +22,9 @@ extern "C" {
 #define VIBE_BLE_STOP   2U
 #define VIBE_BLE_ENTER  3U
 #define VIBE_BLE_CANCEL 4U
+#define VIBE_BLE_DOUBAO_START 5U
+#define VIBE_BLE_DOUBAO_STOP  6U
+#define VIBE_BLE_DOUBAO_STOP_SEND 7U
 
 #define VIBE_TL_IDLE       0U
 #define VIBE_TL_RECORDING  1U

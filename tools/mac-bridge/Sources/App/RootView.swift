@@ -51,6 +51,7 @@ struct RootView: View {
                 Text(model.bleSnap.phase).font(.caption).foregroundColor(.secondary)
             }
             Text(model.typelessState.title).font(.caption).foregroundColor(.secondary)
+            Text("输入：\(model.activeInputTitle)").font(.caption).foregroundColor(.secondary)
         }
     }
 

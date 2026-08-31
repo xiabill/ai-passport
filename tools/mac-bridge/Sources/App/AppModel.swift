@@ -10,6 +10,11 @@ enum AppTab: String, CaseIterable {
 }
 
 final class AppModel: ObservableObject {
+    enum ActiveInput: String {
+        case typeless = "Typeless"
+        case doubao = "豆包"
+    }
+
     static let shared = AppModel()
 
     let settings = SettingsStore()
@@ -30,6 +35,7 @@ final class AppModel: ObservableObject {
     @Published var loginOn = false
     @Published var lastAction = "—"
     @Published var debugNote = ""
+    @Published var activeInputTitle = "—"
 
     private var expect: TypelessState = .idle
     private var lastHotkey = Date.distantPast
@@ -37,6 +43,7 @@ final class AppModel: ObservableObject {
     private var lastOutput = ""
     private var lastPrefix = ""
     private var lastTypelessPoll = Date.distantPast
+    private var activeInput: ActiveInput?
 
     private init() {}
 
@@ -76,11 +83,15 @@ final class AppModel: ObservableObject {
         switch ev {
         case .start:
             KeyTap.tap(s.talk)
+            activeInput = .typeless
+            activeInputTitle = ActiveInput.typeless.rawValue
             expect = .recording
             lastHotkey = Date()
             retaps = 0
         case .stop:
             KeyTap.tap(s.talk)
+            activeInput = .typeless
+            activeInputTitle = ActiveInput.typeless.rawValue
             expect = .idle
             lastHotkey = Date()
             retaps = 0
@@ -89,8 +100,27 @@ final class AppModel: ObservableObject {
         case .cancel:
             if ble.snapshot.streaming { KeyTap.tap(s.talk) }
             KeyTap.tap(s.cancel)
+            activeInput = nil
+            activeInputTitle = "—"
             expect = .idle
             lastHotkey = Date()
+        case .doubaoStart:
+            KeyTap.tap(s.doubao)
+            activeInput = .doubao
+            activeInputTitle = ActiveInput.doubao.rawValue
+        case .doubaoStop:
+            KeyTap.tap(s.doubao)
+            activeInput = nil
+            activeInputTitle = "—"
+        case .doubaoStopAndSend:
+            KeyTap.tap(s.doubao)
+            activeInput = nil
+            activeInputTitle = "—"
+            Log.key("豆包停止后延迟发送回车")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+                guard let self else { return }
+                KeyTap.tap(self.settings.current.send)
+            }
         }
     }
 
@@ -124,6 +154,10 @@ final class AppModel: ObservableObject {
                 Log.typeless(st.title)
                 typelessState = st
             }
+            if activeInput == .typeless && !bleSnap.streaming && st == .idle {
+                activeInput = nil
+                activeInputTitle = "—"
+            }
             ble.writeTypeless(st.rawValue)
             closedLoop(st)
         }
@@ -131,7 +165,8 @@ final class AppModel: ObservableObject {
 
     private func closedLoop(_ st: TypelessState) {
         let s = settings.current
-        guard s.retapEnabled, typeless.running, retaps < s.retapMax else { return }
+        guard activeInput == .typeless, s.retapEnabled, typeless.running, retaps < s.retapMax
+        else { return }
         let dt = Date().timeIntervalSince(lastHotkey)
         guard dt >= s.retapFromSec, dt <= s.retapToSec else { return }
         if expect == .recording && st != .recording {

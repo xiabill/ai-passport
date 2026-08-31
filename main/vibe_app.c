@@ -31,6 +31,7 @@ static void publish_locked(void)
 {
     vibe_ui_model_t m = {0};
     m.phase = s_st.phase;
+    m.source = s_st.source;
     m.linked = s_st.linked;
     m.audio_sub = s_st.audio_sub;
     m.queued_enter = s_st.queued_enter;

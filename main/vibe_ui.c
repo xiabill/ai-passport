@@ -98,6 +98,15 @@ static const char *tl_title(uint8_t tl)
     }
 }
 
+static const char *source_title(vibe_source_t source)
+{
+    switch (source) {
+    case VIBE_SOURCE_TYPELESS: return "TYP";
+    case VIBE_SOURCE_DOUBAO: return "DB";
+    default: return "--";
+    }
+}
+
 static const char *event_title(uint8_t ev)
 {
     switch (ev) {
@@ -105,6 +114,9 @@ static const char *event_title(uint8_t ev)
     case VIBE_BLE_STOP: return "STOP";
     case VIBE_BLE_ENTER: return "SEND";
     case VIBE_BLE_CANCEL: return "CANCEL";
+    case VIBE_BLE_DOUBAO_START: return "DB START";
+    case VIBE_BLE_DOUBAO_STOP: return "DB STOP";
+    case VIBE_BLE_DOUBAO_STOP_SEND: return "DB SEND";
     default: return "--";
     }
 }
@@ -130,8 +142,8 @@ static void paint(const vibe_ui_model_t *m)
     }
 
     char line[40];
-    snprintf(line, sizeof(line), "TYPE %s  LINK %s",
-             tl_title(m->typeless), m->linked ? "OK" : "--");
+    snprintf(line, sizeof(line), "MODE %s  LINK %s",
+             source_title(m->source), m->linked ? "OK" : "--");
     lv_label_set_text(s_line_tl, line);
 
     snprintf(line, sizeof(line), "%s", vibe_ble_name());
@@ -189,19 +201,25 @@ static void paint(const vibe_ui_model_t *m)
 
     switch (m->phase) {
     case VIBE_PHASE_IDLE:
-        set_key(s_key_ok, "OK\nTALK", UI_YELLOW);
-        set_key(s_key_dn, "DOWN\nSEND", UI_PAPER);
-        set_key(s_key_up, "UP\nESC", UI_PAPER);
+        set_key(s_key_ok, "OK\nTYP", UI_YELLOW);
+        set_key(s_key_dn, "DOWN\nENTER", UI_PAPER);
+        set_key(s_key_up, "UP\nDB", UI_PAPER);
         break;
     case VIBE_PHASE_RECORDING:
-        set_key(s_key_ok, "OK\nSTOP", UI_RED);
-        set_key(s_key_dn, "DOWN\nSEND", UI_YELLOW);
-        set_key(s_key_up, "UP\nESC", UI_PAPER);
+        if (m->source == VIBE_SOURCE_DOUBAO) {
+            set_key(s_key_ok, "OK\nBUSY", UI_MUTED);
+            set_key(s_key_dn, "DOWN\nSEND", UI_YELLOW);
+            set_key(s_key_up, "UP\nSTOP", UI_RED);
+        } else {
+            set_key(s_key_ok, "OK\nSTOP", UI_RED);
+            set_key(s_key_dn, "DOWN\nSEND", UI_YELLOW);
+            set_key(s_key_up, "UP\nBUSY", UI_MUTED);
+        }
         break;
     case VIBE_PHASE_PROCESSING:
         set_key(s_key_ok, "OK\n--", UI_MUTED);
         set_key(s_key_dn, m->queued_enter ? "DOWN\nWAIT" : "DOWN\nSEND", UI_ORANGE);
-        set_key(s_key_up, "UP\nESC", UI_PAPER);
+        set_key(s_key_up, "UP\nBUSY", UI_MUTED);
         break;
     case VIBE_PHASE_WAIT:
         set_key(s_key_ok, "OK\n--", UI_MUTED);

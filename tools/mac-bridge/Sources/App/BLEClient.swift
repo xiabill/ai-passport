@@ -187,8 +187,8 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
             let byte = data.first, let ev = VibeEvent(rawValue: byte)
         {
-            if ev == .start { update { $0.streaming = true } }
-            if ev == .stop || ev == .cancel {
+            if ev == .start || ev == .doubaoStart { update { $0.streaming = true } }
+            if ev == .stop || ev == .cancel || ev == .doubaoStop || ev == .doubaoStopAndSend {
                 update { $0.streaming = false }
                 mic.finish()
             }

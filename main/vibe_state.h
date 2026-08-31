@@ -18,13 +18,19 @@ typedef enum {
 } vibe_phase_t;
 
 typedef enum {
+    VIBE_SOURCE_NONE = 0,
+    VIBE_SOURCE_TYPELESS,
+    VIBE_SOURCE_DOUBAO,
+} vibe_source_t;
+
+typedef enum {
     VIBE_IN_LINK_UP = 0,
     VIBE_IN_LINK_DOWN,
     VIBE_IN_AUDIO_SUB,
     VIBE_IN_AUDIO_UNSUB,
-    VIBE_IN_OK,              // toggle talk
-    VIBE_IN_DOWN,            // Enter / stop-and-send
-    VIBE_IN_UP,              // cancel
+    VIBE_IN_OK,              // Typeless toggle
+    VIBE_IN_DOWN,            // Return / stop-and-send
+    VIBE_IN_UP,              // Doubao toggle
     VIBE_IN_TYPELESS,        // typeless_byte is valid
     VIBE_IN_SILENCE,         // 30 s below peak threshold while recording
     VIBE_IN_PROC_TIMEOUT,    // processing wait expired
@@ -32,6 +38,7 @@ typedef enum {
 
 typedef struct {
     vibe_phase_t phase;
+    vibe_source_t source;
     bool linked;
     bool audio_sub;
     uint8_t typeless;

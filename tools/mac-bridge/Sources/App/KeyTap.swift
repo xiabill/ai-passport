@@ -21,7 +21,34 @@ enum KeyTap {
             tapFunction()
             return
         }
+        if key.name == "Right Option" {
+            tapModifier(virtualKey: 0x3D, flags: .maskAlternate)
+            return
+        }
+        if key.name == "Left Option" {
+            tapModifier(virtualKey: 0x3A, flags: .maskAlternate)
+            return
+        }
         tap(key.carbon)
+    }
+
+    private static func tapModifier(virtualKey: UInt16, flags: CGEventFlags) {
+        let src = CGEventSource(stateID: .hidSystemState)
+        let down = CGEvent(
+            keyboardEventSource: src,
+            virtualKey: virtualKey,
+            keyDown: true)
+        down?.type = .flagsChanged
+        down?.flags = flags
+        down?.post(tap: .cghidEventTap)
+
+        let up = CGEvent(
+            keyboardEventSource: src,
+            virtualKey: virtualKey,
+            keyDown: false)
+        up?.type = .flagsChanged
+        up?.flags = []
+        up?.post(tap: .cghidEventTap)
     }
 
     /// Fn/Globe is a modifier-only key on macOS, so it must be posted as a

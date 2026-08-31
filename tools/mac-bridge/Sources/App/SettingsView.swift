@@ -18,17 +18,17 @@ struct SettingsView: View {
                     TextField("音频输出设备", text: outputBinding)
                     Toggle("断开后自动重连", isOn: autoReconnect)
                 }
-                Section(header: Text("按键")) {
-                    Picker("说话", selection: talkBinding) {
+                Section(header: Text("输入法按键")) {
+                    Picker("Typeless", selection: talkBinding) {
                         ForEach(Hotkey.talkKeys, id: \.name) { Text($0.name).tag($0.name) }
                     }
-                    Picker("发送", selection: sendBinding) {
+                    Picker("豆包", selection: doubaoBinding) {
+                        ForEach(Hotkey.doubaoKeys, id: \.name) { Text($0.name).tag($0.name) }
+                    }
+                    Picker("回车", selection: sendBinding) {
                         ForEach(Hotkey.sendKeys, id: \.name) { Text($0.name).tag($0.name) }
                     }
-                    Picker("取消", selection: cancelBinding) {
-                        ForEach(Hotkey.cancelKeys, id: \.name) { Text($0.name).tag($0.name) }
-                    }
-                    Text("Typeless 听写快捷键必须和「说话」一致，默认 Fn，也支持 F13–F20。")
+                    Text("中键控制 Typeless，上键控制豆包，下键发送回车。豆包默认右⌥，请在豆包设置里使用“免按模式”。")
                         .foregroundColor(.secondary)
                 }
                 Section(header: Text("闭环补按")) {
@@ -95,6 +95,9 @@ struct SettingsView: View {
     }
     private var sendBinding: Binding<String> {
         Binding(get: { store.current.sendKey }, set: { store.current.sendKey = $0 })
+    }
+    private var doubaoBinding: Binding<String> {
+        Binding(get: { store.current.doubaoKey }, set: { store.current.doubaoKey = $0 })
     }
     private var cancelBinding: Binding<String> {
         Binding(get: { store.current.cancelKey }, set: { store.current.cancelKey = $0 })

@@ -6,9 +6,9 @@
 
 This public fork of [FoloToy/ai-passport](https://github.com/FoloToy/ai-passport) turns the AI Passport into a Typeless push-to-talk microphone for vibe coding. The active implementation is on [`feature/vibe-typeless`](https://github.com/xiabill/ai-passport/tree/feature/vibe-typeless).
 
-- Firmware: ESP32-C3 BLE IMA-ADPCM microphone, OK / DOWN / UP keys, VIBE status page, power saving, and button feedback beep
+- Firmware: ESP32-C3 BLE IMA-ADPCM microphone, Typeless / Doubao dual-input buttons, Return key, VIBE status page, power saving, and button feedback beep
 - Bluetooth link: custom GATT service for audio, device events, and Typeless state
-- Mac companion: [`tools/mac-bridge/`](tools/mac-bridge/) receives and decodes audio, writes PCM to `BlackHole 2ch`, and taps Fn or F13–F20
+- Mac companion: [`tools/mac-bridge/`](tools/mac-bridge/) receives and decodes audio, writes PCM to `BlackHole 2ch`, and taps the configured Typeless / Doubao shortcuts
 - Complete setup, build, flash, BLE protocol, and troubleshooting guide: [docs/development/vibe-typeless.md](docs/development/vibe-typeless.md)
 - Chinese guide: [docs/development/vibe-typeless.zh_CN.md](docs/development/vibe-typeless.zh_CN.md)
 

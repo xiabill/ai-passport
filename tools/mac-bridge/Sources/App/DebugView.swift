@@ -12,9 +12,9 @@ struct DebugView: View {
 
                 group("按键") {
                     HStack {
-                        Button("点说话键") { KeyTap.tap(model.settings.current.talk) }
-                        Button("点发送键") { KeyTap.tap(model.settings.current.send) }
-                        Button("点取消键") { KeyTap.tap(model.settings.current.cancel) }
+                        Button("点 Typeless 键") { KeyTap.tap(model.settings.current.talk) }
+                        Button("点豆包键") { KeyTap.tap(model.settings.current.doubao) }
+                        Button("点回车键") { KeyTap.tap(model.settings.current.send) }
                     }
                     Text("焦点要在会吃键盘的地方。没开辅助功能时什么都不会发生。")
                         .foregroundColor(.secondary)

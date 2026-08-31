@@ -27,6 +27,12 @@ struct StatusView: View {
                         ("麦克风", model.typelessMicLabel),
                         ("快捷键", model.settings.current.talkKey),
                     ])
+                    card("输入法", [
+                        ("当前", model.activeInputTitle),
+                        ("Typeless", model.settings.current.talkKey),
+                        ("豆包", model.settings.current.doubaoKey),
+                        ("回车", model.settings.current.sendKey),
+                    ])
                     card("权限", [
                         ("辅助功能", model.axOK ? "已开" : "未开"),
                         ("系统蓝牙", model.bleSnap.bluetoothOn ? "已开" : "未开"),

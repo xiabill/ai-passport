@@ -12,6 +12,7 @@ extern "C" {
 
 typedef struct {
     vibe_phase_t phase;
+    vibe_source_t source;
     bool linked;
     bool audio_sub;
     bool queued_enter;

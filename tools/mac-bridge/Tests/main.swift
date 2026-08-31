@@ -33,21 +33,28 @@ do {
     expect(AudioPacket.parse(Data([9, 0, 0, 0, 0, 1]))?.eos == true, "eos packet")
     expect(AudioPacket.parse(Data([1, 2, 3, 4, 5])) == nil, "reject short")
     expect(VibeEvent.start.rawValue == 1, "event start")
+    expect(VibeEvent.doubaoStart.rawValue == 5, "Doubao start event")
+    expect(VibeEvent.doubaoStopAndSend.rawValue == 7, "Doubao stop-send event")
 }
 
 do {
     expect(BridgeSettings.default.talk.name == "Fn", "default talk key")
     expect(BridgeSettings.default.talk.carbon == 0x3F, "Fn carbon")
+    expect(BridgeSettings.default.doubao.name == "Right Option", "default Doubao key")
+    expect(BridgeSettings.default.doubao.carbon == 0x3D, "Right Option carbon")
     var s = BridgeSettings.default
     s.talkKey = "Nope"
     expect(s.talk.name == "Fn", "unknown key fallback")
     let ud = UserDefaults(suiteName: "folovibe.tests.\(UUID().uuidString)")!
     let store = SettingsStore(defaults: ud)
     store.current.talkKey = "F18"
+    store.current.doubaoKey = "Left Option"
     let again = SettingsStore(defaults: ud)
     expect(again.current.talkKey == "F18", "settings round trip")
+    expect(again.current.doubaoKey == "Left Option", "Doubao setting round trip")
     expect(Hotkey.named("F17", in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[0]).carbon == 0x40, "F17 lookup")
     expect(Hotkey.named("Fn", in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[0]).carbon == 0x3F, "Fn lookup")
+    expect(Hotkey.named("Right Option", in: Hotkey.doubaoKeys, fallback: Hotkey.doubaoKeys[0]).carbon == 0x3D, "Doubao lookup")
 }
 
 do {

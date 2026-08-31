@@ -22,6 +22,23 @@ public struct Hotkey: Equatable, Hashable {
         Hotkey(name: "F20", carbon: 0x5A),
     ]
 
+    /// Shortcuts supported by the macOS Doubao input method. Right Option is
+    /// the default in its toggle/"免按" mode; Fn and function keys remain
+    /// available for users who changed the Doubao shortcut.
+    public static let doubaoKeys: [Hotkey] = [
+        Hotkey(name: "Right Option", carbon: 0x3D),
+        Hotkey(name: "Left Option", carbon: 0x3A),
+        Hotkey(name: "Fn", carbon: 0x3F),
+        Hotkey(name: "F13", carbon: 0x69),
+        Hotkey(name: "F14", carbon: 0x6B),
+        Hotkey(name: "F15", carbon: 0x71),
+        Hotkey(name: "F16", carbon: 0x6A),
+        Hotkey(name: "F17", carbon: 0x40),
+        Hotkey(name: "F18", carbon: 0x4F),
+        Hotkey(name: "F19", carbon: 0x50),
+        Hotkey(name: "F20", carbon: 0x5A),
+    ]
+
     public static let sendKeys: [Hotkey] = [
         Hotkey(name: "Return", carbon: 0x24),
         Hotkey(name: "Space", carbon: 0x31),

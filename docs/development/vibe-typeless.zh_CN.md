@@ -7,7 +7,7 @@
 这个分支把 FoloToy AI Passport 做成 Typeless 的无线一键说话麦克风。公开实现由两部分组成：
 
 - ESP32-C3 固件（`main/`）：采集设备麦克风，把 16 kHz PCM 编成 IMA-ADPCM，通过 BLE 发送音频，绘制 VIBE 屏幕并上报按键事件。
-- macOS 伴侣（`tools/mac-bridge/`）：连接设备、解码音频、把 PCM 写入 `BlackHole 2ch`，监控 Typeless，并发送配置好的说话/发送/取消按键。
+- macOS 伴侣（`tools/mac-bridge/`）：连接设备、解码音频、把 PCM 写入 `BlackHole 2ch`，监控 Typeless，并发送配置好的 Typeless / 豆包 / 回车按键。
 
 仓库是公开的，当前实现位于 [`feature/vibe-typeless`](https://github.com/xiabill/ai-passport/tree/feature/vibe-typeless)。上游 `main` 保持干净的硬件基线。
 
@@ -26,7 +26,10 @@ ESP32-C3 BLE notify ───────────────┐
                                BlackHole 2ch
                                       │
                                       ▼
-                                  Typeless
+                          ┌───────────────┐
+                          │ Typeless      │
+                          │ 豆包输入法     │
+                          └───────────────┘
 
 Passport 确定/下/上 ──BLE event──> Bridge ──CGEvent──> Typeless
 Typeless 状态 ───────BLE write───> Passport
@@ -45,7 +48,7 @@ Typeless 状态 ───────BLE write───> Passport
 - macOS 13 或更新版本，用于 Swift Package。
 - Swift 5.9+ 工具链和 Apple Command Line Tools。构建 macOS 伴侣只需要 `swift build`，不要求安装完整 Xcode。
 - 打开蓝牙。
-- 安装 Typeless，并让它使用和 Bridge 相同的说话键。
+- 安装 Typeless 和豆包输入法。Typeless 使用自己的说话键；豆包建议打开“免按模式”，并把快捷键设为右⌥。
 - 安装 BlackHole 2ch，并把它作为 Typeless 的麦克风输入。
 
 ### 固件工具链
@@ -77,9 +80,9 @@ open FoloVibeBridge.app
 1. macOS 询问时允许蓝牙权限。
 2. 打开“系统设置 → 隐私与安全性 → 辅助功能”，启用 `FoloVibe Bridge`。
 3. 在 Bridge 的“设置”页选择设备名前缀 `FoloVibe` 和输出设备 `BlackHole 2ch`。
-4. Bridge 和 Typeless 必须使用同一个说话键。默认是 `Fn`，也支持 `F13`–`F20`，包括 `F19`。
-5. 发送键默认 `Return`，取消键默认 `Escape`；如果你的 Typeless 使用其他按键，两边一起修改。
-6. 在 Typeless 中选择 `BlackHole 2ch` 作为麦克风输入。
+4. 在 Bridge 设置中分别选择 Typeless 和豆包的按键。Typeless 默认 `Fn`；豆包默认 `Right Option`（右⌥）。如果你在对应输入法中改过快捷键，两边选择相同按键。
+5. 回车键默认 `Return`，它对应设备的下键；旧的 `Escape` 取消键仍保留在配置里用于兼容，但不再占用设备上键。
+6. 在 Typeless 和豆包输入法中选择 `BlackHole 2ch` 作为麦克风输入（按当前输入法的设置要求启用）。
 
 Bridge 会把设置保存到 macOS 用户默认值。日志位置：
 
@@ -130,13 +133,15 @@ python -m esptool --chip esp32c3 \
 
 ## 设备行为
 
-| 按键 | 空闲 | 录音中 | 停止后 |
+| 按键 | 空闲 | 对应输入法录音中 | 其他输入法录音中 |
 | --- | --- | --- | --- |
-| 确定 | 开始说话 | 停止 | 转写中忽略 |
-| 下 | 发送/回车 | 停止，等 Typeless 空闲后发送 Return | 排队发送 Return |
-| 上 | 取消/Escape | 停止并发送 Escape | 发送 Escape，回到空闲 |
+| 确定 OK | 启动 Typeless | 停止 Typeless | 忽略，避免抢占豆包 |
+| 下 DOWN | 发送 Return | 停止当前输入，完成后发送 Return | 停止当前输入，完成后发送 Return |
+| 上 UP | 启动豆包 | 停止豆包 | 忽略，避免抢占 Typeless |
 
 峰值低于阈值约 30 秒也会自动停止。短提示音由音频 worker 生成，因此按键回调本身不会执行阻塞的播放工作。
+
+两个输入法共享同一个设备麦克风和 BLE 音频流，但不会并行录音。豆包停止后 Bridge 会短暂等待再发送 Return，给识别结果落到当前输入框留出时间；Typeless 则继续读取本地状态，在转写完成后再发送。
 
 VIBE 页面显示 BLE/Typeless 状态、电量、音频状态、绿/黄/红声波和三个按键提示。声波是活动历史，不是经过校准的声压计。
 
@@ -160,7 +165,7 @@ Control write: F0100004-0000-4A6B-9E10-464F4C4F5631
 | 特征 | 方向 | 数据 |
 | --- | --- | --- |
 | Audio | 设备 → Mac | 166 字节 IMA-ADPCM 帧，或 6 字节 EOS 结束标记 |
-| Event | 设备 → Mac | `1` 开始，`2` 停止，`3` 发送/Enter，`4` 取消/Escape |
+| Event | 设备 → Mac | `1` Typeless 开始，`2` Typeless 停止，`3` Return，`4` 旧取消/Escape，`5` 豆包开始，`6` 豆包停止，`7` 豆包停止并发送 Return |
 | Control | Mac → 设备 | Typeless 状态：`0` 空闲，`1` 录音，`2` 转写，`3` 未运行 |
 
 音频帧包含序号、预测值、step index 和 ADPCM 数据。Bridge 会对小范围丢帧插入静音，并在状态页显示丢包统计。
@@ -179,10 +184,10 @@ Device tests: 实体板、BLE、屏幕、按键、扬声器、麦克风、Typele
 
 - [ ] 设备广播 `FoloVibe-*`，Bridge 能连接。
 - [ ] Bridge 显示已订阅音频，Typeless 选择 `BlackHole 2ch`。
-- [ ] 按确定开始 Typeless 听写，文字进入当前焦点输入框。
-- [ ] 再按确定停止，VIBE 页面离开 REC。
-- [ ] 说话时按下键：停止、等待 Typeless 空闲、发送 Return。
-- [ ] 按上键取消并发送 Escape，不发送文字。
+- [ ] 按确定开始/停止 Typeless 听写，文字进入当前焦点输入框。
+- [ ] 按上键开始/停止豆包输入法，文字进入当前焦点输入框。
+- [ ] 两个输入法录音互斥，录音中按另一个输入法键不会抢占音频。
+- [ ] 说话时按下键：停止当前输入法并发送 Return。
 - [ ] 按键提示音可听见，且不影响麦克风采集。
 - [ ] 声波低音量显示绿色，中等显示黄色，高峰显示红色，停止后渐隐。
 - [ ] USB Serial/JTAG 重启后可以重新枚举，设备身份仍然保留。
@@ -200,6 +205,10 @@ Device tests: 实体板、BLE、屏幕、按键、扬声器、麦克风、Typele
 ### Fn 或 F19 没有触发 Typeless
 
 Bridge 默认是 macOS 的 Fn/Globe 修饰键，不是 F19。请让 Typeless 和 Bridge 都选 `Fn`，或者两边都选 `F19`。Bridge 支持 F13 到 F20，并会保存选择。
+
+### 豆包无法启动或停止
+
+在豆包输入法设置中打开“免按模式”，并把快捷键设置为和 Bridge 的“豆包”选项一致。默认是 `Right Option`（右⌥）；如果你的版本使用 Fn，就两边都选择 `Fn`。如果 macOS 拦截修饰键事件，请给 Bridge 打开辅助功能和输入监控权限。
 
 ### USB 端口消失
 
