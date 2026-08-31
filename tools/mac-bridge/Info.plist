@@ -6,23 +6,27 @@
     <string>dev.folovibe.bridge</string>
     <key>CFBundleName</key>
     <string>FoloVibe Bridge</string>
+    <key>CFBundleDisplayName</key>
+    <string>FoloVibe Bridge</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleExecutable</key>
     <string>FoloVibeBridge</string>
     <key>CFBundleVersion</key>
-    <string>0.1.0</string>
+    <string>0.2.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.1.0</string>
+    <string>0.2.0</string>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
-    <key>LSUIElement</key>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.developer-tools</string>
+    <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>FoloVibe Bridge connects to AI Passport over Bluetooth LE to receive microphone audio.</string>
+    <string>FoloVibe 通过蓝牙连接 AI Passport，接收设备麦克风音频。</string>
     <key>NSBluetoothPeripheralUsageDescription</key>
-    <string>FoloVibe Bridge connects to AI Passport over Bluetooth LE.</string>
+    <string>FoloVibe 通过蓝牙连接 AI Passport。</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Not used. Audio is received from the device over BLE.</string>
+    <string>不使用 Mac 麦克风。声音来自 Passport 的 BLE 音频流。</string>
 </dict>
 </plist>

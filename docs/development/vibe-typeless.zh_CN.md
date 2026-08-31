@@ -4,7 +4,7 @@
 
 # Vibe Typeless 伴侣
 
-`feature/vibe-typeless` 上的固件把 AI Passport 做成 Typeless 的一键说话麦克风。`tools/mac-bridge/` 里的 Mac 桥把解码后的 PCM 写入 `BlackHole 2ch`，并轻按 Typeless 的 `F19`。
+`feature/vibe-typeless` 上的固件把 AI Passport 做成 Typeless 的一键说话麦克风。`tools/mac-bridge/` 是完整 Mac 应用（状态、设置、日志、调试），把解码后的 PCM 写入 `BlackHole 2ch`，并按设置里的说话键（默认 F19）。
 
 这是专用应用：开机不再进入硬件 demo 菜单，直接打开 VIBE 页。`components/bsp` 未改。
 

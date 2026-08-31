@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- Mac 伴侣做成完整应用：总览、设置、实时日志、调试测试台（`tools/mac-bridge/`）。
 - 新增 vibe-typeless 专用伴侣：开机进入 VIBE 页，经 BLE 推 16 kHz IMA-ADPCM，并配合
   `tools/mac-bridge/` 把声音打进 `BlackHole 2ch` 供 Typeless 听写（`feature/vibe-typeless`）。
 - 将小程序 BLE 安装兼容提升为二创模板强制契约：固定保护 `cardid`/Recovery 分区，

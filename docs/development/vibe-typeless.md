@@ -4,7 +4,7 @@
 
 # Vibe Typeless companion
 
-Firmware on `feature/vibe-typeless` turns AI Passport into a push-to-talk microphone for Typeless. The Mac bridge in `tools/mac-bridge/` writes decoded PCM into `BlackHole 2ch` and taps Typeless `F19`.
+Firmware on `feature/vibe-typeless` turns AI Passport into a push-to-talk microphone for Typeless. The Mac app in `tools/mac-bridge/` (status, settings, logs, debug) writes decoded PCM into `BlackHole 2ch` and taps the configured talk key (default F19).
 
 This is a dedicated application: boot skips the hardware demo menu and opens the VIBE page. `components/bsp` is unchanged.
 

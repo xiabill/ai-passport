@@ -1,6 +1,6 @@
 import Foundation
 
-enum IMAADPCM {
+public enum IMAADPCM {
     private static let stepTable: [Int32] = [
         7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
         50, 55, 60, 66, 73, 80, 88, 97, 107, 118, 130, 143, 157, 173, 190, 209, 230,
@@ -15,7 +15,7 @@ enum IMAADPCM {
         -1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8,
     ]
 
-    static func decode(_ data: Data, predictor: Int16, stepIndex: UInt8) -> [Int16] {
+    public static func decode(_ data: Data, predictor: Int16, stepIndex: UInt8) -> [Int16] {
         var pred = Int32(predictor)
         var index = Int32(min(stepIndex, 88))
         var out = [Int16]()
@@ -36,8 +36,12 @@ enum IMAADPCM {
         return out
     }
 
-    static func selfCheck() {
-        let pcm = decode(Data([0x04, 0x0C]), predictor: 0, stepIndex: 0)
-        precondition(Array(pcm.prefix(3)) == [7, 8, -1], "IMA ADPCM decoder mismatch")
+    public static func peak(_ pcm: [Int16]) -> Int {
+        var p = 0
+        for s in pcm {
+            let v = s == Int16.min ? 32767 : abs(Int(s))
+            if v > p { p = v }
+        }
+        return p
     }
 }

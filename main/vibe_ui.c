@@ -1,6 +1,8 @@
 #include "vibe_ui.h"
 #include "bsp_battery.h"
 #include "ui_pixel.h"
+#include "vibe_ble.h"
+#include "vibe_protocol.h"
 #include "lvgl.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -10,59 +12,194 @@
 
 static SemaphoreHandle_t s_mu;
 static lv_obj_t *s_scr;
+static lv_obj_t *s_led;
 static lv_obj_t *s_phase;
-static lv_obj_t *s_hint;
-static lv_obj_t *s_stats;
-static lv_obj_t *s_batt;
+static lv_obj_t *s_clock;
+static lv_obj_t *s_line_tl;
+static lv_obj_t *s_line_name;
+static lv_obj_t *s_line_batt;
+static lv_obj_t *s_line_tx;
+static lv_obj_t *s_line_last;
+static lv_obj_t *s_key_ok;
+static lv_obj_t *s_key_dn;
+static lv_obj_t *s_key_up;
 static lv_obj_t *s_bars[VIBE_UI_BARS];
 static lv_obj_t *s_mascot;
 static lv_timer_t *s_timer;
 static vibe_ui_model_t s_live;
-static vibe_phase_t s_shown = VIBE_PHASE_DOWN;
+static vibe_phase_t s_shown = (vibe_phase_t)255;
+static uint32_t s_rec_t0;
+static bool s_led_on;
+
+static lv_obj_t *ink_box(lv_obj_t *parent, int x, int y, int w, int h, uint32_t fill)
+{
+    lv_obj_t *obj = lv_obj_create(parent);
+    lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_pos(obj, x, y);
+    lv_obj_set_size(obj, w, h);
+    lv_obj_set_style_radius(obj, 0, 0);
+    lv_obj_set_style_pad_all(obj, 0, 0);
+    lv_obj_set_style_border_width(obj, 3, 0);
+    lv_obj_set_style_border_color(obj, lv_color_hex(UI_INK), 0);
+    lv_obj_set_style_bg_color(obj, lv_color_hex(fill), 0);
+    return obj;
+}
+
+static lv_obj_t *key_chip(lv_obj_t *parent, int x, int y)
+{
+    lv_obj_t *box = ink_box(parent, x, y, 60, 26, UI_PAPER);
+    lv_obj_t *lab = lv_label_create(box);
+    lv_obj_set_style_text_font(lab, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_color(lab, lv_color_hex(UI_INK), 0);
+    lv_obj_center(lab);
+    lv_label_set_text(lab, "");
+    return lab;
+}
+
+static void set_key(lv_obj_t *lab, const char *text, uint32_t fill)
+{
+    lv_obj_t *box = lv_obj_get_parent(lab);
+    lv_obj_set_style_bg_color(box, lv_color_hex(fill), 0);
+    lv_label_set_text(lab, text);
+}
+
+static uint32_t phase_color(vibe_phase_t p)
+{
+    switch (p) {
+    case VIBE_PHASE_WAIT: return UI_YELLOW;
+    case VIBE_PHASE_IDLE: return 0x7BE07A;
+    case VIBE_PHASE_RECORDING: return UI_RED;
+    case VIBE_PHASE_PROCESSING: return UI_ORANGE;
+    default: return UI_MUTED;
+    }
+}
 
 static const char *phase_title(vibe_phase_t p)
 {
     switch (p) {
-    case VIBE_PHASE_WAIT: return "WAIT MAC";
+    case VIBE_PHASE_WAIT: return "LINKING";
     case VIBE_PHASE_IDLE: return "READY";
     case VIBE_PHASE_RECORDING: return "REC";
-    case VIBE_PHASE_PROCESSING: return "WAIT TEXT";
+    case VIBE_PHASE_PROCESSING: return "TYPING";
     default: return "OFFLINE";
     }
 }
 
-static const char *phase_hint(vibe_phase_t p)
+static const char *tl_title(uint8_t tl)
 {
-    switch (p) {
-    case VIBE_PHASE_WAIT: return "Open FoloVibe Bridge\non the Mac.";
-    case VIBE_PHASE_IDLE: return "OK talk\nDOWN send   UP cancel";
-    case VIBE_PHASE_RECORDING: return "Speaking...\nOK stop   DOWN send";
-    case VIBE_PHASE_PROCESSING: return "Typeless is writing.";
-    default: return "Waiting for BLE.";
+    switch (tl) {
+    case VIBE_TL_RECORDING: return "REC";
+    case VIBE_TL_PROCESSING: return "TYPE";
+    case VIBE_TL_DOWN: return "OFF";
+    default: return "IDLE";
+    }
+}
+
+static const char *event_title(uint8_t ev)
+{
+    switch (ev) {
+    case VIBE_BLE_START: return "START";
+    case VIBE_BLE_STOP: return "STOP";
+    case VIBE_BLE_ENTER: return "SEND";
+    case VIBE_BLE_CANCEL: return "CANCEL";
+    default: return "--";
     }
 }
 
 static void paint(const vibe_ui_model_t *m)
 {
+    uint32_t accent = phase_color(m->phase);
+    lv_obj_set_style_bg_color(s_led, lv_color_hex(accent), 0);
     lv_label_set_text(s_phase, phase_title(m->phase));
-    lv_label_set_text(s_hint, phase_hint(m->phase));
+    lv_obj_set_style_text_color(s_phase, lv_color_hex(
+        m->phase == VIBE_PHASE_RECORDING ? UI_RED : UI_INK), 0);
 
-    char line[48];
-    if (m->battery >= 0) snprintf(line, sizeof(line), "%d%%", m->battery);
-    else snprintf(line, sizeof(line), "--");
-    lv_label_set_text(s_batt, line);
+    if (m->phase == VIBE_PHASE_RECORDING) {
+        if (s_shown != VIBE_PHASE_RECORDING) s_rec_t0 = lv_tick_get();
+        uint32_t sec = (lv_tick_get() - s_rec_t0) / 1000;
+        char clk[12];
+        snprintf(clk, sizeof(clk), "%02u:%02u",
+                 (unsigned)(sec / 60 % 100), (unsigned)(sec % 60));
+        lv_label_set_text(s_clock, clk);
+        lv_obj_remove_flag(s_clock, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(s_clock, LV_OBJ_FLAG_HIDDEN);
+    }
 
-    snprintf(line, sizeof(line), "tx %lu  drop %lu",
+    char line[40];
+    snprintf(line, sizeof(line), "TL %s   BLE %s%s",
+             tl_title(m->typeless),
+             m->linked ? "ON" : "OFF",
+             m->audio_sub ? "  SUB" : "");
+    lv_label_set_text(s_line_tl, line);
+
+    snprintf(line, sizeof(line), "%s", vibe_ble_name());
+    lv_label_set_text(s_line_name, line);
+
+    if (m->battery >= 0 && m->battery_mv >= 0) {
+        snprintf(line, sizeof(line), "BATT %d%%  %d mV", m->battery, m->battery_mv);
+    } else if (m->battery >= 0) {
+        snprintf(line, sizeof(line), "BATT %d%%", m->battery);
+    } else {
+        snprintf(line, sizeof(line), "BATT --");
+    }
+    lv_label_set_text(s_line_batt, line);
+    uint32_t batt_color = UI_INK;
+    if (m->battery >= 0 && m->battery <= 15) batt_color = UI_RED;
+    else if (m->battery >= 0 && m->battery <= 30) batt_color = UI_ORANGE;
+    lv_obj_set_style_text_color(s_line_batt, lv_color_hex(batt_color), 0);
+
+    snprintf(line, sizeof(line), "TX %lu   DROP %lu",
              (unsigned long)m->sent, (unsigned long)m->dropped);
-    lv_label_set_text(s_stats, line);
+    lv_label_set_text(s_line_tx, line);
+
+    if (m->queued_enter) {
+        snprintf(line, sizeof(line), "LAST %s  Q-SEND", event_title(m->last_event));
+    } else {
+        snprintf(line, sizeof(line), "LAST %s", event_title(m->last_event));
+    }
+    lv_label_set_text(s_line_last, line);
 
     for (int i = 0; i < VIBE_UI_BARS; i++) {
-        int h = 4 + (int)m->bars[i] * 2;
-        if (h > 36) h = 36;
+        int h = 3 + (int)m->bars[i] * 2;
+        if (h > 40) h = 40;
         lv_obj_set_height(s_bars[i], h);
-        lv_obj_set_y(s_bars[i], 36 - h);
-        uint32_t color = m->phase == VIBE_PHASE_RECORDING ? UI_RED : UI_MUTED;
-        lv_obj_set_style_bg_color(s_bars[i], lv_color_hex(color), 0);
+        lv_obj_set_y(s_bars[i], 40 - h);
+        uint32_t c = UI_MUTED;
+        if (m->phase == VIBE_PHASE_RECORDING) {
+            c = m->bars[i] > 8 ? UI_RED : UI_ORANGE;
+        } else if (m->audio_sub) {
+            c = 0x7BE07A;
+        }
+        lv_obj_set_style_bg_color(s_bars[i], lv_color_hex(c), 0);
+    }
+
+    switch (m->phase) {
+    case VIBE_PHASE_IDLE:
+        set_key(s_key_ok, "OK TALK", UI_YELLOW);
+        set_key(s_key_dn, "DN SEND", UI_PAPER);
+        set_key(s_key_up, "UP ESC", UI_PAPER);
+        break;
+    case VIBE_PHASE_RECORDING:
+        set_key(s_key_ok, "OK STOP", UI_RED);
+        set_key(s_key_dn, "DN SEND", UI_YELLOW);
+        set_key(s_key_up, "UP ESC", UI_PAPER);
+        break;
+    case VIBE_PHASE_PROCESSING:
+        set_key(s_key_ok, "OK --", UI_MUTED);
+        set_key(s_key_dn, m->queued_enter ? "DN WAIT" : "DN SEND", UI_ORANGE);
+        set_key(s_key_up, "UP ESC", UI_PAPER);
+        break;
+    case VIBE_PHASE_WAIT:
+        set_key(s_key_ok, "OK --", UI_MUTED);
+        set_key(s_key_dn, "DN --", UI_MUTED);
+        set_key(s_key_up, "UP --", UI_MUTED);
+        break;
+    default:
+        set_key(s_key_ok, "OK --", UI_MUTED);
+        set_key(s_key_dn, "DN --", UI_MUTED);
+        set_key(s_key_up, "UP --", UI_MUTED);
+        break;
     }
 
     if (m->phase != s_shown) {
@@ -79,56 +216,77 @@ static void on_tick(lv_timer_t *timer)
     m = s_live;
     xSemaphoreGive(s_mu);
     m.battery = bsp_battery_soc();
+    m.battery_mv = bsp_battery_mv();
     xSemaphoreTake(s_mu, portMAX_DELAY);
     s_live.battery = m.battery;
+    s_live.battery_mv = m.battery_mv;
     xSemaphoreGive(s_mu);
     paint(&m);
+
+    if (m.phase == VIBE_PHASE_RECORDING) {
+        s_led_on = !s_led_on;
+        lv_obj_set_style_bg_opa(s_led, s_led_on ? LV_OPA_COVER : LV_OPA_40, 0);
+    } else {
+        lv_obj_set_style_bg_opa(s_led, LV_OPA_COVER, 0);
+    }
 }
 
 void vibe_ui_start(void)
 {
     s_mu = xSemaphoreCreateMutex();
     s_scr = ui_pixel_screen_create("VIBE");
-    s_batt = ui_pixel_label(s_scr, "--", &lv_font_montserrat_14, UI_PAPER);
-    lv_obj_set_pos(s_batt, 162, 16);
 
-    lv_obj_t *panel = ui_pixel_panel_create(s_scr, 16, 52, 208, 186, UI_PAPER);
+    lv_obj_t *panel = ui_pixel_panel_create(s_scr, 10, 46, 220, 198, UI_PAPER);
+
+    s_led = ink_box(panel, 4, 4, 16, 16, UI_MUTED);
 
     s_phase = ui_pixel_label(panel, "OFFLINE", &lv_font_montserrat_20, UI_INK);
-    lv_obj_align(s_phase, LV_ALIGN_TOP_MID, 0, 4);
+    lv_obj_set_pos(s_phase, 26, 0);
 
-    s_hint = lv_label_create(panel);
-    lv_obj_set_style_text_font(s_hint, &lv_font_montserrat_14, 0);
-    lv_obj_set_style_text_color(s_hint, lv_color_hex(UI_INK), 0);
-    lv_obj_set_style_text_align(s_hint, LV_TEXT_ALIGN_CENTER, 0);
-    lv_label_set_long_mode(s_hint, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(s_hint, 180);
-    lv_obj_align(s_hint, LV_ALIGN_TOP_MID, 0, 36);
+    s_clock = ui_pixel_label(panel, "00:00", &lv_font_montserrat_20, UI_RED);
+    lv_obj_align(s_clock, LV_ALIGN_TOP_RIGHT, -2, 0);
+    lv_obj_add_flag(s_clock, LV_OBJ_FLAG_HIDDEN);
+
+    s_line_tl = ui_pixel_label(panel, "TL --   BLE OFF", &lv_font_montserrat_14, UI_INK);
+    lv_obj_set_pos(s_line_tl, 4, 24);
 
     lv_obj_t *meter = lv_obj_create(panel);
     lv_obj_remove_flag(meter, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(meter, 176, 36);
-    lv_obj_align(meter, LV_ALIGN_BOTTOM_MID, 0, -28);
-    lv_obj_set_style_bg_opa(meter, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_width(meter, 0, 0);
+    lv_obj_set_size(meter, 196, 40);
+    lv_obj_set_pos(meter, 4, 46);
+    lv_obj_set_style_bg_color(meter, lv_color_hex(0xE8EEF0), 0);
+    lv_obj_set_style_border_width(meter, 3, 0);
+    lv_obj_set_style_border_color(meter, lv_color_hex(UI_INK), 0);
+    lv_obj_set_style_radius(meter, 0, 0);
     lv_obj_set_style_pad_all(meter, 0, 0);
     for (int i = 0; i < VIBE_UI_BARS; i++) {
         s_bars[i] = lv_obj_create(meter);
         lv_obj_remove_flag(s_bars[i], LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_set_size(s_bars[i], 8, 4);
-        lv_obj_set_pos(s_bars[i], i * 11, 32);
+        lv_obj_set_size(s_bars[i], 7, 3);
+        lv_obj_set_pos(s_bars[i], 4 + i * 9, 37);
         lv_obj_set_style_radius(s_bars[i], 0, 0);
         lv_obj_set_style_border_width(s_bars[i], 0, 0);
         lv_obj_set_style_pad_all(s_bars[i], 0, 0);
         lv_obj_set_style_bg_color(s_bars[i], lv_color_hex(UI_MUTED), 0);
     }
 
-    s_stats = ui_pixel_label(panel, "tx 0  drop 0", &lv_font_montserrat_14, UI_INK);
-    lv_obj_align(s_stats, LV_ALIGN_BOTTOM_MID, 0, -4);
+    s_line_name = ui_pixel_label(panel, "FoloVibe", &lv_font_montserrat_14, UI_INK);
+    lv_obj_set_pos(s_line_name, 4, 90);
+    s_line_batt = ui_pixel_label(panel, "BATT --", &lv_font_montserrat_14, UI_INK);
+    lv_obj_set_pos(s_line_batt, 4, 108);
+    s_line_tx = ui_pixel_label(panel, "TX 0   DROP 0", &lv_font_montserrat_14, UI_INK);
+    lv_obj_set_pos(s_line_tx, 4, 126);
+    s_line_last = ui_pixel_label(panel, "LAST --", &lv_font_montserrat_14, UI_INK);
+    lv_obj_set_pos(s_line_last, 4, 144);
 
-    s_mascot = ui_pixel_mascot_create(s_scr, 101, 244);
+    s_key_ok = key_chip(panel, 4, 164);
+    s_key_dn = key_chip(panel, 70, 164);
+    s_key_up = key_chip(panel, 136, 164);
+
+    s_mascot = ui_pixel_mascot_create(s_scr, 101, 248);
     memset(&s_live, 0, sizeof(s_live));
     s_live.battery = -1;
+    s_live.battery_mv = -1;
     s_timer = lv_timer_create(on_tick, 200, NULL);
     lv_screen_load(s_scr);
     paint(&s_live);
@@ -139,7 +297,9 @@ void vibe_ui_set(const vibe_ui_model_t *model)
     if (!s_mu) return;
     xSemaphoreTake(s_mu, portMAX_DELAY);
     int battery = s_live.battery;
+    int mv = s_live.battery_mv;
     s_live = *model;
     if (s_live.battery < 0) s_live.battery = battery;
+    if (s_live.battery_mv < 0) s_live.battery_mv = mv;
     xSemaphoreGive(s_mu);
 }

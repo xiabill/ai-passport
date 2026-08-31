@@ -4,9 +4,20 @@
 
 # FoloVibe Bridge
 
-macOS menu-bar companion for the AI Passport vibe-typeless firmware. It receives IMA-ADPCM microphone frames over BLE, plays them into `BlackHole 2ch`, and taps `F19` / Return / Escape so Typeless can dictate into the focused app.
+macOS companion for the AI Passport vibe-typeless firmware. It is a full app: status dashboard, settings, live logs, and a debug/test panel, plus a menu-bar extra.
 
-## Build and run
+It receives IMA-ADPCM frames over BLE, plays them into `BlackHole 2ch`, and taps the configured talk / send / cancel keys so Typeless can dictate into the focused app.
+
+## Windows
+
+| Tab | Contents |
+| --- | --- |
+| Status | Device, audio, Typeless, permissions, level meter, problem list |
+| Settings | Device prefix, output device, hotkeys, closed-loop retap, Typeless poll, login item |
+| Logs | Filter, search, copy, open file, clear |
+| Debug | Key taps, simulated device events, 440 Hz tone, mic capture test, reconnect, UUID copy, self-check |
+
+## Build
 
 ```bash
 cd tools/mac-bridge
@@ -14,7 +25,7 @@ cd tools/mac-bridge
 open FoloVibeBridge.app
 ```
 
-Grant Bluetooth and Accessibility to `FoloVibe Bridge`. Set Typeless dictation to `F19` and the Typeless microphone to `BlackHole 2ch`.
+`./build.sh` runs `swift run FoloVibeCoreTests` then packages the app. Grant Bluetooth and Accessibility. Set Typeless dictation to the talk key (default F19) and the Typeless microphone to `BlackHole 2ch`.
 
 Logs: `~/Library/Logs/folovibe-bridge.log`
 

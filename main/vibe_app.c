@@ -17,6 +17,7 @@ static SemaphoreHandle_t s_mu;
 static vibe_state_t s_st;
 static uint8_t s_bars[VIBE_UI_BARS];
 static uint8_t s_bar_i;
+static uint8_t s_last_event;
 static esp_timer_handle_t s_proc_timer;
 
 static void apply(vibe_in_t in, uint8_t typeless_byte);
@@ -25,8 +26,13 @@ static void publish_locked(void)
 {
     vibe_ui_model_t m = {0};
     m.phase = s_st.phase;
+    m.linked = s_st.linked;
+    m.audio_sub = s_st.audio_sub;
+    m.queued_enter = s_st.queued_enter;
     m.typeless = s_st.typeless;
+    m.last_event = s_last_event;
     m.battery = -1;
+    m.battery_mv = -1;
     for (int i = 0; i < VIBE_UI_BARS; i++) {
         m.bars[i] = s_bars[(s_bar_i + i) % VIBE_UI_BARS];
     }
@@ -52,6 +58,7 @@ static void apply(vibe_in_t in, uint8_t typeless_byte)
     xSemaphoreTake(s_mu, portMAX_DELAY);
     vibe_out_t o = vibe_state_apply(&s_st, in, typeless_byte);
     bool processing = s_st.phase == VIBE_PHASE_PROCESSING;
+    if (o.n_events) s_last_event = o.ble_events[o.n_events - 1];
     publish_locked();
     xSemaphoreGive(s_mu);
 

@@ -259,6 +259,11 @@ bool vibe_ble_audio_subscribed(void)
     return s_audio_sub;
 }
 
+const char *vibe_ble_name(void)
+{
+    return s_name[0] ? s_name : "FoloVibe";
+}
+
 static esp_err_t notify_buf(uint16_t handle, const uint8_t *data, size_t len)
 {
     if (s_conn == BLE_HS_CONN_HANDLE_NONE) {
