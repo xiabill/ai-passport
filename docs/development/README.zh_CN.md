@@ -18,6 +18,7 @@
 ## 文档索引
 
 - [agent-guide.md](agent-guide.md)：AI 开发工作流（面向 AI 编程助手：上下文建立、需求拆解、BSP 边界、验收交付格式）。
+- [vibe-typeless.zh_CN.md](vibe-typeless.zh_CN.md)：Vibe Typeless 伴侣固件与 Mac 桥。
 - [environment-setup.zh_CN.md](environment-setup.zh_CN.md)：AI 在全新机器上的环境引导，包含国际与中国大陆下载线路。
 - [build-and-test.md](build-and-test.md)：构建与验证（ESP-IDF 命令、逻辑测试、改动验证要求）。
 - [ble-recovery-compatibility.zh_CN.md](ble-recovery-compatibility.zh_CN.md)：小程序 BLE

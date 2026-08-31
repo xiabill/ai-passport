@@ -21,6 +21,7 @@
 | [development/ble-recovery-compatibility.zh_CN.md](./development/ble-recovery-compatibility.zh_CN.md) | 工程规范 | authoritative | 小程序 BLE 固件产物、分区与 bootloader 兼容契约 |
 | [development/coding-conventions.zh_CN.md](./development/coding-conventions.zh_CN.md) | 工程规范 | authoritative | 代码约定（语言风格、复用、注释、测试同步、资源约束） |
 | [development/agent-guide.zh_CN.md](./development/agent-guide.zh_CN.md) | 工程规范 | authoritative | AI 开发工作流（上下文建立、需求拆解、BSP 边界、验收交付格式） |
+| [development/vibe-typeless.zh_CN.md](./development/vibe-typeless.zh_CN.md) | 工程说明 | 参考 | Vibe Typeless 伴侣固件与 Mac 桥 |
 | [development/CI-build-and-release.zh_CN.md](./development/CI-build-and-release.zh_CN.md) | CI 文档 | authoritative | 自动构建与发布说明（tag 触发自动编译固件并发布 Release） |
 | [development/CI-validation.zh_CN.md](./development/CI-validation.zh_CN.md) | CI 文档 | authoritative | PR/main 自动仓库检查、host tests 与固件验证 |
 | [development/CI-sync-main.zh_CN.md](./development/CI-sync-main.zh_CN.md) | CI 文档 | authoritative | 上游同步说明（定期同步上游 main 到 fork） |

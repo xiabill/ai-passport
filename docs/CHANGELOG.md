@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+- Added a dedicated vibe-typeless companion: boot opens a VIBE page, streams
+  16 kHz IMA-ADPCM over BLE, and pairs with `tools/mac-bridge/` so Typeless can
+  dictate through `BlackHole 2ch` (`feature/vibe-typeless`).
 - Made mini-program BLE install compatibility a template-level invariant: fixed
   protected `cardid`/Recovery partitions, retained the five-second UP-key
   Recovery boot hook, and added CI validation for merged-image structure,

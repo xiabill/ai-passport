@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- 新增 vibe-typeless 专用伴侣：开机进入 VIBE 页，经 BLE 推 16 kHz IMA-ADPCM，并配合
+  `tools/mac-bridge/` 把声音打进 `BlackHole 2ch` 供 Typeless 听写（`feature/vibe-typeless`）。
 - 将小程序 BLE 安装兼容提升为二创模板强制契约：固定保护 `cardid`/Recovery 分区，
   保留上键持续 5 秒进入 Recovery 的 bootloader hook，并在 CI 强制校验合并镜像结构、
   分区表 MD5/范围、3 MB 应用上限和保护分区数据不入包。

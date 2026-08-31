@@ -9,6 +9,7 @@ This directory contains AI Passport engineering rules and reusable workflows. Ru
 ## Documents
 
 - [agent-guide.md](agent-guide.md): AI-assisted development workflow.
+- [vibe-typeless.md](vibe-typeless.md): Vibe Typeless companion firmware and Mac bridge.
 - [environment-setup.md](environment-setup.md): clean-machine bootstrap for AI agents, including international and mainland China download routes.
 - [build-and-test.md](build-and-test.md): ESP-IDF build and validation.
 - [ble-recovery-compatibility.md](ble-recovery-compatibility.md): mandatory
