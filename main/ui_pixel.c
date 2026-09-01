@@ -54,7 +54,7 @@ lv_obj_t *ui_pixel_screen_create(const char *title)
     lv_obj_t *plate = block(scr, 5, 8, 151, 33, UI_PAPER);
     lv_obj_set_style_border_color(plate, lv_color_hex(UI_INK), 0);
     lv_obj_set_style_border_width(plate, 3, 0);
-    lv_obj_t *heading = ui_pixel_label(plate, title, &ui_font_cjk_20, UI_INK);
+    lv_obj_t *heading = ui_pixel_label(plate, title, &ui_font_cjk_16, UI_INK);
     lv_obj_center(heading);
     return scr;
 }

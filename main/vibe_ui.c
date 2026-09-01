@@ -51,14 +51,18 @@ static lv_obj_t *ink_box(lv_obj_t *parent, int x, int y, int w, int h, uint32_t 
 
 static lv_obj_t *key_chip(lv_obj_t *parent, int x, int y)
 {
-    lv_obj_t *box = ink_box(parent, x, y, 64, 32, UI_PAPER);
+    // The button label uses two 17px CJK lines. Leave a 2px inner border and
+    // exactly 34px of content height so neither line is clipped.
+    lv_obj_t *box = ink_box(parent, x, y, 64, 38, UI_PAPER);
+    lv_obj_set_style_border_width(box, 2, 0);
     lv_obj_t *lab = lv_label_create(box);
-    lv_obj_set_width(lab, 58);
-    lv_obj_set_height(lab, 30);
+    lv_obj_set_width(lab, 60);
+    lv_obj_set_height(lab, 34);
     lv_label_set_long_mode(lab, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_text_font(lab, &ui_font_cjk_14, 0);
     lv_obj_set_style_text_align(lab, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_text_line_space(lab, 0, 0);
+    lv_obj_set_style_text_letter_space(lab, 0, 0);
     lv_obj_set_style_text_color(lab, lv_color_hex(UI_INK), 0);
     lv_obj_center(lab);
     lv_label_set_text(lab, "");
@@ -341,10 +345,13 @@ void vibe_ui_start(void)
     s_scr = ui_pixel_screen_create("语音助手");
 
     lv_obj_t *panel = ui_pixel_panel_create(s_scr, 10, 46, 220, 208, UI_PAPER);
+    // This dense HUD needs a little more usable content area than the
+    // default shared panel style; keep the other demo panels unchanged.
+    lv_obj_set_style_pad_all(panel, 2, 0);
 
     s_led = ink_box(panel, 4, 4, 16, 16, UI_MUTED);
 
-    s_phase = ui_pixel_label(panel, "离线", &ui_font_cjk_20, UI_INK);
+    s_phase = ui_pixel_label(panel, "离线", &ui_font_cjk_16, UI_INK);
     lv_obj_set_width(s_phase, 128);
     lv_label_set_long_mode(s_phase, LV_LABEL_LONG_DOT);
     lv_obj_set_pos(s_phase, 26, 0);
@@ -360,8 +367,8 @@ void vibe_ui_start(void)
 
     lv_obj_t *meter = lv_obj_create(panel);
     lv_obj_remove_flag(meter, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(meter, 196, 46);
-    lv_obj_set_pos(meter, 4, 46);
+    lv_obj_set_size(meter, 196, 42);
+    lv_obj_set_pos(meter, 4, 44);
     lv_obj_set_style_bg_color(meter, lv_color_hex(0xE8EEF0), 0);
     lv_obj_set_style_border_width(meter, 2, 0);
     lv_obj_set_style_border_color(meter, lv_color_hex(UI_INK), 0);
@@ -369,14 +376,14 @@ void vibe_ui_start(void)
     lv_obj_set_style_pad_all(meter, 0, 0);
     s_meter_hint = ui_pixel_label(meter, "待机 · 按键说话", &ui_font_cjk_14, UI_MUTED);
     lv_obj_set_width(s_meter_hint, 190);
-    lv_obj_set_height(s_meter_hint, 42);
+    lv_obj_set_height(s_meter_hint, 38);
     lv_obj_set_style_text_align(s_meter_hint, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_center(s_meter_hint);
     for (int i = 0; i < VIBE_UI_BARS; i++) {
         s_bars[i] = lv_obj_create(meter);
         lv_obj_remove_flag(s_bars[i], LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_set_size(s_bars[i], 4, 4);
-        lv_obj_set_pos(s_bars[i], 14 + i * 6, 21);
+        lv_obj_set_pos(s_bars[i], 14 + i * 6, 19);
         lv_obj_set_style_radius(s_bars[i], 2, 0);
         lv_obj_set_style_border_width(s_bars[i], 0, 0);
         lv_obj_set_style_pad_all(s_bars[i], 0, 0);
@@ -387,23 +394,23 @@ void vibe_ui_start(void)
     s_line_name = ui_pixel_label(panel, "FoloVibe  正常模式", &ui_font_cjk_14, UI_INK);
     lv_obj_set_width(s_line_name, 196);
     lv_label_set_long_mode(s_line_name, LV_LABEL_LONG_DOT);
-    lv_obj_set_pos(s_line_name, 4, 98);
+    lv_obj_set_pos(s_line_name, 4, 90);
     s_line_batt = ui_pixel_label(panel, "电量 --", &ui_font_cjk_14, UI_INK);
-    lv_obj_set_pos(s_line_batt, 4, 116);
+    lv_obj_set_pos(s_line_batt, 4, 107);
     s_line_tx = ui_pixel_label(panel, "音频等待", &ui_font_cjk_14, UI_INK);
     lv_obj_set_width(s_line_tx, 196);
     lv_label_set_long_mode(s_line_tx, LV_LABEL_LONG_DOT);
-    lv_obj_set_pos(s_line_tx, 4, 134);
+    lv_obj_set_pos(s_line_tx, 4, 124);
     s_line_last = ui_pixel_label(panel, "最近 --", &ui_font_cjk_14, UI_INK);
     lv_obj_set_width(s_line_last, 196);
     lv_label_set_long_mode(s_line_last, LV_LABEL_LONG_DOT);
-    lv_obj_set_pos(s_line_last, 4, 152);
+    lv_obj_set_pos(s_line_last, 4, 141);
 
-    // Use the lower part of the panel without leaving a tall empty strip
-    // below the controls. A 32px chip still fits two CJK lines cleanly.
-    s_key_ok = key_chip(panel, 4, 172);
-    s_key_dn = key_chip(panel, 72, 172);
-    s_key_up = key_chip(panel, 140, 172);
+    // With the reduced padding and 4px gaps, all three 64px chips fit inside
+    // the 208px content width and height.
+    s_key_ok = key_chip(panel, 4, 158);
+    s_key_dn = key_chip(panel, 72, 158);
+    s_key_up = key_chip(panel, 140, 158);
 
     // 沿用官方 VIBE 基线的固定坐标；该屏幕的草地从 y=286 开始，
     // 38x48 的吉祥物放在 y=248 时正好站在草地上方，且跳跃动画可安全修改 y。
