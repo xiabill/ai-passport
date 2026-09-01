@@ -202,7 +202,10 @@ static const lv_font_fmt_txt_dsc_t ui_font_cjk_14_dsc = {
     .bpp = 1,
     .kern_classes = 0,
     .bitmap_format = LV_FONT_FMT_TXT_PLAIN,
-    .stride = 0,
+    // Each glyph row is byte-aligned in the generated bitmap.  A non-zero
+    // stride tells LVGL to restart bit decoding at the beginning of every
+    // row instead of treating the bitmap as one continuous bit stream.
+    .stride = 2,
 };
 
 const lv_font_t ui_font_cjk_14 = {
@@ -547,7 +550,10 @@ static const lv_font_fmt_txt_dsc_t ui_font_cjk_20_dsc = {
     .bpp = 1,
     .kern_classes = 0,
     .bitmap_format = LV_FONT_FMT_TXT_PLAIN,
-    .stride = 0,
+    // Each glyph row is byte-aligned in the generated bitmap.  A non-zero
+    // stride tells LVGL to restart bit decoding at the beginning of every
+    // row instead of treating the bitmap as one continuous bit stream.
+    .stride = 3,
 };
 
 const lv_font_t ui_font_cjk_20 = {
