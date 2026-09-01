@@ -17,7 +17,7 @@ static const char *TAG = "vibe_audio";
 #define SILENCE_PEAK 500
 #define SILENCE_BLOCKS (30 * 50)  // 30 s of 20 ms blocks
 #define BEEP_SAMPLE_RATE 8000U
-#define BEEP_AMPLITUDE 9000
+#define BEEP_AMPLITUDE 6300 // 70% of the previous level
 #define BEEP_VOLUME 80U
 
 static TaskHandle_t s_task;
@@ -73,11 +73,11 @@ static void play_button_beep(vibe_beep_t type)
         unsigned samples;
     } beep_segment_t;
     static const beep_segment_t start[] = {
-        {560U, 880U},   // 110 ms
-        {0U,   200U},   // 25 ms gap
-        {760U, 880U},   // 110 ms
-        {0U,   200U},   // 25 ms gap
-        {1040U, 1280U}, // 160 ms
+        {560U, 560U},  // 70 ms
+        {0U,   120U},  // 15 ms gap
+        {760U, 560U},  // 70 ms
+        {0U,   120U},  // 15 ms gap
+        {1040U, 880U}, // 110 ms
     };
     static const beep_segment_t end[] = {
         {660U, 720U},  // 90 ms
