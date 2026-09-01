@@ -39,7 +39,7 @@ public enum VibeEvent: UInt8, CaseIterable, Equatable {
         case .doubaoStopAndSend: return "豆包停止并发送"
         case .typelessTranslate: return "Typeless 翻译"
         case .typelessAsk: return "Typeless 随便问"
-        case .doubaoSelectAll: return "豆包全选"
+        case .doubaoSelectAll: return "豆包全选并删除"
         case .doubaoClear: return "豆包清空"
         }
     }

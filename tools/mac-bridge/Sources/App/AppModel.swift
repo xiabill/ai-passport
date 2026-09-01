@@ -253,7 +253,10 @@ final class AppModel: ObservableObject {
                 KeyTap.tap(self.settings.current.send)
             }
         case .doubaoSelectAll:
-            KeyTap.tapSelectAll()
+            // The edit shortcut is intentionally destructive: after a double
+            // press the user wants to discard the mistaken transcript and
+            // immediately speak again, not leave the text merely selected.
+            KeyTap.tapClearAll()
         case .doubaoClear:
             KeyTap.tapClearAll()
         }

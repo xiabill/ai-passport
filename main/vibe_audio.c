@@ -17,14 +17,17 @@ static const char *TAG = "vibe_audio";
 #define SILENCE_PEAK 500
 #define SILENCE_BLOCKS (30 * 50)  // 30 s of 20 ms blocks
 #define BEEP_SAMPLE_RATE 8000U
-#define BEEP_AMPLITUDE 6000
+#define BEEP_AMPLITUDE 9000
+#define BEEP_VOLUME 80U
 
 static TaskHandle_t s_task;
 static volatile bool s_recording;
 static vibe_adpcm_state_t s_adpcm;
 static uint16_t s_seq;
 static int s_quiet;
-static volatile vibe_beep_t s_beep_pending;
+// Bit mask rather than a single slot: a stop cue must not be overwritten by
+// a following start request when the user taps again quickly.
+static volatile uint8_t s_beep_pending;
 
 static uint8_t peak_level(const int16_t *pcm, int n)
 {
@@ -65,7 +68,9 @@ static void play_button_beep(vibe_beep_t type)
     }
 
     // Start: two rising notes. End: a lower, longer falling note.
-    bsp_audio_set_volume(25);
+    // Match the audible level used by the audio test. The old value (25%) was
+    // too quiet on the device's small speaker, especially for the end cue.
+    bsp_audio_set_volume(BEEP_VOLUME);
     int16_t pcm[64];
     for (unsigned base = 0; base < total_samples; base += 64) {
         for (unsigned i = 0; i < 64; i++) {
@@ -111,8 +116,15 @@ static void audio_task(void *arg)
     for (;;) {
         // 在录音开始前或刚结束后播放，避免和 I2S 采集并行访问 codec。
         if (s_beep_pending != 0 && (!capture_started || !s_recording)) {
-            vibe_beep_t beep = s_beep_pending;
-            s_beep_pending = 0;
+            const uint8_t pending = s_beep_pending;
+            // If both transitions arrived before the audio task ran, the end
+            // cue is the useful final state and must be heard. Otherwise play
+            // start first. Clear both when consuming the end cue so it cannot
+            // be lost behind another recording transition.
+            const vibe_beep_t beep = (pending & VIBE_BEEP_END)
+                ? VIBE_BEEP_END : VIBE_BEEP_START;
+            s_beep_pending = (beep == VIBE_BEEP_END)
+                ? 0 : (uint8_t)(pending & ~VIBE_BEEP_START);
             play_button_beep(beep);
         }
 
@@ -196,6 +208,8 @@ bool vibe_audio_recording(void)
 void vibe_audio_beep(vibe_beep_t type)
 {
     if (type == VIBE_BEEP_START || type == VIBE_BEEP_END) {
-        s_beep_pending = type;
+        s_beep_pending |= (uint8_t)type;
+        ESP_LOGI(TAG, "queued %s beep (volume %u)",
+                 type == VIBE_BEEP_START ? "start" : "end", BEEP_VOLUME);
     }
 }

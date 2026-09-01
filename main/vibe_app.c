@@ -75,8 +75,8 @@ static void apply(vibe_in_t in, uint8_t typeless_byte)
         vibe_ble_link_fast(true);
     }
     if (o.stop_capture) {
-        vibe_audio_set_recording(false);
         vibe_audio_beep(VIBE_BEEP_END);
+        vibe_audio_set_recording(false);
         vibe_power_set_busy(false);
         vibe_ble_link_fast(false);
         vibe_power_note_activity();
