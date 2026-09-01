@@ -18,8 +18,11 @@ static const char *TAG = "vibe_audio";
 #define SILENCE_PEAK 500
 #define SILENCE_BLOCKS (30 * 50)  // 30 s of 20 ms blocks
 #define BEEP_SAMPLE_RATE 16000U
-#define BEEP_AMPLITUDE 3200 // Leave generous headroom for the small speaker
-#define BEEP_VOLUME 68U
+// The ES8311's DAC feeds a fixed-gain speaker amplifier. Keep the cue well
+// below full scale; reducing both digital peak and DAC level avoids the
+// pleasant sine wave becoming a clipped, harsh tone on the small enclosure.
+#define BEEP_AMPLITUDE 900
+#define BEEP_VOLUME 36U
 #define BEEP_PI 3.14159265358979323846f
 
 static TaskHandle_t s_task;
@@ -74,25 +77,23 @@ static void play_button_beep(vibe_beep_t type)
         unsigned hz;
         unsigned samples;
     } beep_segment_t;
-    // Use short musical intervals instead of unrelated alarm frequencies.
-    // A4-C5-E5 makes a warm rising start cue; the other cues resolve downward
-    // so the user can distinguish them without looking at the UI.
+    // Use a sparse two-note palette. Fewer simultaneous/high harmonics means
+    // less energy for the fixed-gain PA to amplify, while the direction of
+    // the interval still distinguishes start, end and edit actions.
     static const beep_segment_t start[] = {
-        {440U, 960U},  // A4, 60 ms
-        {0U,   192U},  // 12 ms gap
-        {523U, 960U},  // C5, 60 ms
-        {0U,   192U},  // 12 ms gap
-        {659U, 1440U}, // E5, 90 ms
+        {440U, 640U},  // A4, 40 ms
+        {0U,   240U},  // 15 ms gap
+        {554U, 800U},  // C#5, 50 ms
     };
     static const beep_segment_t end[] = {
-        {659U, 1120U}, // E5, 70 ms
-        {0U,   288U},  // 18 ms gap
-        {440U, 2880U}, // A4, 180 ms
+        {554U, 720U},  // C#5, 45 ms
+        {0U,   240U},  // 15 ms gap
+        {440U, 1440U}, // A4, 90 ms
     };
     static const beep_segment_t edit[] = {
-        {523U, 720U},  // C5, 45 ms
-        {0U,   288U},  // 18 ms gap
-        {440U, 1280U}, // A4, 80 ms
+        {659U, 560U},  // E5, 35 ms
+        {0U,   240U},  // 15 ms gap
+        {554U, 960U},  // C#5, 60 ms
     };
 
     const beep_segment_t *segments;
@@ -121,8 +122,8 @@ static void play_button_beep(vibe_beep_t type)
         return;
     }
 
-    // Keep the level below the old alarm-like cue while letting the smoother
-    // waveform remain clearly audible through the small speaker.
+    // Keep a large headroom margin at both the PCM and codec stages. This is
+    // intentionally conservative because the board's PA gain is fixed.
     bsp_audio_set_volume(BEEP_VOLUME);
     int16_t pcm[64];
     for (unsigned base = 0; base < total_samples; base += 64U) {

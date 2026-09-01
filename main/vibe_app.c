@@ -36,6 +36,7 @@ static void publish_locked(void)
     m.audio_sub = s_st.audio_sub;
     m.queued_enter = s_st.queued_enter;
     m.typeless = s_st.typeless;
+    m.power_mode = vibe_power_mode();
     m.last_event = s_last_event;
     m.battery = -1;
     m.battery_mv = -1;
@@ -164,6 +165,11 @@ void vibe_app_on_power_mode(uint8_t mode)
     const bool eco = mode == VIBE_POWER_ECO;
     vibe_power_set_mode(eco ? VIBE_POWER_ECO : VIBE_POWER_STANDARD);
     vibe_ble_set_power_mode(eco);
+    // Mode changes arrive from the BLE control channel and otherwise would
+    // only become visible on the next state transition.
+    xSemaphoreTake(s_mu, portMAX_DELAY);
+    publish_locked();
+    xSemaphoreGive(s_mu);
 }
 
 void vibe_app_on_silence(void)

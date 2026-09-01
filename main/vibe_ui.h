@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vibe_state.h"
+#include "vibe_power.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -19,6 +20,7 @@ typedef struct {
     int battery;          // 0..100, or -1
     int battery_mv;       // or -1
     uint8_t typeless;
+    vibe_power_mode_t power_mode;
     uint8_t last_event;   // 0 if none
     uint8_t bars[VIBE_UI_BARS];
     uint32_t sent;
