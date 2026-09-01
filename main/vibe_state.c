@@ -68,6 +68,21 @@ static vibe_out_t stop_doubao(vibe_state_t *s, bool send)
     return o;
 }
 
+static vibe_out_t doubao_edit(vibe_state_t *s, uint8_t event)
+{
+    vibe_out_t o = out_none();
+    if (s->phase == VIBE_PHASE_RECORDING && s->source == VIBE_SOURCE_DOUBAO) {
+        // Do not leave the microphone running while editing the text field.
+        o.stop_capture = true;
+        push_event(&o, VIBE_BLE_DOUBAO_STOP);
+        s->source = VIBE_SOURCE_NONE;
+        s->queued_enter = false;
+        ready_phase(s);
+    }
+    if (s->phase == VIBE_PHASE_IDLE) push_event(&o, event);
+    return o;
+}
+
 vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint8_t typeless_byte)
 {
     vibe_out_t o = out_none();
@@ -143,6 +158,12 @@ vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint8_t typeless_byte
             return stop_doubao(s, false);
         }
         break;
+
+    case VIBE_IN_UP_DOUBLE:
+        return doubao_edit(s, VIBE_BLE_DOUBAO_SELECT_ALL);
+
+    case VIBE_IN_UP_LONG:
+        return doubao_edit(s, VIBE_BLE_DOUBAO_CLEAR);
 
     case VIBE_IN_TYPELESS:
         s->typeless = typeless_byte;

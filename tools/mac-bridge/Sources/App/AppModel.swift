@@ -252,6 +252,10 @@ final class AppModel: ObservableObject {
                 guard let self else { return }
                 KeyTap.tap(self.settings.current.send)
             }
+        case .doubaoSelectAll:
+            KeyTap.tapSelectAll()
+        case .doubaoClear:
+            KeyTap.tapClearAll()
         }
     }
 

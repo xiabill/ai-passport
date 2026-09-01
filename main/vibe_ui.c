@@ -173,6 +173,8 @@ static const char *event_title(uint8_t ev)
     case VIBE_BLE_DOUBAO_STOP_SEND: return "DB SEND";
     case VIBE_BLE_TYPELESS_TRANSLATE: return "TR START";
     case VIBE_BLE_TYPELESS_ASK: return "ASK START";
+    case VIBE_BLE_DOUBAO_SELECT_ALL: return "DB SELECT";
+    case VIBE_BLE_DOUBAO_CLEAR: return "DB CLEAR";
     default: return "--";
     }
 }

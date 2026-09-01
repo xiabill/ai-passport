@@ -93,6 +93,8 @@ struct DebugView: View {
         case .typelessTranslate: return "character.bubble"
         case .typelessAsk: return "sparkles"
         case .doubaoStart, .doubaoStop, .doubaoStopAndSend: return "mic.fill"
+        case .doubaoSelectAll: return "textformat"
+        case .doubaoClear: return "delete.left"
         case .enter: return "return"
         case .cancel: return "xmark.circle"
         }

@@ -35,6 +35,8 @@ Logs: `~/Library/Logs/folovibe-bridge.log`
 
 Power modes: Standard keeps the display at 50%, dims to 15% three seconds after speech starts, briefly restores brightness when confirming send, turns the backlight off after 5 minutes, and enters deep sleep after 15 minutes. Eco dims the display to 8% after 10 seconds, turns the backlight off after 1 minute, pauses BLE advertising after 60 seconds while disconnected, and enters deep sleep after 5 minutes. Any ordinary function key resumes advertising and wakes the device in Eco mode.
 
+Doubao upper key: single click toggles voice input, quick double-click performs macOS Select All (Cmd+A), and long press selects all and deletes the current text field.
+
 ## Protocol
 
 - Center single/double/long presses start Typeless Dictate/Translation/Ask anything; UP controls Doubao and DOWN sends Return.

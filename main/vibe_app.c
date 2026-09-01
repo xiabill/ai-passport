@@ -121,10 +121,12 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
         // implementation that also emits CLICK on release from firing twice.
         s_swallow_click = true;
         if (btn == BSP_BTN_OK) apply(VIBE_IN_OK_LONG, 0);
+        else if (btn == BSP_BTN_UP) apply(VIBE_IN_UP_LONG, 0);
         return;
     }
     if (ev == BSP_BTN_DOUBLE) {
         if (btn == BSP_BTN_OK) apply(VIBE_IN_OK_DOUBLE, 0);
+        else if (btn == BSP_BTN_UP) apply(VIBE_IN_UP_DOUBLE, 0);
         return;
     }
     if (ev != BSP_BTN_CLICK) return;

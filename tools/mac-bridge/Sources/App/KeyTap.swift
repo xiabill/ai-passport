@@ -43,6 +43,19 @@ enum KeyTap {
         tapCombo(key, trigger: 0x31, modifier: nil)
     }
 
+    /// On macOS, Command+A is the native Select All command (the literal
+    /// Control+A binding moves to the beginning of a text field).
+    static func tapSelectAll() {
+        Log.key("发送 Cmd+A（全选）")
+        tapCommandKey(0x00) // A
+    }
+
+    static func tapClearAll() {
+        Log.key("发送全选并删除")
+        tapSelectAll()
+        tapKey(0x33, flags: []) // Delete / Backspace
+    }
+
     private static func tapCombo(_ key: Hotkey, trigger: UInt16?, modifier: CGEventFlags?) {
         if key.name == "Fn" {
             var flags = CGEventFlags.maskSecondaryFn
@@ -77,6 +90,12 @@ enum KeyTap {
     private static func tapModifier(virtualKey: UInt16, flags: CGEventFlags) {
         postModifier(virtualKey: virtualKey, flags: flags, down: true)
         postModifier(virtualKey: virtualKey, flags: [], down: false)
+    }
+
+    private static func tapCommandKey(_ virtualKey: UInt16) {
+        postModifier(virtualKey: 0x37, flags: .maskCommand, down: true)
+        tapKey(virtualKey, flags: .maskCommand)
+        postModifier(virtualKey: 0x37, flags: [], down: false)
     }
 
     private static func postModifier(virtualKey: UInt16, flags: CGEventFlags, down: Bool) {

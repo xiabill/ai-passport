@@ -35,6 +35,8 @@ do {
     expect(VibeEvent.start.rawValue == 1, "event start")
     expect(VibeEvent.doubaoStart.rawValue == 5, "Doubao start event")
     expect(VibeEvent.doubaoStopAndSend.rawValue == 7, "Doubao stop-send event")
+    expect(VibeEvent.doubaoSelectAll.rawValue == 10, "Doubao select-all event")
+    expect(VibeEvent.doubaoClear.rawValue == 11, "Doubao clear event")
     expect(VibeEvent.typelessTranslate.rawValue == 8, "Typeless translation event")
     expect(VibeEvent.typelessAsk.rawValue == 9, "Typeless Ask anything event")
 }

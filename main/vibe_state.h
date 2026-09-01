@@ -35,6 +35,8 @@ typedef enum {
     VIBE_IN_OK_LONG,         // Typeless Ask anything shortcut
     VIBE_IN_DOWN,            // Return / stop-and-send
     VIBE_IN_UP,              // Doubao toggle
+    VIBE_IN_UP_DOUBLE,       // Doubao select all
+    VIBE_IN_UP_LONG,         // Doubao clear all
     VIBE_IN_TYPELESS,        // typeless_byte is valid
     VIBE_IN_SILENCE,         // 30 s below peak threshold while recording
     VIBE_IN_PROC_TIMEOUT,    // processing wait expired
