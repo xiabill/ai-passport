@@ -10,6 +10,7 @@
 
 #define BACKLIGHT_BRIGHT 100
 #define BACKLIGHT_DIM 20
+#define BACKLIGHT_ECO_DIM 8
 
 vibe_screen_t vibe_power_next_mode(vibe_screen_t cur, uint32_t idle_ms, bool busy,
                                    vibe_power_mode_t mode)
@@ -59,14 +60,15 @@ static void apply_screen(vibe_screen_t next)
 {
     if (next == s_screen) return;
     s_screen = next;
+    const uint8_t dim_level = s_mode == VIBE_POWER_ECO ? BACKLIGHT_ECO_DIM : BACKLIGHT_DIM;
     switch (next) {
     case VIBE_SCREEN_BRIGHT:
         bsp_display_backlight(BACKLIGHT_BRIGHT);
         ESP_LOGI(TAG, "backlight 100");
         break;
     case VIBE_SCREEN_DIM:
-        bsp_display_backlight(BACKLIGHT_DIM);
-        ESP_LOGI(TAG, "backlight 20");
+        bsp_display_backlight(dim_level);
+        ESP_LOGI(TAG, "backlight %u", dim_level);
         break;
     case VIBE_SCREEN_OFF:
         bsp_display_backlight(0);

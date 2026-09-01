@@ -33,7 +33,7 @@ The status page includes audio-effect tests for the configured output, a Passpor
 
 Logs: `~/Library/Logs/folovibe-bridge.log`
 
-Power modes: Standard keeps the device easy to reconnect and enters deep sleep after 15 minutes idle. Eco dims and sleeps earlier, pauses BLE advertising after 60 seconds while disconnected, and enters deep sleep after 5 minutes. Any ordinary function key resumes advertising and wakes the device in Eco mode.
+Power modes: Standard keeps the device easy to reconnect and enters deep sleep after 15 minutes idle. Eco dims the display to 8% after 10 seconds, turns the backlight off after 1 minute, pauses BLE advertising after 60 seconds while disconnected, and enters deep sleep after 5 minutes. Any ordinary function key resumes advertising and wakes the device in Eco mode.
 
 ## Protocol
 
