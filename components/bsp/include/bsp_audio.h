@@ -24,4 +24,4 @@ esp_err_t bsp_audio_write(const void *pcm, size_t bytes);
 esp_err_t bsp_audio_read(void *pcm, size_t bytes);
 
 // 输出音量 0..100(%)。
-void bsp_audio_set_volume(uint8_t percent);
+esp_err_t bsp_audio_set_volume(uint8_t percent);

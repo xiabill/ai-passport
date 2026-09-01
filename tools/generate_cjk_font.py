@@ -51,10 +51,11 @@ def make_font(size: int, name: str, fallback: str, chars: list[str],
     for char in chars:
         image = Image.new("L", (width, height), 0)
         draw = ImageDraw.Draw(image)
-        bbox = draw.textbbox((0, 0), char, font=font)
-        # Keep every CJK glyph in the same fixed cell. The source font's
-        # antialiasing is quantized to LVGL's 4bpp grayscale format.
-        draw.text((-bbox[0], -bbox[1]), char, font=font, fill=255)
+        # Render every glyph against the same font baseline. Cropping each
+        # glyph to its own bbox makes characters such as 省、正、豆 appear to
+        # jump vertically when they share a line with other CJK characters.
+        # The source font's antialiasing is quantized to LVGL's 4bpp format.
+        draw.text((0, size - 1), char, font=font, fill=255, anchor="ls")
         pixels = image.load()
         start = len(bitmaps)
         for y in range(height):

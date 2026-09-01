@@ -248,7 +248,7 @@ static void paint(const vibe_ui_model_t *m)
     if (recording) {
         lv_obj_add_flag(s_meter_hint, LV_OBJ_FLAG_HIDDEN);
     } else {
-        const char *hint = "待机 · 按键说话";
+        const char *hint = "待机 / 按键说话";
         if (!m->linked) hint = "未连接";
         else if (!m->audio_sub) hint = "等待音频";
         else if (m->phase == VIBE_PHASE_WAIT) hint = "等待连接";
@@ -376,7 +376,7 @@ void vibe_ui_start(void)
     lv_obj_set_style_border_color(meter, lv_color_hex(UI_INK), 0);
     lv_obj_set_style_radius(meter, 6, 0);
     lv_obj_set_style_pad_all(meter, 0, 0);
-    s_meter_hint = ui_pixel_label(meter, "待机 · 按键说话", &ui_font_cjk_14, UI_TEXT_MUTED);
+    s_meter_hint = ui_pixel_label(meter, "待机 / 按键说话", &ui_font_cjk_14, UI_TEXT_MUTED);
     lv_obj_set_width(s_meter_hint, 190);
     lv_obj_set_height(s_meter_hint, 38);
     lv_obj_set_style_text_align(s_meter_hint, LV_TEXT_ALIGN_CENTER, 0);
@@ -414,9 +414,9 @@ void vibe_ui_start(void)
     s_key_dn = key_chip(panel, 72, 158);
     s_key_up = key_chip(panel, 140, 158);
 
-    // 沿用官方 VIBE 基线的固定坐标；该屏幕的草地从 y=286 开始，
-    // 38x48 的吉祥物放在 y=248 时正好站在草地上方，且跳跃动画可安全修改 y。
-    s_mascot = ui_pixel_mascot_create(s_scr, 101, 248);
+    // The 240x320 screen's grass starts at y=286. Keep the 38x48 mascot
+    // centered and place its feet exactly on that boundary.
+    s_mascot = ui_pixel_mascot_create(s_scr, 101, 238);
     memset(&s_live, 0, sizeof(s_live));
     s_live.battery = -1;
     s_live.battery_mv = -1;

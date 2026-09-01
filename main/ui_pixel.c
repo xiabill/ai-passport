@@ -78,6 +78,8 @@ lv_obj_t *ui_pixel_mascot_create(lv_obj_t *parent, int x, int y)
 
     lv_obj_t *m = lv_obj_create(parent);
     lv_obj_remove_flag(m, LV_OBJ_FLAG_SCROLLABLE);
+    // The mascot is 48px tall and the grass begins at y=286 on the 240x320
+    // screen. Its feet therefore sit on the grass at y=238.
     lv_obj_set_pos(m, x, y);
     lv_obj_set_size(m, 38, 48);
     lv_obj_set_style_bg_opa(m, LV_OPA_TRANSP, 0);

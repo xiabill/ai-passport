@@ -18,11 +18,11 @@ static const char *TAG = "vibe_audio";
 #define SILENCE_PEAK 500
 #define SILENCE_BLOCKS (30 * 50)  // 30 s of 20 ms blocks
 #define BEEP_SAMPLE_RATE 16000U
-// The ES8311's DAC feeds a fixed-gain speaker amplifier. Keep the cue well
-// below full scale; reducing both digital peak and DAC level avoids the
-// pleasant sine wave becoming a clipped, harsh tone on the small enclosure.
-#define BEEP_AMPLITUDE 900
-#define BEEP_VOLUME 36U
+// The ES8311's DAC feeds a fixed-gain speaker amplifier. Keep headroom in the
+// PCM signal, but leave enough level for the cue to remain audible in normal
+// use. The previous 900/36 combination was effectively inaudible here.
+#define BEEP_AMPLITUDE 1800
+#define BEEP_VOLUME 52U
 #define BEEP_PI 3.14159265358979323846f
 
 static TaskHandle_t s_task;
@@ -33,6 +33,7 @@ static int s_quiet;
 // Bit mask rather than a single slot: a stop cue must not be overwritten by
 // a following start request when the user taps again quickly.
 static volatile uint8_t s_beep_pending;
+static portMUX_TYPE s_beep_mu = portMUX_INITIALIZER_UNLOCKED;
 
 static uint8_t peak_level(const int16_t *pcm, int n)
 {
@@ -59,8 +60,12 @@ static void send_eos(void)
 
 static bool take_pending_beep(vibe_beep_t *type)
 {
+    portENTER_CRITICAL(&s_beep_mu);
     const uint8_t pending = s_beep_pending;
-    if (!pending) return false;
+    if (!pending) {
+        portEXIT_CRITICAL(&s_beep_mu);
+        return false;
+    }
 
     // End is always the final state the user needs to hear. Edit is next so a
     // double/long press gets feedback even if no recording was active.
@@ -68,6 +73,7 @@ static bool take_pending_beep(vibe_beep_t *type)
     else if (pending & VIBE_BEEP_EDIT) *type = VIBE_BEEP_EDIT;
     else *type = VIBE_BEEP_START;
     s_beep_pending = (uint8_t)(pending & (uint8_t)~*type);
+    portEXIT_CRITICAL(&s_beep_mu);
     return true;
 }
 
@@ -122,9 +128,11 @@ static void play_button_beep(vibe_beep_t type)
         return;
     }
 
-    // Keep a large headroom margin at both the PCM and codec stages. This is
-    // intentionally conservative because the board's PA gain is fixed.
-    bsp_audio_set_volume(BEEP_VOLUME);
+    // Keep headroom at both stages. Check the codec volume call explicitly so
+    // a muted/reopened codec cannot make the cue disappear silently.
+    if (bsp_audio_set_volume(BEEP_VOLUME) != ESP_OK) {
+        ESP_LOGW(TAG, "button %s beep volume failed", label);
+    }
     int16_t pcm[64];
     for (unsigned base = 0; base < total_samples; base += 64U) {
         unsigned segment = 0;
@@ -289,7 +297,9 @@ bool vibe_audio_recording(void)
 void vibe_audio_beep(vibe_beep_t type)
 {
     if (type == VIBE_BEEP_START || type == VIBE_BEEP_END || type == VIBE_BEEP_EDIT) {
+        portENTER_CRITICAL(&s_beep_mu);
         s_beep_pending |= (uint8_t)type;
+        portEXIT_CRITICAL(&s_beep_mu);
         ESP_LOGI(TAG, "queued %s beep (volume %u)",
                  type == VIBE_BEEP_START ? "start" :
                  type == VIBE_BEEP_END ? "end" : "edit", BEEP_VOLUME);
