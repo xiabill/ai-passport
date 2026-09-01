@@ -23,6 +23,10 @@ const char *vibe_ble_name(void);
 // true = 7.5–15 ms for audio; false = idle gear after 2 s so a second press
 // does not thrash the link.
 void vibe_ble_link_fast(bool fast);
+// Eco mode pauses advertising after a grace period while disconnected. A
+// function-key activity resumes it so the Mac can reconnect.
+void vibe_ble_set_power_mode(bool eco);
+void vibe_ble_note_activity(void);
 
 #ifdef __cplusplus
 }

@@ -47,6 +47,11 @@ static uint32_t s_dropped;
 static char s_name[16];
 static int s_gear = -1;  // -1 unknown, 0 idle, 1 fast
 static esp_timer_handle_t s_idle_timer;
+static esp_timer_handle_t s_eco_adv_timer;
+static bool s_eco_mode;
+static bool s_adv_paused;
+
+#define ECO_ADV_GRACE_US (60 * 1000000LL)
 
 static int gap_event(struct ble_gap_event *event, void *arg);
 static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
@@ -90,7 +95,11 @@ static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
         uint8_t v = 0;
         if (OS_MBUF_PKTLEN(ctxt->om) >= 1) {
             os_mbuf_copydata(ctxt->om, 0, 1, &v);
-            vibe_app_on_typeless(v);
+            if (v == VIBE_CTRL_POWER_MODE_STANDARD || v == VIBE_CTRL_POWER_MODE_ECO) {
+                vibe_app_on_power_mode(v == VIBE_CTRL_POWER_MODE_ECO ? 1 : 0);
+            } else {
+                vibe_app_on_typeless(v);
+            }
         }
         return 0;
     }
@@ -163,6 +172,23 @@ static void idle_timer_cb(void *arg)
     apply_gear(0);
 }
 
+static void eco_adv_timeout_cb(void *arg)
+{
+    (void)arg;
+    if (s_eco_mode && s_conn == BLE_HS_CONN_HANDLE_NONE && !s_adv_paused) {
+        s_adv_paused = true;
+        ble_gap_adv_stop();
+        ESP_LOGI(TAG, "eco mode: advertising paused while idle");
+    }
+}
+
+static void arm_eco_adv_timer(void)
+{
+    if (!s_eco_adv_timer || !s_eco_mode || s_conn != BLE_HS_CONN_HANDLE_NONE) return;
+    esp_timer_stop(s_eco_adv_timer);
+    esp_timer_start_once(s_eco_adv_timer, ECO_ADV_GRACE_US);
+}
+
 void vibe_ble_link_fast(bool fast)
 {
     if (s_idle_timer) esp_timer_stop(s_idle_timer);
@@ -173,6 +199,30 @@ void vibe_ble_link_fast(bool fast)
     } else {
         apply_gear(0);
     }
+}
+
+void vibe_ble_set_power_mode(bool eco)
+{
+    s_eco_mode = eco;
+    if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
+    if (!eco && s_adv_paused && s_conn == BLE_HS_CONN_HANDLE_NONE) {
+        s_adv_paused = false;
+        advertise();
+    } else if (eco && s_conn == BLE_HS_CONN_HANDLE_NONE) {
+        arm_eco_adv_timer();
+    }
+    ESP_LOGI(TAG, "BLE power mode %s", eco ? "eco" : "standard");
+}
+
+void vibe_ble_note_activity(void)
+{
+    if (!s_eco_mode) return;
+    if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
+    if (s_adv_paused && s_conn == BLE_HS_CONN_HANDLE_NONE) {
+        s_adv_paused = false;
+        advertise();
+    }
+    arm_eco_adv_timer();
 }
 
 static int gap_event(struct ble_gap_event *event, void *arg)
@@ -191,6 +241,8 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         ble_att_set_preferred_mtu(185);
         s_gear = -1;
         apply_gear(0);
+        s_adv_paused = false;
+        if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
         vibe_app_on_ble_link(true);
         ESP_LOGI(TAG, "connected handle=%u", s_conn);
         return 0;
@@ -202,9 +254,11 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         s_event_sub = false;
         s_gear = -1;
         if (s_idle_timer) esp_timer_stop(s_idle_timer);
+        if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
         vibe_app_on_audio_sub(false);
         vibe_app_on_ble_link(false);
         advertise();
+        arm_eco_adv_timer();
         return 0;
 
     case BLE_GAP_EVENT_SUBSCRIBE:
@@ -222,7 +276,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         return 0;
 
     case BLE_GAP_EVENT_ADV_COMPLETE:
-        if (s_conn == BLE_HS_CONN_HANDLE_NONE) advertise();
+        if (s_conn == BLE_HS_CONN_HANDLE_NONE && !s_adv_paused) advertise();
         return 0;
 
     default:
@@ -285,6 +339,13 @@ esp_err_t vibe_ble_start(void)
             .name = "ble_idle",
         };
         esp_timer_create(&t, &s_idle_timer);
+    }
+    if (!s_eco_adv_timer) {
+        const esp_timer_create_args_t t = {
+            .callback = eco_adv_timeout_cb,
+            .name = "ble_eco_adv",
+        };
+        esp_timer_create(&t, &s_eco_adv_timer);
     }
     nimble_port_freertos_init(host_task);
     return ESP_OK;

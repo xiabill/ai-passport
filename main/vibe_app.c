@@ -112,6 +112,7 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
 {
     if (ev == BSP_BTN_PRESS) {
         vibe_audio_beep();
+        vibe_ble_note_activity();
         if (!vibe_power_on_input()) s_swallow_click = true;
         return;
     }
@@ -132,6 +133,7 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
         return;
     }
     vibe_power_on_input();
+    vibe_ble_note_activity();
     if (btn == BSP_BTN_OK) apply(VIBE_IN_OK, 0);
     else if (btn == BSP_BTN_DOWN) apply(VIBE_IN_DOWN, 0);
     else if (btn == BSP_BTN_UP) apply(VIBE_IN_UP, 0);
@@ -151,6 +153,13 @@ void vibe_app_on_audio_sub(bool sub)
 void vibe_app_on_typeless(uint8_t state)
 {
     apply(VIBE_IN_TYPELESS, state);
+}
+
+void vibe_app_on_power_mode(uint8_t mode)
+{
+    const bool eco = mode == VIBE_POWER_ECO;
+    vibe_power_set_mode(eco ? VIBE_POWER_ECO : VIBE_POWER_STANDARD);
+    vibe_ble_set_power_mode(eco);
 }
 
 void vibe_app_on_silence(void)

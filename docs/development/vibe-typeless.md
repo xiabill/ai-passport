@@ -147,11 +147,12 @@ Typeless Dictate, Translation, Ask anything, and Doubao share one microphone and
 
 The VIBE page shows BLE/Typeless state, battery, audio status, a green/yellow/red waveform, and three button hints. The waveform is an activity history rather than a calibrated sound-level meter.
 
-Power behavior:
+Power behavior (switchable from the macOS Bridge status page):
 
-- Backlight is 100% while in use, drops to 20% after 18 seconds idle, and enters standby with the backlight off after 5 minutes.
-- After 15 minutes continuously idle, the ESP32-C3 enters deep sleep, stopping the application and BLE; any ordinary GPIO0 function key wakes it into a clean boot.
-- The first function-key press during standby only wakes the screen; the 15-minute state performs a full restart on wake but is not a physical battery disconnect.
+- Standard mode keeps the backlight at 100% while in use, dims to 20% after 18 seconds, turns the backlight off after 5 minutes, and enters deep sleep after 15 minutes.
+- Eco mode dims after 10 seconds, turns the backlight off after 2 minutes, and enters deep sleep after 5 minutes; while disconnected, BLE advertising pauses after 60 seconds of idle.
+- Both modes use the GPIO0 three-button ladder as the wake source. The first function-key press during standby only wakes the screen; deep-sleep wake performs a full application restart. In Eco mode, a normal function key also resumes BLE advertising for Mac reconnection.
+- Neither mode physically disconnects the battery; use the hardware power button for zero-power storage.
 - BLE uses a slower 30–50 ms connection interval with slave latency while idle, and 7.5–15 ms with zero latency while talking.
 
 ## BLE contract

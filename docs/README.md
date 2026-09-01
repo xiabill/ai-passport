@@ -24,7 +24,7 @@ The table below describes the application capabilities implemented by the curren
 | Battery | CW2017 state-of-charge and voltage readings | `bsp_battery_*` | This capability is optional at runtime; accuracy depends on the cell and battery profile and is not equivalent to a calibrated result |
 | Wi-Fi | On-demand 2.4 GHz STA scan demo | `main/demo_wifi.c` | Scans only; it does not connect, store credentials, or validate antenna/RF performance |
 | Bluetooth LE | On-demand non-connectable NimBLE advertising as `FoloPassport` | `main/demo_ble.c` | ESP32-C3 does not support Bluetooth Classic; radio range, coexistence, and power draw require device measurements |
-| Low power | VIBE dims after 18 seconds, enters backlight-off standby after 5 minutes, and enters deep sleep after 15 minutes idle; GPIO0 function-key wake | `main/vibe_power.c`, `main/demo_low_power.c` | Deep-sleep wake performs a full application restart but is not a physical battery disconnect |
+| Low power | Standard/Eco modes; Eco pauses idle BLE advertising and sleeps earlier; GPIO0 function-key wake | `main/vibe_power.c`, `main/vibe_ble.c` | Standard sleeps after 15 minutes, Eco after 5 minutes; neither is a physical battery disconnect |
 | Shared bus | ES8311 and CW2017 share I2C0 | `bsp_i2c_*` | Every device must reuse the bus owned by the BSP; do not create another bus on the same port for scanning or a new device |
 | Logging and flashing | Native ESP32-C3 USB Serial/JTAG | ESP-IDF console | GPIO18/19 are reserved for USB; the default UART0 TX on GPIO21 conflicts with the backlight |
 

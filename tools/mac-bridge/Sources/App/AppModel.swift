@@ -72,6 +72,7 @@ final class AppModel: ObservableObject {
     private var lastOutput = ""
     private var lastPrefix = ""
     private var lastTypelessPoll = Date.distantPast
+    private var appliedPowerMode: BridgePowerMode?
     private var activeInput: ActiveInput?
     private var lastMicWarning = ""
 
@@ -81,6 +82,8 @@ final class AppModel: ObservableObject {
         ble = BLEClient(audio: audio, mic: mic)
         ble.prefix = settings.current.devicePrefix
         ble.autoReconnect = settings.current.autoReconnect
+        ble.setPowerMode(settings.current.powerMode)
+        appliedPowerMode = settings.current.powerMode
         ble.onEvent = { [weak self] ev in self?.handle(ev) }
         applyAudio()
         refreshChecks()
@@ -156,7 +159,7 @@ final class AppModel: ObservableObject {
         }
         if !typelessMicOK {
             _ = Permissions.openTypeless()
-            repairNote = "已打开 Typeless，请在“语音输入”中选择 (settings.current.outputDevice)，再点“再次检查”。"
+            repairNote = "已打开 Typeless，请在“语音输入”中选择 \(settings.current.outputDevice)，再点“再次检查”。"
             return
         }
         repairNote = "检查完成，没有发现需要修复的项目。"
@@ -264,6 +267,11 @@ final class AppModel: ObservableObject {
         }
         ble.autoReconnect = settings.current.autoReconnect
         if lastOutput != settings.current.outputDevice { applyAudio() }
+        if appliedPowerMode != settings.current.powerMode {
+            appliedPowerMode = settings.current.powerMode
+            ble.setPowerMode(settings.current.powerMode)
+            Log.sys("设备功耗模式：\(settings.current.powerMode.title)")
+        }
 
         bleSnap = ble.snapshot
         audioPeak = audio.peak

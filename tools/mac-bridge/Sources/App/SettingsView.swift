@@ -21,6 +21,20 @@ struct SettingsView: View {
 
                 SetupGuideView(model: model)
 
+                SurfaceCard("设备功耗模式", subtitle: "根据你是否长时间闲置，快速切换设备的耗电策略") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Picker("功耗模式", selection: powerModeBinding) {
+                            ForEach(BridgePowerMode.allCases, id: \.self) { mode in
+                                Label(mode.title, systemImage: mode.symbol).tag(mode)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        Text(store.current.powerMode.subtitle + "。省电模式下，设备闲置 60 秒后会暂停 BLE 广播，按普通功能键即可恢复。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 SurfaceCard("连接设备", subtitle: "Bridge 会自动寻找名称以此前缀开头的 Passport") {
                     VStack(spacing: 15) {
                         SettingRow("设备名前缀", subtitle: "默认 FoloVibe") {
@@ -221,6 +235,9 @@ struct SettingsView: View {
     }
     private var autoReconnect: Binding<Bool> {
         Binding(get: { store.current.autoReconnect }, set: { store.current.autoReconnect = $0 })
+    }
+    private var powerModeBinding: Binding<BridgePowerMode> {
+        Binding(get: { store.current.powerMode }, set: { store.current.powerMode = $0 })
     }
     private var talkBinding: Binding<String> {
         Binding(get: { store.current.talkKey }, set: { store.current.talkKey = $0 })

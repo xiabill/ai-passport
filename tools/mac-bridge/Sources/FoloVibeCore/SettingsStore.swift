@@ -1,6 +1,32 @@
 import Combine
 import Foundation
 
+public enum BridgePowerMode: String, Codable, CaseIterable {
+    case standard
+    case eco
+
+    public var title: String {
+        switch self {
+        case .standard: return "标准模式"
+        case .eco: return "省电模式"
+        }
+    }
+
+    public var subtitle: String {
+        switch self {
+        case .standard: return "保持蓝牙易连接，15 分钟后深度睡眠"
+        case .eco: return "闲置后暂停广播，5 分钟后深度睡眠"
+        }
+    }
+
+    public var symbol: String {
+        switch self {
+        case .standard: return "bolt.fill"
+        case .eco: return "leaf.fill"
+        }
+    }
+}
+
 public struct BridgeSettings: Equatable, Codable {
     public var devicePrefix: String
     public var outputDevice: String
@@ -16,6 +42,7 @@ public struct BridgeSettings: Equatable, Codable {
     public var launchAtLogin: Bool
     public var startHidden: Bool
     public var autoReconnect: Bool
+    public var powerMode: BridgePowerMode
 
     public init(
         devicePrefix: String,
@@ -31,7 +58,8 @@ public struct BridgeSettings: Equatable, Codable {
         typelessPollSec: Double,
         launchAtLogin: Bool,
         startHidden: Bool,
-        autoReconnect: Bool
+        autoReconnect: Bool,
+        powerMode: BridgePowerMode = .standard
     ) {
         self.devicePrefix = devicePrefix
         self.outputDevice = outputDevice
@@ -47,6 +75,7 @@ public struct BridgeSettings: Equatable, Codable {
         self.launchAtLogin = launchAtLogin
         self.startHidden = startHidden
         self.autoReconnect = autoReconnect
+        self.powerMode = powerMode
     }
 
     public static let `default` = BridgeSettings(
@@ -63,7 +92,8 @@ public struct BridgeSettings: Equatable, Codable {
         typelessPollSec: 2,
         launchAtLogin: false,
         startHidden: false,
-        autoReconnect: true
+        autoReconnect: true,
+        powerMode: .standard
     )
 
     public var talk: Hotkey {
@@ -82,7 +112,7 @@ public struct BridgeSettings: Equatable, Codable {
     private enum CodingKeys: String, CodingKey {
         case devicePrefix, outputDevice, talkKey, doubaoKey, sendKey, cancelKey
         case retapEnabled, retapFromSec, retapToSec, retapMax, typelessPollSec
-        case launchAtLogin, startHidden, autoReconnect
+        case launchAtLogin, startHidden, autoReconnect, powerMode
     }
 
     /// Keep existing installations valid when the Doubao setting is added.
@@ -103,6 +133,7 @@ public struct BridgeSettings: Equatable, Codable {
         launchAtLogin = try c.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? d.launchAtLogin
         startHidden = try c.decodeIfPresent(Bool.self, forKey: .startHidden) ?? d.startHidden
         autoReconnect = try c.decodeIfPresent(Bool.self, forKey: .autoReconnect) ?? d.autoReconnect
+        powerMode = try c.decodeIfPresent(BridgePowerMode.self, forKey: .powerMode) ?? d.powerMode
     }
 }
 

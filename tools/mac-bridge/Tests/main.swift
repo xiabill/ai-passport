@@ -44,6 +44,7 @@ do {
     expect(BridgeSettings.default.talk.carbon == 0x3F, "Fn carbon")
     expect(BridgeSettings.default.doubao.name == "Right Option", "default Doubao key")
     expect(BridgeSettings.default.doubao.carbon == 0x3D, "Right Option carbon")
+    expect(BridgeSettings.default.powerMode == .standard, "default standard power mode")
     var s = BridgeSettings.default
     s.talkKey = "Nope"
     expect(s.talk.name == "Fn", "unknown key fallback")
@@ -54,9 +55,14 @@ do {
     let again = SettingsStore(defaults: ud)
     expect(again.current.talkKey == "F18", "settings round trip")
     expect(again.current.doubaoKey == "Left Option", "Doubao setting round trip")
+    store.current.powerMode = .eco
+    let powerAgain = SettingsStore(defaults: ud)
+    expect(powerAgain.current.powerMode == .eco, "power mode round trip")
     expect(Hotkey.named("F17", in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[0]).carbon == 0x40, "F17 lookup")
     expect(Hotkey.named("Fn", in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[0]).carbon == 0x3F, "Fn lookup")
     expect(Hotkey.named("Right Option", in: Hotkey.doubaoKeys, fallback: Hotkey.doubaoKeys[0]).carbon == 0x3D, "Doubao lookup")
+    expect(VibeProtocol.powerModeStandard == 0x80, "standard power command")
+    expect(VibeProtocol.powerModeEco == 0x81, "eco power command")
 }
 
 do {

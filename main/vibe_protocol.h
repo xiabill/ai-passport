@@ -33,6 +33,11 @@ extern "C" {
 #define VIBE_TL_PROCESSING 2U
 #define VIBE_TL_DOWN       3U
 
+// Control characteristic values >= 0x80 are Bridge commands. Values 0..3
+// remain reserved for Typeless state feedback.
+#define VIBE_CTRL_POWER_MODE_STANDARD 0x80U
+#define VIBE_CTRL_POWER_MODE_ECO      0x81U
+
 void vibe_packet_pack(uint8_t *out, uint16_t seq, int16_t predictor,
                       uint8_t step_index, const uint8_t *adpcm);
 void vibe_packet_eos(uint8_t *out, uint16_t seq);

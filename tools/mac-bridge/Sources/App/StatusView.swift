@@ -18,6 +18,7 @@ struct StatusView: View {
 
                 SetupGuideView(model: model)
                 connectionCard
+                powerModeCard
                 quickActions
 
                 HStack(alignment: .top, spacing: 16) {
@@ -71,6 +72,37 @@ struct StatusView: View {
                 action(title: "语音输入", detail: "单击中键", shortcut: model.settings.current.talkKey, symbol: "mic.fill", tint: .blue)
                 action(title: "翻译", detail: "双击中键", shortcut: "\(model.settings.current.talkKey) + Shift", symbol: "character.bubble", tint: .purple)
                 action(title: "随便问", detail: "长按中键", shortcut: "\(model.settings.current.talkKey) + Space", symbol: "sparkles", tint: .orange)
+            }
+        }
+    }
+
+    private var powerModeCard: some View {
+        SurfaceCard("设备功耗模式", subtitle: model.settings.current.powerMode.subtitle) {
+            HStack(spacing: 14) {
+                Image(systemName: model.settings.current.powerMode.symbol)
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(model.settings.current.powerMode == .eco ? .green : .orange)
+                    .frame(width: 42, height: 42)
+                    .background(
+                        (model.settings.current.powerMode == .eco ? Color.green : Color.orange)
+                            .opacity(0.12),
+                        in: RoundedRectangle(cornerRadius: 12))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(model.settings.current.powerMode.title)
+                        .font(.callout.weight(.semibold))
+                    Text("切换后会在下次 BLE 同步时立即应用")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Picker("功耗模式", selection: powerModeBinding) {
+                    ForEach(BridgePowerMode.allCases, id: \.self) { mode in
+                        Label(mode.title, systemImage: mode.symbol).tag(mode)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.segmented)
+                .frame(width: 230)
             }
         }
     }
@@ -203,5 +235,11 @@ struct StatusView: View {
         if model.bleSnap.subscribed { return "checkmark.circle.fill" }
         if model.bleSnap.connected { return "arrow.triangle.2.circlepath" }
         return "dot.radiowaves.left.and.right"
+    }
+
+    private var powerModeBinding: Binding<BridgePowerMode> {
+        Binding(
+            get: { model.settings.current.powerMode },
+            set: { model.settings.current.powerMode = $0 })
     }
 }

@@ -24,7 +24,7 @@ FoloToy AI Passport 是一个开放式可穿戴 AI 硬件，本仓库是这款 A
 | 电池 | CW2017 的 SOC 与电压读取 | `bsp_battery_*` | 是可缺省能力；读数精度取决于电芯与 profile，不能等同于已标定结果 |
 | Wi-Fi | 按需 2.4 GHz STA 扫描 demo | `main/demo_wifi.c` | 仅扫描；不连接、不存凭证、不验证天线/射频表现 |
 | Bluetooth LE | 按需以 `FoloPassport` 名义做不可连接的 NimBLE 广播 | `main/demo_ble.c` | ESP32-C3 不支持蓝牙经典；射频范围、共存与功耗需实测 |
-| 低功耗 | VIBE 闲置 18 秒降亮度、5 分钟待机、15 分钟后深度睡眠；GPIO0 功能键唤醒 | `main/vibe_power.c`, `main/demo_low_power.c` | 深睡眠唤醒会完整重启应用，但不是电池物理断电 |
+| 低功耗 | 标准/省电两种模式；省电模式会暂停闲置 BLE 广播并提前休眠；GPIO0 功能键唤醒 | `main/vibe_power.c`, `main/vibe_ble.c` | 标准模式 15 分钟深睡，省电模式 5 分钟深睡；不是电池物理断电 |
 | 共享总线 | ES8311 与 CW2017 共用 I2C0 | `bsp_i2c_*` | 所有设备复用 BSP 持有的总线；不能为扫描或新设备再创建同端口总线 |
 | 日志与烧录 | ESP32-C3 原生 USB Serial/JTAG | ESP-IDF console | GPIO18/19 保留给 USB；UART0 默认 TX GPIO21 与背光冲突 |
 

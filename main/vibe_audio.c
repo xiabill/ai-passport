@@ -75,6 +75,7 @@ static void play_button_beep(void)
             break;
         }
     }
+    bsp_audio_suspend();
 }
 
 static void audio_task(void *arg)
@@ -152,6 +153,7 @@ static void audio_task(void *arg)
         }
 
         send_eos();
+        bsp_audio_suspend();
         ESP_LOGI(TAG, "capture stop");
     }
 }

@@ -15,7 +15,7 @@ For the end-to-end firmware, BLE, Typeless, flashing, permissions, and troublesh
 | Tab | Contents |
 | --- | --- |
 | Status | Device, audio, Typeless, permissions, level meter, problem list |
-| Settings | Device prefix, output device, hotkeys, closed-loop retap, Typeless poll, login item |
+| Settings | Power mode, device prefix, output device, hotkeys, closed-loop retap, Typeless poll, login item |
 | Logs | Filter, search, copy, open file, clear |
 | Debug | Key taps, simulated device events, 440 Hz tone, mic capture test, reconnect, UUID copy, self-check |
 
@@ -32,6 +32,8 @@ open /Applications/FoloVibeBridge.app
 The status page includes audio-effect tests for the configured output, a Passport microphone record/playback round, and BLE packet/loss checks. Every mapping in Settings supports both a picker and direct key capture. If BlackHole is missing, the setup guide can open its official installation page and macOS Sound settings.
 
 Logs: `~/Library/Logs/folovibe-bridge.log`
+
+Power modes: Standard keeps the device easy to reconnect and enters deep sleep after 15 minutes idle. Eco dims and sleeps earlier, pauses BLE advertising after 60 seconds while disconnected, and enters deep sleep after 5 minutes. Any ordinary function key resumes advertising and wakes the device in Eco mode.
 
 ## Protocol
 

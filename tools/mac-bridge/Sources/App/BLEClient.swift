@@ -27,6 +27,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     private let mic: MicTest
     private let lock = NSLock()
     private var snap = Snapshot()
+    private var desiredPowerMode: BridgePowerMode = .standard
     var prefix = "FoloVibe"
     var autoReconnect = true
 
@@ -51,6 +52,21 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             guard let p = peripheral, let c = control else { return }
             p.writeValue(Data([state]), for: c, type: .withoutResponse)
         }
+    }
+
+    func setPowerMode(_ mode: BridgePowerMode) {
+        queue.async { [self] in
+            self.desiredPowerMode = mode
+            self.writePowerMode()
+        }
+    }
+
+    private func writePowerMode() {
+        guard let p = peripheral, let c = control else { return }
+        let command: UInt8 = desiredPowerMode == .eco
+            ? VibeProtocol.powerModeEco : VibeProtocol.powerModeStandard
+        p.writeValue(Data([command]), for: c, type: .withoutResponse)
+        Log.ble("同步功耗模式：\(desiredPowerMode.title)")
     }
 
     func reconnect() {
@@ -173,6 +189,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse) + 3
         update { $0.subscribed = true; $0.phase = "已订阅"; $0.mtu = mtu }
         Log.ble("已订阅音频/事件，约 MTU \(mtu)")
+        writePowerMode()
         peripheral.readRSSI()
     }
 

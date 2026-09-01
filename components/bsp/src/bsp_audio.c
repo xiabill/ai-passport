@@ -155,6 +155,13 @@ esp_err_t bsp_audio_set_format(uint32_t hz, uint8_t bits, uint8_t ch) {
     return ESP_OK;
 }
 
+void bsp_audio_suspend(void) {
+    if (!s_dev || !s_opened) return;
+    esp_codec_dev_close(s_dev);
+    s_opened = false;
+    ESP_LOGI(TAG, "codec suspended while idle");
+}
+
 esp_err_t bsp_audio_write(const void *pcm, size_t bytes) {
     if (!s_dev) return ESP_ERR_INVALID_STATE;
     return esp_codec_dev_write(s_dev, (void *)pcm, bytes) == 0 ? ESP_OK : ESP_FAIL;
