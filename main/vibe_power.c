@@ -15,7 +15,7 @@ vibe_screen_t vibe_power_next(vibe_screen_t cur, uint32_t idle_ms, bool busy)
 {
     (void)cur;
     if (busy) return VIBE_SCREEN_BRIGHT;
-    if (idle_ms >= VIBE_PWR_OFF_MS) return VIBE_SCREEN_OFF;
+    if (idle_ms >= VIBE_PWR_STANDBY_MS) return VIBE_SCREEN_OFF;
     if (idle_ms >= VIBE_PWR_DIM_MS) return VIBE_SCREEN_DIM;
     return VIBE_SCREEN_BRIGHT;
 }
@@ -61,7 +61,7 @@ static void apply_screen(vibe_screen_t next)
 static void enter_deep_sleep(void)
 {
     // GPIO0 is the ADC button ladder: the external pull-up makes a pressed
-    // button a low level, so it can wake the C3 from deep sleep.
+    // button a low level, so any ordinary function key can wake the C3.
     gpio_config_t wake_cfg = {
         .pin_bit_mask = 1ULL << GPIO_NUM_0,
         .mode = GPIO_MODE_INPUT,
@@ -81,7 +81,7 @@ static void enter_deep_sleep(void)
     }
 
     bsp_display_backlight(0);
-    ESP_LOGI(TAG, "idle for %u ms; entering deep sleep, wake on GPIO0",
+    ESP_LOGI(TAG, "idle for %u ms; entering deep sleep; wake on GPIO0",
              VIBE_PWR_DEEP_SLEEP_MS);
     esp_deep_sleep_start();
 }
