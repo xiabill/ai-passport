@@ -17,6 +17,38 @@ public struct BridgeSettings: Equatable, Codable {
     public var startHidden: Bool
     public var autoReconnect: Bool
 
+    public init(
+        devicePrefix: String,
+        outputDevice: String,
+        talkKey: String,
+        doubaoKey: String,
+        sendKey: String,
+        cancelKey: String,
+        retapEnabled: Bool,
+        retapFromSec: Double,
+        retapToSec: Double,
+        retapMax: Int,
+        typelessPollSec: Double,
+        launchAtLogin: Bool,
+        startHidden: Bool,
+        autoReconnect: Bool
+    ) {
+        self.devicePrefix = devicePrefix
+        self.outputDevice = outputDevice
+        self.talkKey = talkKey
+        self.doubaoKey = doubaoKey
+        self.sendKey = sendKey
+        self.cancelKey = cancelKey
+        self.retapEnabled = retapEnabled
+        self.retapFromSec = retapFromSec
+        self.retapToSec = retapToSec
+        self.retapMax = retapMax
+        self.typelessPollSec = typelessPollSec
+        self.launchAtLogin = launchAtLogin
+        self.startHidden = startHidden
+        self.autoReconnect = autoReconnect
+    }
+
     public static let `default` = BridgeSettings(
         devicePrefix: "FoloVibe",
         outputDevice: "BlackHole 2ch",

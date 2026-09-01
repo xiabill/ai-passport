@@ -36,7 +36,7 @@ enum KeyTap {
     /// shortcuts. The latter two use the same base key as Dictate by default:
     /// base+Shift for Translation and base+Space for Ask anything.
     static func tapTypelessTranslate(_ key: Hotkey) {
-        tapCombo(key, trigger: nil, modifier: .shift)
+        tapCombo(key, trigger: nil, modifier: CGEventFlags.maskShift)
     }
 
     static func tapTypelessAsk(_ key: Hotkey) {
@@ -46,27 +46,27 @@ enum KeyTap {
     private static func tapCombo(_ key: Hotkey, trigger: UInt16?, modifier: CGEventFlags?) {
         if key.name == "Fn" {
             var flags = CGEventFlags.maskSecondaryFn
-            postModifier(virtualKey: functionVirtualKey, flags: flags)
+            postModifier(virtualKey: functionVirtualKey, flags: flags, down: true)
             if let modifier {
                 flags.formUnion(modifier)
-                postModifier(virtualKey: 0x38, flags: flags)
-                postModifier(virtualKey: 0x38, flags: .maskSecondaryFn)
+                postModifier(virtualKey: 0x38, flags: flags, down: true)
+                postModifier(virtualKey: 0x38, flags: .maskSecondaryFn, down: false)
             }
             if let trigger {
                 tapKey(trigger, flags: flags)
             }
-            postModifier(virtualKey: functionVirtualKey, flags: [])
+            postModifier(virtualKey: functionVirtualKey, flags: [], down: false)
             return
         }
 
         if let modifier {
-            postModifier(virtualKey: 0x38, flags: modifier)
+            postModifier(virtualKey: 0x38, flags: modifier, down: true)
             if let trigger {
                 tapKey(trigger, flags: modifier)
             } else {
                 tapKey(key.carbon, flags: modifier)
             }
-            postModifier(virtualKey: 0x38, flags: [])
+            postModifier(virtualKey: 0x38, flags: [], down: false)
         } else if let trigger {
             keyDown(key.carbon)
             tapKey(trigger, flags: [])
@@ -75,19 +75,19 @@ enum KeyTap {
     }
 
     private static func tapModifier(virtualKey: UInt16, flags: CGEventFlags) {
-        postModifier(virtualKey: virtualKey, flags: flags)
-        postModifier(virtualKey: virtualKey, flags: [])
+        postModifier(virtualKey: virtualKey, flags: flags, down: true)
+        postModifier(virtualKey: virtualKey, flags: [], down: false)
     }
 
-    private static func postModifier(virtualKey: UInt16, flags: CGEventFlags) {
+    private static func postModifier(virtualKey: UInt16, flags: CGEventFlags, down: Bool) {
         let src = CGEventSource(stateID: .hidSystemState)
-        let down = CGEvent(
+        let event = CGEvent(
             keyboardEventSource: src,
             virtualKey: virtualKey,
-            keyDown: true)
-        down?.type = .flagsChanged
-        down?.flags = flags
-        down?.post(tap: .cghidEventTap)
+            keyDown: down)
+        event?.type = .flagsChanged
+        event?.flags = flags
+        event?.post(tap: .cghidEventTap)
     }
 
     private static func tapKey(_ virtualKey: UInt16, flags: CGEventFlags) {
