@@ -28,7 +28,7 @@ struct SettingsView: View {
                     Picker("回车", selection: sendBinding) {
                         ForEach(Hotkey.sendKeys, id: \.name) { Text($0.name).tag($0.name) }
                     }
-                    Text("中键控制 Typeless，上键控制豆包，下键发送回车。豆包默认右⌥，请在豆包设置里使用“免按模式”。")
+                    Text("中键：单击听写、双击翻译、长按随便问；上键控制豆包；下键发送回车。Typeless 默认 Fn，翻译为 Fn+Shift，随便问为 Fn+Space。")
                         .foregroundColor(.secondary)
                 }
                 Section(header: Text("闭环补按")) {

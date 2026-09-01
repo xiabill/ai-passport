@@ -19,6 +19,13 @@ static void ready_phase(vibe_state_t *s)
     else s->phase = VIBE_PHASE_IDLE;
 }
 
+static bool is_typeless_source(vibe_source_t source)
+{
+    return source == VIBE_SOURCE_TYPELESS ||
+           source == VIBE_SOURCE_TYPELESS_TRANSLATE ||
+           source == VIBE_SOURCE_TYPELESS_ASK;
+}
+
 void vibe_state_init(vibe_state_t *s)
 {
     s->phase = VIBE_PHASE_DOWN;
@@ -97,14 +104,28 @@ vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint8_t typeless_byte
     case VIBE_IN_OK:
         if (s->phase == VIBE_PHASE_IDLE) {
             return start_recording(s, VIBE_SOURCE_TYPELESS, VIBE_BLE_START);
-        } else if (s->phase == VIBE_PHASE_RECORDING && s->source == VIBE_SOURCE_TYPELESS) {
+        } else if (s->phase == VIBE_PHASE_RECORDING && is_typeless_source(s->source)) {
             return stop_typeless(s, false);
+        }
+        break;
+
+    case VIBE_IN_OK_DOUBLE:
+        if (s->phase == VIBE_PHASE_IDLE) {
+            return start_recording(s, VIBE_SOURCE_TYPELESS_TRANSLATE,
+                                   VIBE_BLE_TYPELESS_TRANSLATE);
+        }
+        break;
+
+    case VIBE_IN_OK_LONG:
+        if (s->phase == VIBE_PHASE_IDLE) {
+            return start_recording(s, VIBE_SOURCE_TYPELESS_ASK,
+                                   VIBE_BLE_TYPELESS_ASK);
         }
         break;
 
     case VIBE_IN_DOWN:
         if (s->phase == VIBE_PHASE_RECORDING) {
-            if (s->source == VIBE_SOURCE_TYPELESS) return stop_typeless(s, true);
+            if (is_typeless_source(s->source)) return stop_typeless(s, true);
             if (s->source == VIBE_SOURCE_DOUBAO) return stop_doubao(s, true);
         }
         if (s->phase == VIBE_PHASE_IDLE) {
@@ -125,30 +146,32 @@ vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint8_t typeless_byte
 
     case VIBE_IN_TYPELESS:
         s->typeless = typeless_byte;
-        if (s->phase == VIBE_PHASE_PROCESSING && s->source == VIBE_SOURCE_TYPELESS &&
+        if (s->phase == VIBE_PHASE_PROCESSING && is_typeless_source(s->source) &&
             (typeless_byte == VIBE_TL_IDLE || typeless_byte == VIBE_TL_DOWN)) {
             if (s->queued_enter) {
                 push_event(&o, VIBE_BLE_ENTER);
                 s->queued_enter = false;
             }
             ready_phase(s);
+            s->source = VIBE_SOURCE_NONE;
         }
         break;
 
     case VIBE_IN_SILENCE:
         if (s->phase == VIBE_PHASE_RECORDING) {
-            if (s->source == VIBE_SOURCE_TYPELESS) return stop_typeless(s, false);
+            if (is_typeless_source(s->source)) return stop_typeless(s, false);
             if (s->source == VIBE_SOURCE_DOUBAO) return stop_doubao(s, false);
         }
         break;
 
     case VIBE_IN_PROC_TIMEOUT:
-        if (s->phase == VIBE_PHASE_PROCESSING && s->source == VIBE_SOURCE_TYPELESS) {
+        if (s->phase == VIBE_PHASE_PROCESSING && is_typeless_source(s->source)) {
             if (s->queued_enter) {
                 push_event(&o, VIBE_BLE_ENTER);
                 s->queued_enter = false;
             }
             ready_phase(s);
+            s->source = VIBE_SOURCE_NONE;
         }
         break;
     }

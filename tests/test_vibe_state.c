@@ -33,6 +33,27 @@ int main(void)
     assert(o.n_events == 0);
 
     linked_idle(&s);
+    o = vibe_state_apply(&s, VIBE_IN_OK_DOUBLE, 0);
+    assert(s.phase == VIBE_PHASE_RECORDING);
+    assert(s.source == VIBE_SOURCE_TYPELESS_TRANSLATE);
+    assert(o.start_capture);
+    assert(o.n_events == 1 && o.ble_events[0] == VIBE_BLE_TYPELESS_TRANSLATE);
+    o = vibe_state_apply(&s, VIBE_IN_OK, 0);
+    assert(s.phase == VIBE_PHASE_PROCESSING);
+    assert(o.stop_capture);
+    assert(o.n_events == 1 && o.ble_events[0] == VIBE_BLE_STOP);
+    o = vibe_state_apply(&s, VIBE_IN_TYPELESS, VIBE_TL_IDLE);
+    assert(s.phase == VIBE_PHASE_IDLE);
+    assert(s.source == VIBE_SOURCE_NONE);
+
+    linked_idle(&s);
+    o = vibe_state_apply(&s, VIBE_IN_OK_LONG, 0);
+    assert(s.phase == VIBE_PHASE_RECORDING);
+    assert(s.source == VIBE_SOURCE_TYPELESS_ASK);
+    assert(o.start_capture);
+    assert(o.n_events == 1 && o.ble_events[0] == VIBE_BLE_TYPELESS_ASK);
+
+    linked_idle(&s);
     o = vibe_state_apply(&s, VIBE_IN_UP, 0);
     assert(s.phase == VIBE_PHASE_RECORDING);
     assert(s.source == VIBE_SOURCE_DOUBAO);

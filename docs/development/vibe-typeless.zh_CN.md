@@ -7,7 +7,7 @@
 这个分支把 FoloToy AI Passport 做成 Typeless 的无线一键说话麦克风。公开实现由两部分组成：
 
 - ESP32-C3 固件（`main/`）：采集设备麦克风，把 16 kHz PCM 编成 IMA-ADPCM，通过 BLE 发送音频，绘制 VIBE 屏幕并上报按键事件。
-- macOS 伴侣（`tools/mac-bridge/`）：连接设备、解码音频、把 PCM 写入 `BlackHole 2ch`，监控 Typeless，并发送配置好的 Typeless / 豆包 / 回车按键。
+- macOS 伴侣（`tools/mac-bridge/`）：连接设备、解码音频、把 PCM 写入 `BlackHole 2ch`，监控 Typeless，并发送 Typeless 三种模式、豆包和回车按键。
 
 仓库是公开的，当前实现位于 [`feature/vibe-typeless`](https://github.com/xiabill/ai-passport/tree/feature/vibe-typeless)。上游 `main` 保持干净的硬件基线。
 
@@ -80,7 +80,7 @@ open FoloVibeBridge.app
 1. macOS 询问时允许蓝牙权限。
 2. 打开“系统设置 → 隐私与安全性 → 辅助功能”，启用 `FoloVibe Bridge`。
 3. 在 Bridge 的“设置”页选择设备名前缀 `FoloVibe` 和输出设备 `BlackHole 2ch`。
-4. 在 Bridge 设置中分别选择 Typeless 和豆包的按键。Typeless 默认 `Fn`；豆包默认 `Right Option`（右⌥）。如果你在对应输入法中改过快捷键，两边选择相同按键。
+4. 在 Bridge 设置中选择 Typeless 基础键和豆包按键。Typeless 默认 `Fn`：中键单击是听写，双击自动发送 `Fn+Shift` 翻译，长按自动发送 `Fn+Space` 随便问；豆包默认 `Right Option`（右⌥）。如果你把 Typeless 的基础听写键改成 `F19`，Bridge 中也选择 `F19`，翻译/随便问会自动跟随为 `F19+Shift` / `F19+Space`。
 5. 回车键默认 `Return`，它对应设备的下键；旧的 `Escape` 取消键仍保留在配置里用于兼容，但不再占用设备上键。
 6. 在 Typeless 和豆包输入法中选择 `BlackHole 2ch` 作为麦克风输入（按当前输入法的设置要求启用）。
 
@@ -135,13 +135,15 @@ python -m esptool --chip esp32c3 \
 
 | 按键 | 空闲 | 对应输入法录音中 | 其他输入法录音中 |
 | --- | --- | --- | --- |
-| 确定 OK | 启动 Typeless | 停止 Typeless | 忽略，避免抢占豆包 |
+| 确定 OK 单击 | 启动/停止 Typeless 听写 | 停止当前 Typeless 模式 | 忽略，避免抢占豆包 |
+| 确定 OK 双击 | 启动 Typeless 翻译 | 忽略 | 忽略 |
+| 确定 OK 长按 | 启动 Typeless 随便问 | 忽略 | 忽略 |
 | 下 DOWN | 发送 Return | 停止当前输入，完成后发送 Return | 停止当前输入，完成后发送 Return |
 | 上 UP | 启动豆包 | 停止豆包 | 忽略，避免抢占 Typeless |
 
 峰值低于阈值约 30 秒也会自动停止。短提示音由音频 worker 生成，因此按键回调本身不会执行阻塞的播放工作。
 
-两个输入法共享同一个设备麦克风和 BLE 音频流，但不会并行录音。豆包停止后 Bridge 会短暂等待再发送 Return，给识别结果落到当前输入框留出时间；Typeless 则继续读取本地状态，在转写完成后再发送。
+Typeless 的听写、翻译、随便问和豆包共享同一个设备麦克风和 BLE 音频流，但不会并行录音。翻译和随便问使用 Typeless 基础键派生的 `基础键+Shift` / `基础键+Space` 快捷键启动；结束时仍使用基础 Typeless 键。豆包停止后 Bridge 会短暂等待再发送 Return，给识别结果落到当前输入框留出时间；Typeless 则继续读取本地状态，在转写完成后再发送。
 
 VIBE 页面显示 BLE/Typeless 状态、电量、音频状态、绿/黄/红声波和三个按键提示。声波是活动历史，不是经过校准的声压计。
 
@@ -165,7 +167,7 @@ Control write: F0100004-0000-4A6B-9E10-464F4C4F5631
 | 特征 | 方向 | 数据 |
 | --- | --- | --- |
 | Audio | 设备 → Mac | 166 字节 IMA-ADPCM 帧，或 6 字节 EOS 结束标记 |
-| Event | 设备 → Mac | `1` Typeless 开始，`2` Typeless 停止，`3` Return，`4` 旧取消/Escape，`5` 豆包开始，`6` 豆包停止，`7` 豆包停止并发送 Return |
+| Event | 设备 → Mac | `1` Typeless 听写开始，`2` Typeless 停止，`3` Return，`4` 旧取消/Escape，`5` 豆包开始，`6` 豆包停止，`7` 豆包停止并发送 Return，`8` Typeless 翻译开始，`9` Typeless 随便问开始 |
 | Control | Mac → 设备 | Typeless 状态：`0` 空闲，`1` 录音，`2` 转写，`3` 未运行 |
 
 音频帧包含序号、预测值、step index 和 ADPCM 数据。Bridge 会对小范围丢帧插入静音，并在状态页显示丢包统计。
@@ -184,7 +186,8 @@ Device tests: 实体板、BLE、屏幕、按键、扬声器、麦克风、Typele
 
 - [ ] 设备广播 `FoloVibe-*`，Bridge 能连接。
 - [ ] Bridge 显示已订阅音频，Typeless 选择 `BlackHole 2ch`。
-- [ ] 按确定开始/停止 Typeless 听写，文字进入当前焦点输入框。
+- [ ] 按确定单击开始/停止 Typeless 听写，文字进入当前焦点输入框。
+- [ ] 按确定双击进入 Typeless 翻译，长按进入 Typeless 随便问。
 - [ ] 按上键开始/停止豆包输入法，文字进入当前焦点输入框。
 - [ ] 两个输入法录音互斥，录音中按另一个输入法键不会抢占音频。
 - [ ] 说话时按下键：停止当前输入法并发送 Return。

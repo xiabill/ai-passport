@@ -32,7 +32,54 @@ enum KeyTap {
         tap(key.carbon)
     }
 
+    /// Typeless keeps Dictate, Translation mode, and Ask anything as separate
+    /// shortcuts. The latter two use the same base key as Dictate by default:
+    /// base+Shift for Translation and base+Space for Ask anything.
+    static func tapTypelessTranslate(_ key: Hotkey) {
+        tapCombo(key, trigger: nil, modifier: .shift)
+    }
+
+    static func tapTypelessAsk(_ key: Hotkey) {
+        tapCombo(key, trigger: 0x31, modifier: nil)
+    }
+
+    private static func tapCombo(_ key: Hotkey, trigger: UInt16?, modifier: CGEventFlags?) {
+        if key.name == "Fn" {
+            var flags = CGEventFlags.maskSecondaryFn
+            postModifier(virtualKey: functionVirtualKey, flags: flags)
+            if let modifier {
+                flags.formUnion(modifier)
+                postModifier(virtualKey: 0x38, flags: flags)
+                postModifier(virtualKey: 0x38, flags: .maskSecondaryFn)
+            }
+            if let trigger {
+                tapKey(trigger, flags: flags)
+            }
+            postModifier(virtualKey: functionVirtualKey, flags: [])
+            return
+        }
+
+        if let modifier {
+            postModifier(virtualKey: 0x38, flags: modifier)
+            if let trigger {
+                tapKey(trigger, flags: modifier)
+            } else {
+                tapKey(key.carbon, flags: modifier)
+            }
+            postModifier(virtualKey: 0x38, flags: [])
+        } else if let trigger {
+            keyDown(key.carbon)
+            tapKey(trigger, flags: [])
+            keyUp(key.carbon)
+        }
+    }
+
     private static func tapModifier(virtualKey: UInt16, flags: CGEventFlags) {
+        postModifier(virtualKey: virtualKey, flags: flags)
+        postModifier(virtualKey: virtualKey, flags: [])
+    }
+
+    private static func postModifier(virtualKey: UInt16, flags: CGEventFlags) {
         let src = CGEventSource(stateID: .hidSystemState)
         let down = CGEvent(
             keyboardEventSource: src,
@@ -41,14 +88,25 @@ enum KeyTap {
         down?.type = .flagsChanged
         down?.flags = flags
         down?.post(tap: .cghidEventTap)
+    }
 
-        let up = CGEvent(
-            keyboardEventSource: src,
-            virtualKey: virtualKey,
-            keyDown: false)
-        up?.type = .flagsChanged
-        up?.flags = []
-        up?.post(tap: .cghidEventTap)
+    private static func tapKey(_ virtualKey: UInt16, flags: CGEventFlags) {
+        keyDown(virtualKey, flags: flags)
+        keyUp(virtualKey, flags: flags)
+    }
+
+    private static func keyDown(_ virtualKey: UInt16, flags: CGEventFlags = []) {
+        let src = CGEventSource(stateID: .hidSystemState)
+        let event = CGEvent(keyboardEventSource: src, virtualKey: virtualKey, keyDown: true)
+        event?.flags = flags
+        event?.post(tap: .cghidEventTap)
+    }
+
+    private static func keyUp(_ virtualKey: UInt16, flags: CGEventFlags = []) {
+        let src = CGEventSource(stateID: .hidSystemState)
+        let event = CGEvent(keyboardEventSource: src, virtualKey: virtualKey, keyDown: false)
+        event?.flags = flags
+        event?.post(tap: .cghidEventTap)
     }
 
     /// Fn/Globe is a modifier-only key on macOS, so it must be posted as a

@@ -25,7 +25,9 @@ struct StatusView: View {
                         ("状态", model.typelessState.title),
                         ("进程", model.typeless.running ? "运行中" : "未打开"),
                         ("麦克风", model.typelessMicLabel),
-                        ("快捷键", model.settings.current.talkKey),
+                        ("听写", model.settings.current.talkKey),
+                        ("翻译", "(model.settings.current.talkKey)+Shift"),
+                        ("随便问", "(model.settings.current.talkKey)+Space"),
                     ])
                     card("输入法", [
                         ("当前", model.activeInputTitle),

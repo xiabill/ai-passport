@@ -21,6 +21,8 @@ public enum VibeEvent: UInt8, CaseIterable, Equatable {
     case doubaoStart = 5
     case doubaoStop = 6
     case doubaoStopAndSend = 7
+    case typelessTranslate = 8
+    case typelessAsk = 9
 
     public var title: String {
         switch self {
@@ -31,6 +33,8 @@ public enum VibeEvent: UInt8, CaseIterable, Equatable {
         case .doubaoStart: return "豆包开始"
         case .doubaoStop: return "豆包停止"
         case .doubaoStopAndSend: return "豆包停止并发送"
+        case .typelessTranslate: return "Typeless 翻译"
+        case .typelessAsk: return "Typeless 随便问"
         }
     }
 }

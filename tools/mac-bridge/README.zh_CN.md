@@ -6,7 +6,7 @@
 
 AI Passport vibe-typeless 固件的 macOS 伴侣。这是完整应用：总览、设置、实时日志、调试测试台，外加菜单栏。
 
-通过 BLE 接收 IMA-ADPCM 麦克风帧，播放到 `BlackHole 2ch`，并按设置里的 Typeless / 豆包 / 回车键，让两个输入法把文字打进当前焦点应用。
+通过 BLE 接收 IMA-ADPCM 麦克风帧，播放到 `BlackHole 2ch`，并按设置里的 Typeless 三手势、豆包和回车键，让输入法把文字打进当前焦点应用。
 
 完整的固件、BLE、Typeless、刷机、权限和故障排查教程见 [Vibe 教程](../../docs/development/vibe-typeless.zh_CN.md)。
 
@@ -33,8 +33,9 @@ open FoloVibeBridge.app
 
 ## 协议
 
+- 中键单击/双击/长按分别启动 Typeless 听写/翻译/随便问；上键控制豆包，下键发送回车。
 - 设备名：`FoloVibe-XXXX`
 - 服务 `F0100001-0000-4A6B-9E10-464F4C4F5631`
 - 音频 notify `...0002`：166 字节 ADPCM 帧，或 6 字节结束标记
-- 事件 notify `...0003`：`1` Typeless 开始，`2` Typeless 停止，`3` 回车，`4` 旧取消，`5` 豆包开始，`6` 豆包停止，`7` 豆包停止并回车
+- 事件 notify `...0003`：`1` Typeless 听写开始，`2` Typeless 停止，`3` 回车，`4` 旧取消，`5` 豆包开始，`6` 豆包停止，`7` 豆包停止并回车，`8` Typeless 翻译开始，`9` Typeless 随便问开始
 - 控制 write `...0004`：Typeless 状态 `0` 空闲，`1` 录音，`2` 转写，`3` 未运行

@@ -12,7 +12,13 @@ enum AppTab: String, CaseIterable {
 final class AppModel: ObservableObject {
     enum ActiveInput: String {
         case typeless = "Typeless"
+        case typelessTranslate = "Typeless 翻译"
+        case typelessAsk = "Typeless 随便问"
         case doubao = "豆包"
+
+        var isTypeless: Bool {
+            self != .doubao
+        }
     }
 
     static let shared = AppModel()
@@ -88,6 +94,20 @@ final class AppModel: ObservableObject {
             expect = .recording
             lastHotkey = Date()
             retaps = 0
+        case .typelessTranslate:
+            KeyTap.tapTypelessTranslate(s.talk)
+            activeInput = .typelessTranslate
+            activeInputTitle = ActiveInput.typelessTranslate.rawValue
+            expect = .recording
+            lastHotkey = Date()
+            retaps = 0
+        case .typelessAsk:
+            KeyTap.tapTypelessAsk(s.talk)
+            activeInput = .typelessAsk
+            activeInputTitle = ActiveInput.typelessAsk.rawValue
+            expect = .recording
+            lastHotkey = Date()
+            retaps = 0
         case .stop:
             KeyTap.tap(s.talk)
             activeInput = .typeless
@@ -154,7 +174,7 @@ final class AppModel: ObservableObject {
                 Log.typeless(st.title)
                 typelessState = st
             }
-            if activeInput == .typeless && !bleSnap.streaming && st == .idle {
+            if activeInput?.isTypeless == true && !bleSnap.streaming && st == .idle {
                 activeInput = nil
                 activeInputTitle = "—"
             }
@@ -165,7 +185,7 @@ final class AppModel: ObservableObject {
 
     private func closedLoop(_ st: TypelessState) {
         let s = settings.current
-        guard activeInput == .typeless, s.retapEnabled, typeless.running, retaps < s.retapMax
+        guard activeInput?.isTypeless == true, s.retapEnabled, typeless.running, retaps < s.retapMax
         else { return }
         let dt = Date().timeIntervalSince(lastHotkey)
         guard dt >= s.retapFromSec, dt <= s.retapToSec else { return }

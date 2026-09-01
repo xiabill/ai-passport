@@ -102,6 +102,8 @@ static const char *source_title(vibe_source_t source)
 {
     switch (source) {
     case VIBE_SOURCE_TYPELESS: return "TYP";
+    case VIBE_SOURCE_TYPELESS_TRANSLATE: return "TR";
+    case VIBE_SOURCE_TYPELESS_ASK: return "ASK";
     case VIBE_SOURCE_DOUBAO: return "DB";
     default: return "--";
     }
@@ -117,6 +119,8 @@ static const char *event_title(uint8_t ev)
     case VIBE_BLE_DOUBAO_START: return "DB START";
     case VIBE_BLE_DOUBAO_STOP: return "DB STOP";
     case VIBE_BLE_DOUBAO_STOP_SEND: return "DB SEND";
+    case VIBE_BLE_TYPELESS_TRANSLATE: return "TR START";
+    case VIBE_BLE_TYPELESS_ASK: return "ASK START";
     default: return "--";
     }
 }
@@ -201,7 +205,7 @@ static void paint(const vibe_ui_model_t *m)
 
     switch (m->phase) {
     case VIBE_PHASE_IDLE:
-        set_key(s_key_ok, "OK\nTYP", UI_YELLOW);
+        set_key(s_key_ok, "OK\nV/TR/A", UI_YELLOW);
         set_key(s_key_dn, "DOWN\nENTER", UI_PAPER);
         set_key(s_key_up, "UP\nDB", UI_PAPER);
         break;

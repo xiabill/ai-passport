@@ -115,6 +115,17 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
         if (!vibe_power_on_input()) s_swallow_click = true;
         return;
     }
+    if (ev == BSP_BTN_LONG) {
+        // A long press is reported at the threshold. Prevent a component
+        // implementation that also emits CLICK on release from firing twice.
+        s_swallow_click = true;
+        if (btn == BSP_BTN_OK) apply(VIBE_IN_OK_LONG, 0);
+        return;
+    }
+    if (ev == BSP_BTN_DOUBLE) {
+        if (btn == BSP_BTN_OK) apply(VIBE_IN_OK_DOUBLE, 0);
+        return;
+    }
     if (ev != BSP_BTN_CLICK) return;
     if (s_swallow_click) {
         s_swallow_click = false;

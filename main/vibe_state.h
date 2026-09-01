@@ -20,6 +20,8 @@ typedef enum {
 typedef enum {
     VIBE_SOURCE_NONE = 0,
     VIBE_SOURCE_TYPELESS,
+    VIBE_SOURCE_TYPELESS_TRANSLATE,
+    VIBE_SOURCE_TYPELESS_ASK,
     VIBE_SOURCE_DOUBAO,
 } vibe_source_t;
 
@@ -29,6 +31,8 @@ typedef enum {
     VIBE_IN_AUDIO_SUB,
     VIBE_IN_AUDIO_UNSUB,
     VIBE_IN_OK,              // Typeless toggle
+    VIBE_IN_OK_DOUBLE,       // Typeless translation shortcut
+    VIBE_IN_OK_LONG,         // Typeless Ask anything shortcut
     VIBE_IN_DOWN,            // Return / stop-and-send
     VIBE_IN_UP,              // Doubao toggle
     VIBE_IN_TYPELESS,        // typeless_byte is valid
