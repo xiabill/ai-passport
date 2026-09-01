@@ -17,9 +17,9 @@ static const char *TAG = "vibe_audio";
 
 #define SILENCE_PEAK 500
 #define SILENCE_BLOCKS (30 * 50)  // 30 s of 20 ms blocks
-#define BEEP_SAMPLE_RATE 8000U
-#define BEEP_AMPLITUDE 6300 // 70% of the previous level
-#define BEEP_VOLUME 80U
+#define BEEP_SAMPLE_RATE 16000U
+#define BEEP_AMPLITUDE 3200 // Leave generous headroom for the small speaker
+#define BEEP_VOLUME 68U
 #define BEEP_PI 3.14159265358979323846f
 
 static TaskHandle_t s_task;
@@ -75,24 +75,24 @@ static void play_button_beep(vibe_beep_t type)
         unsigned samples;
     } beep_segment_t;
     // Use short musical intervals instead of unrelated alarm frequencies.
-    // C5-E5-G5 makes a gentle rising start cue; the other cues resolve
-    // downward so the user can distinguish them without looking at the UI.
+    // A4-C5-E5 makes a warm rising start cue; the other cues resolve downward
+    // so the user can distinguish them without looking at the UI.
     static const beep_segment_t start[] = {
-        {523U, 520U},  // C5, 65 ms
-        {0U,   80U},   // 10 ms gap
-        {659U, 520U},  // E5, 65 ms
-        {0U,   80U},   // 10 ms gap
-        {784U, 760U},  // G5, 95 ms
+        {440U, 960U},  // A4, 60 ms
+        {0U,   192U},  // 12 ms gap
+        {523U, 960U},  // C5, 60 ms
+        {0U,   192U},  // 12 ms gap
+        {659U, 1440U}, // E5, 90 ms
     };
     static const beep_segment_t end[] = {
-        {784U, 680U},  // G5, 85 ms
-        {0U,   160U},  // 20 ms gap
-        {523U, 1680U}, // C5, 210 ms
+        {659U, 1120U}, // E5, 70 ms
+        {0U,   288U},  // 18 ms gap
+        {440U, 2880U}, // A4, 180 ms
     };
     static const beep_segment_t edit[] = {
-        {659U, 400U},  // E5, 50 ms
-        {0U,   144U},  // 18 ms gap
-        {523U, 760U},  // C5, 95 ms
+        {523U, 720U},  // C5, 45 ms
+        {0U,   288U},  // 18 ms gap
+        {440U, 1280U}, // A4, 80 ms
     };
 
     const beep_segment_t *segments;
@@ -152,8 +152,9 @@ static void play_button_beep(vibe_beep_t type)
             }
 
             // A short per-note envelope removes clicks at both note and gap
-            // boundaries. A quiet second harmonic gives the sine tone a bit
-            // of warmth without bringing back the harsh square-wave edge.
+            // boundaries. Keep this as a pure sine: the codec and speaker add
+            // enough character by themselves, while extra harmonics can push
+            // the small amplifier into audible distortion.
             const unsigned note_samples = segments[current].samples;
             const unsigned envelope_samples = note_samples / 6U < 96U
                 ? (note_samples / 6U < 8U ? 8U : note_samples / 6U)
@@ -166,8 +167,7 @@ static void play_button_beep(vibe_beep_t type)
             }
             const float phase = 2.0f * BEEP_PI * (float)hz * (float)local /
                                 (float)BEEP_SAMPLE_RATE;
-            const float wave = 0.92f * sinf(phase) + 0.08f * sinf(phase * 2.0f);
-            pcm[i] = (int16_t)(wave * (float)BEEP_AMPLITUDE * gain);
+            pcm[i] = (int16_t)(sinf(phase) * (float)BEEP_AMPLITUDE * gain);
         }
         if (bsp_audio_write(pcm, sizeof(pcm)) != ESP_OK) {
             ESP_LOGW(TAG, "button %s beep write failed", label);
