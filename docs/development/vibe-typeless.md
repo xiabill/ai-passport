@@ -149,12 +149,13 @@ The VIBE page shows BLE/Typeless state, battery, audio status, a green/yellow/re
 
 Power behavior (switchable from the macOS Bridge status page):
 
-- Standard mode keeps the backlight at 50%, dims to 15% three seconds after speech starts (and after 18 seconds of ordinary idle), briefly returns to 50% when confirming send, turns the backlight off after 5 minutes, and enters deep sleep after 15 minutes.
-- Eco mode dims to 8% after 10 seconds, turns the backlight off after 1 minute, and enters deep sleep after 5 minutes; while disconnected, BLE advertising pauses after 60 seconds of idle.
+- Standard mode keeps the backlight at 50%, dims to 15% three seconds after speech starts (and after 18 seconds of ordinary idle), briefly returns to 50% when confirming send, turns the backlight off after 5 minutes, and enters deep sleep after 15 minutes. When connected to a computer over USB, automatic dimming, screen-off, and deep sleep are disabled.
+- Eco mode dims to 8% after 10 seconds, turns the backlight off after 1 minute, and enters deep sleep after 5 minutes; while disconnected, BLE advertising pauses after 60 seconds of idle. The same USB-host exemption applies in Eco mode.
 - Both modes use the GPIO0 three-button ladder as the wake source. The first function-key press during standby only wakes the screen; deep-sleep wake performs a full application restart. In Eco mode, a normal function key also resumes BLE advertising for Mac reconnection.
 - Doubao upper key: single click toggles Doubao voice input, quick double-click selects all and deletes the current text (Cmd+A then Delete), and long press performs the same clear action. If editing is triggered during Doubao recording, recording stops before the edit action.
 - Audio cues: recording start uses a longer three-note rise; recording end uses a lower, longer note; Doubao clear shortcuts use a short edit cue so each action is clear without looking at the display.
 - Neither mode physically disconnects the battery; use the hardware power button for zero-power storage.
+- The current board can detect a USB computer host through USB Serial/JTAG, but it cannot detect charge-only power from a wall charger or power bank because no VBUS/charger-status signal is connected to the MCU.
 - BLE uses a slower 30–50 ms connection interval with slave latency while idle, and 7.5–15 ms with zero latency while talking.
 
 ## BLE contract

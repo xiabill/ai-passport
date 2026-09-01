@@ -12,5 +12,5 @@ idf_component_register(
          "vibe_power.c"
          "vibe_app.c"
     INCLUDE_DIRS "."
-    REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer nvs_flash
+    REQUIRES bsp bt esp_driver_usb_serial_jtag esp_event esp_hw_support esp_netif esp_timer nvs_flash
 )

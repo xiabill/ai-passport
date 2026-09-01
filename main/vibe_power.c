@@ -6,6 +6,7 @@
 #include "esp_sleep.h"
 #include "esp_timer.h"
 #include "driver/gpio.h"
+#include "driver/usb_serial_jtag.h"
 #endif
 
 #define BACKLIGHT_STANDARD 50
@@ -52,6 +53,7 @@ static uint32_t s_busy_since_ms;
 static uint32_t s_last_ms;
 static bool s_deep_sleep_failed;
 static vibe_power_mode_t s_mode = VIBE_POWER_STANDARD;
+static bool s_usb_host_powered;
 
 static uint32_t now_ms(void)
 {
@@ -117,6 +119,7 @@ void vibe_power_init(void)
     s_last_ms = now_ms();
     s_screen = VIBE_SCREEN_BRIGHT;
     s_mode = VIBE_POWER_STANDARD;
+    s_usb_host_powered = false;
     bsp_display_backlight(BACKLIGHT_BRIGHT);
 }
 
@@ -160,6 +163,27 @@ bool vibe_power_on_input(void)
 void vibe_power_tick(void)
 {
     uint32_t now = now_ms();
+
+    // USB Serial/JTAG reports a host only when it sees USB SOF packets. This
+    // reliably identifies a computer connection without confusing a
+    // charge-only cable or power bank with a data host.
+    bool usb_host_powered = usb_serial_jtag_is_connected();
+    if (usb_host_powered) {
+        if (!s_usb_host_powered) {
+            ESP_LOGI(TAG, "USB host connected; automatic power saving disabled");
+        }
+        s_usb_host_powered = true;
+        s_last_ms = now;
+        s_deep_sleep_failed = false;
+        apply_screen(VIBE_SCREEN_BRIGHT);
+        return;
+    }
+    if (s_usb_host_powered) {
+        ESP_LOGI(TAG, "USB host disconnected; automatic power saving resumed");
+        s_usb_host_powered = false;
+        s_last_ms = now;
+    }
+
     if (s_busy) s_last_ms = now;
     uint32_t idle = now - s_last_ms;
     vibe_screen_t next = vibe_power_next_mode(s_screen, idle, s_busy, s_mode);

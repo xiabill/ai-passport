@@ -33,6 +33,9 @@ vibe_screen_t vibe_power_next_mode(vibe_screen_t cur, uint32_t idle_ms, bool bus
                                    vibe_power_mode_t mode);
 // Standard policy enters deep sleep after 15 minutes; Eco uses its shorter
 // timeout. Both modes wake on the GPIO0 function key.
+// A USB host connection disables automatic dimming, screen-off, and deep sleep
+// for as long as the host is present. Charge-only power cannot be detected on
+// this board because no VBUS/charger-status signal is connected to the MCU.
 bool vibe_power_should_deep_sleep(uint32_t idle_ms, bool busy);
 bool vibe_power_should_deep_sleep_mode(uint32_t idle_ms, bool busy,
                                        vibe_power_mode_t mode);
