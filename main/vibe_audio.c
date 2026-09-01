@@ -52,6 +52,7 @@ static void send_eos(void)
 
 static void play_button_beep(void)
 {
+    ESP_LOGI(TAG, "button beep");
     if (bsp_audio_set_format(BEEP_SAMPLE_RATE, 16, 1) != ESP_OK) {
         ESP_LOGW(TAG, "button beep format failed");
         return;
@@ -75,6 +76,9 @@ static void play_button_beep(void)
             break;
         }
     }
+    // The codec write fills the DMA queue asynchronously. Let the 32 ms tone
+    // drain before closing the codec, otherwise suspend can truncate it.
+    vTaskDelay(pdMS_TO_TICKS(45));
     bsp_audio_suspend();
 }
 

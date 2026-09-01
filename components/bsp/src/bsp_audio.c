@@ -17,6 +17,17 @@ static i2s_chan_handle_t      s_tx, s_rx;
 static uint32_t s_hz;
 static uint8_t  s_bits, s_ch;
 static bool     s_opened;
+static bool     s_i2s_enabled;
+
+static esp_err_t enable_i2s_channels(void)
+{
+    esp_err_t e = i2s_channel_enable(s_tx);
+    if (e != ESP_OK && e != ESP_ERR_INVALID_STATE) return e;
+    e = i2s_channel_enable(s_rx);
+    if (e != ESP_OK && e != ESP_ERR_INVALID_STATE) return e;
+    s_i2s_enabled = true;
+    return ESP_OK;
+}
 
 static esp_err_t i2s_full_duplex_init(void) {
     i2s_chan_config_t chan = {
@@ -66,9 +77,7 @@ static esp_err_t i2s_full_duplex_init(void) {
     // esp_codec_dev_open 内部重配前会先 i2s_channel_disable,而 disable 要求通道处于
     // RUNNING;刚 init 的通道是 READY,会打一条 "channel has not been enabled yet" 错误日志。
     // 这里先 enable 一次让那次 disable 合法(此时 codec 未配,不出声)。
-    i2s_channel_enable(s_tx);
-    i2s_channel_enable(s_rx);
-    return ESP_OK;
+    return enable_i2s_channels();
 }
 
 esp_err_t bsp_audio_init(void) {
@@ -129,10 +138,18 @@ esp_err_t bsp_audio_set_format(uint32_t hz, uint8_t bits, uint8_t ch) {
     if (s_opened) {
         esp_codec_dev_close(s_dev);
         s_opened = false;
-        // close 把 I2S 通道退回 READY,而接下来的 open 内部又会 disable 一次 →
-        // 会打 "channel has not been enabled yet"。补一次 enable 让它合法。
-        if (s_tx) i2s_channel_enable(s_tx);
-        if (s_rx) i2s_channel_enable(s_rx);
+        s_i2s_enabled = false;
+    }
+
+    // esp_codec_dev_close() disables the I2S channels. Re-enable them before
+    // opening the next stream, including the suspend -> resume path used by
+    // the button beep and by recording.
+    if (!s_i2s_enabled) {
+        esp_err_t e = enable_i2s_channels();
+        if (e != ESP_OK) {
+            ESP_LOGE(TAG, "I2S 通道恢复失败: %s", esp_err_to_name(e));
+            return e;
+        }
     }
 
     esp_codec_dev_sample_info_t fs = {
@@ -159,6 +176,7 @@ void bsp_audio_suspend(void) {
     if (!s_dev || !s_opened) return;
     esp_codec_dev_close(s_dev);
     s_opened = false;
+    s_i2s_enabled = false;
     ESP_LOGI(TAG, "codec suspended while idle");
 }
 

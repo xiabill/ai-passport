@@ -8,8 +8,9 @@
 #include "driver/gpio.h"
 #endif
 
+#define BACKLIGHT_STANDARD 50
 #define BACKLIGHT_BRIGHT 100
-#define BACKLIGHT_DIM 20
+#define BACKLIGHT_DIM 15
 #define BACKLIGHT_ECO_DIM 8
 
 vibe_screen_t vibe_power_next_mode(vibe_screen_t cur, uint32_t idle_ms, bool busy,
@@ -47,6 +48,7 @@ bool vibe_power_should_deep_sleep(uint32_t idle_ms, bool busy)
 static const char *TAG = "vibe_pwr";
 static vibe_screen_t s_screen = VIBE_SCREEN_BRIGHT;
 static bool s_busy;
+static uint32_t s_busy_since_ms;
 static uint32_t s_last_ms;
 static bool s_deep_sleep_failed;
 static vibe_power_mode_t s_mode = VIBE_POWER_STANDARD;
@@ -60,11 +62,12 @@ static void apply_screen(vibe_screen_t next)
 {
     if (next == s_screen) return;
     s_screen = next;
+    const uint8_t bright_level = s_mode == VIBE_POWER_ECO ? BACKLIGHT_BRIGHT : BACKLIGHT_STANDARD;
     const uint8_t dim_level = s_mode == VIBE_POWER_ECO ? BACKLIGHT_ECO_DIM : BACKLIGHT_DIM;
     switch (next) {
     case VIBE_SCREEN_BRIGHT:
-        bsp_display_backlight(BACKLIGHT_BRIGHT);
-        ESP_LOGI(TAG, "backlight 100");
+        bsp_display_backlight(bright_level);
+        ESP_LOGI(TAG, "backlight %u", bright_level);
         break;
     case VIBE_SCREEN_DIM:
         bsp_display_backlight(dim_level);
@@ -110,6 +113,7 @@ static void enter_deep_sleep(void)
 void vibe_power_init(void)
 {
     s_busy = false;
+    s_busy_since_ms = 0;
     s_last_ms = now_ms();
     s_screen = VIBE_SCREEN_BRIGHT;
     s_mode = VIBE_POWER_STANDARD;
@@ -141,6 +145,7 @@ void vibe_power_note_activity(void)
 
 void vibe_power_set_busy(bool busy)
 {
+    if (busy && !s_busy) s_busy_since_ms = now_ms();
     s_busy = busy;
     if (busy) vibe_power_note_activity();
 }
@@ -157,7 +162,13 @@ void vibe_power_tick(void)
     uint32_t now = now_ms();
     if (s_busy) s_last_ms = now;
     uint32_t idle = now - s_last_ms;
-    apply_screen(vibe_power_next_mode(s_screen, idle, s_busy, s_mode));
+    vibe_screen_t next = vibe_power_next_mode(s_screen, idle, s_busy, s_mode);
+    if (s_busy && now - s_busy_since_ms >= VIBE_PWR_BUSY_DIM_MS) {
+        // While speaking, the user already knows the device is working. Keep
+        // a small visual cue without leaving the display at full brightness.
+        next = VIBE_SCREEN_DIM;
+    }
+    apply_screen(next);
     if (!s_deep_sleep_failed && vibe_power_should_deep_sleep_mode(idle, s_busy, s_mode)) {
         enter_deep_sleep();
     }

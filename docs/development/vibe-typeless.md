@@ -149,7 +149,7 @@ The VIBE page shows BLE/Typeless state, battery, audio status, a green/yellow/re
 
 Power behavior (switchable from the macOS Bridge status page):
 
-- Standard mode keeps the backlight at 100% while in use, dims to 20% after 18 seconds, turns the backlight off after 5 minutes, and enters deep sleep after 15 minutes.
+- Standard mode keeps the backlight at 50%, dims to 15% three seconds after speech starts (and after 18 seconds of ordinary idle), briefly returns to 50% when confirming send, turns the backlight off after 5 minutes, and enters deep sleep after 15 minutes.
 - Eco mode dims to 8% after 10 seconds, turns the backlight off after 1 minute, and enters deep sleep after 5 minutes; while disconnected, BLE advertising pauses after 60 seconds of idle.
 - Both modes use the GPIO0 three-button ladder as the wake source. The first function-key press during standby only wakes the screen; deep-sleep wake performs a full application restart. In Eco mode, a normal function key also resumes BLE advertising for Mac reconnection.
 - Neither mode physically disconnects the battery; use the hardware power button for zero-power storage.
