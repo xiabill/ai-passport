@@ -6,6 +6,10 @@
 
 ## Unreleased
 
+- Refined the VIBE hardware screen without changing its pixel-art identity:
+  clearer listening/processing states, compact green-yellow-red waveform
+  scaling, readable action labels for Typeless/Translation/Ask/Doubao, and a
+  grounded mascot with phase-change motion.
 - Added badge power policy: dim backlight after 18 s idle, off after 60 s
   (first key only wakes); BLE idle 30–50 ms + latency 20, fast 7.5–15 ms while
   talking.

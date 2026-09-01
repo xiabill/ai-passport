@@ -35,7 +35,10 @@ static uint8_t peak_level(const int16_t *pcm, int n)
         if (v < 0) v = -v;
         if (v > peak) peak = v;
     }
-    int level = peak / 1024;
+    // Compress the raw 16-bit peak into a calmer 0..16 display range. A
+    // normal speaking voice should stay green/yellow; only close, loud peaks
+    // should reach red.
+    int level = peak / 2048;
     if (level > 16) level = 16;
     return (uint8_t)level;
 }

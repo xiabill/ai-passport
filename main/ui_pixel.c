@@ -71,6 +71,10 @@ lv_obj_t *ui_pixel_panel_create(lv_obj_t *parent, int x, int y, int w, int h,
 
 lv_obj_t *ui_pixel_mascot_create(lv_obj_t *parent, int x, int y)
 {
+    lv_obj_t *shadow = block(parent, x + 4, y + 45, 30, 4, UI_GRASS_DARK);
+    lv_obj_set_style_radius(shadow, 4, 0);
+    lv_obj_set_style_opa(shadow, LV_OPA_70, 0);
+
     lv_obj_t *m = lv_obj_create(parent);
     lv_obj_remove_flag(m, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_pos(m, x, y);

@@ -29,6 +29,7 @@ static lv_obj_t *s_mascot;
 static lv_timer_t *s_timer;
 static vibe_ui_model_t s_live;
 static vibe_phase_t s_shown = (vibe_phase_t)255;
+static vibe_source_t s_shown_source = (vibe_source_t)255;
 static uint32_t s_rec_t0;
 static bool s_led_on;
 
@@ -38,7 +39,7 @@ static lv_obj_t *ink_box(lv_obj_t *parent, int x, int y, int w, int h, uint32_t 
     lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_pos(obj, x, y);
     lv_obj_set_size(obj, w, h);
-    lv_obj_set_style_radius(obj, 0, 0);
+    lv_obj_set_style_radius(obj, 5, 0);
     lv_obj_set_style_pad_all(obj, 0, 0);
     lv_obj_set_style_border_width(obj, 3, 0);
     lv_obj_set_style_border_color(obj, lv_color_hex(UI_INK), 0);
@@ -70,7 +71,7 @@ static uint32_t phase_color(vibe_phase_t p)
 {
     switch (p) {
     case VIBE_PHASE_WAIT: return UI_YELLOW;
-    case VIBE_PHASE_IDLE: return 0x7BE07A;
+    case VIBE_PHASE_IDLE: return UI_GREEN;
     case VIBE_PHASE_RECORDING: return UI_RED;
     case VIBE_PHASE_PROCESSING: return UI_ORANGE;
     default: return UI_MUTED;
@@ -80,10 +81,10 @@ static uint32_t phase_color(vibe_phase_t p)
 static const char *phase_title(vibe_phase_t p)
 {
     switch (p) {
-    case VIBE_PHASE_WAIT: return "WAIT";
+    case VIBE_PHASE_WAIT: return "CONNECTING";
     case VIBE_PHASE_IDLE: return "READY";
-    case VIBE_PHASE_RECORDING: return "REC";
-    case VIBE_PHASE_PROCESSING: return "TYPING";
+    case VIBE_PHASE_RECORDING: return "LISTENING";
+    case VIBE_PHASE_PROCESSING: return "PROCESSING";
     default: return "OFFLINE";
     }
 }
@@ -101,12 +102,20 @@ static const char *tl_title(uint8_t tl)
 static const char *source_title(vibe_source_t source)
 {
     switch (source) {
-    case VIBE_SOURCE_TYPELESS: return "TYP";
-    case VIBE_SOURCE_TYPELESS_TRANSLATE: return "TR";
+    case VIBE_SOURCE_TYPELESS: return "VOICE";
+    case VIBE_SOURCE_TYPELESS_TRANSLATE: return "TRANS";
     case VIBE_SOURCE_TYPELESS_ASK: return "ASK";
-    case VIBE_SOURCE_DOUBAO: return "DB";
+    case VIBE_SOURCE_DOUBAO: return "DOUBAO";
     default: return "--";
     }
+}
+
+static uint32_t bar_color(uint8_t level, bool enabled)
+{
+    if (!enabled) return UI_MUTED;
+    if (level <= 4) return UI_GREEN;
+    if (level <= 10) return UI_YELLOW;
+    return UI_RED;
 }
 
 static const char *event_title(uint8_t ev)
@@ -146,8 +155,8 @@ static void paint(const vibe_ui_model_t *m)
     }
 
     char line[40];
-    snprintf(line, sizeof(line), "MODE %s  LINK %s",
-             source_title(m->source), m->linked ? "OK" : "--");
+    snprintf(line, sizeof(line), "%s  %s",
+             source_title(m->source), m->linked ? "BLE OK" : "BLE --");
     lv_label_set_text(s_line_tl, line);
 
     snprintf(line, sizeof(line), "%s", vibe_ble_name());
@@ -190,40 +199,37 @@ static void paint(const vibe_ui_model_t *m)
     lv_label_set_text(s_line_last, line);
 
     for (int i = 0; i < VIBE_UI_BARS; i++) {
-        int h = 3 + (int)m->bars[i] * 2;
-        if (h > 32) h = 32;
+        // Peak level is 0..16. Keep the waveform compact so one loud sample
+        // does not turn the whole meter into a solid wall of red.
+        int h = 4 + (int)m->bars[i] * 2;
+        if (h > 34) h = 34;
         lv_obj_set_height(s_bars[i], h);
-        lv_obj_set_y(s_bars[i], 20 - h / 2);
-        uint32_t c = UI_MUTED;
-        if (m->audio_sub) {
-            if (m->bars[i] > 10) c = UI_RED;
-            else if (m->bars[i] > 5) c = UI_YELLOW;
-            else c = UI_GREEN;
-        }
-        lv_obj_set_style_bg_color(s_bars[i], lv_color_hex(c), 0);
+        lv_obj_set_y(s_bars[i], 22 - h / 2);
+        lv_obj_set_style_bg_color(s_bars[i],
+            lv_color_hex(bar_color(m->bars[i], m->audio_sub)), 0);
     }
 
     switch (m->phase) {
     case VIBE_PHASE_IDLE:
-        set_key(s_key_ok, "OK\nV/TR/A", UI_YELLOW);
-        set_key(s_key_dn, "DOWN\nENTER", UI_PAPER);
-        set_key(s_key_up, "UP\nDB", UI_PAPER);
+        set_key(s_key_ok, "OK\n3 MODES", UI_YELLOW);
+        set_key(s_key_dn, "DOWN\nRETURN", UI_PAPER);
+        set_key(s_key_up, "UP\nDOUBAO", UI_PAPER);
         break;
     case VIBE_PHASE_RECORDING:
         if (m->source == VIBE_SOURCE_DOUBAO) {
-            set_key(s_key_ok, "OK\nBUSY", UI_MUTED);
+            set_key(s_key_ok, "OK\nLOCK", UI_MUTED);
             set_key(s_key_dn, "DOWN\nSEND", UI_YELLOW);
             set_key(s_key_up, "UP\nSTOP", UI_RED);
         } else {
             set_key(s_key_ok, "OK\nSTOP", UI_RED);
             set_key(s_key_dn, "DOWN\nSEND", UI_YELLOW);
-            set_key(s_key_up, "UP\nBUSY", UI_MUTED);
+            set_key(s_key_up, "UP\nLOCK", UI_MUTED);
         }
         break;
     case VIBE_PHASE_PROCESSING:
-        set_key(s_key_ok, "OK\n--", UI_MUTED);
+        set_key(s_key_ok, "OK\nLOCK", UI_MUTED);
         set_key(s_key_dn, m->queued_enter ? "DOWN\nWAIT" : "DOWN\nSEND", UI_ORANGE);
-        set_key(s_key_up, "UP\nBUSY", UI_MUTED);
+        set_key(s_key_up, "UP\nLOCK", UI_MUTED);
         break;
     case VIBE_PHASE_WAIT:
         set_key(s_key_ok, "OK\n--", UI_MUTED);
@@ -237,8 +243,9 @@ static void paint(const vibe_ui_model_t *m)
         break;
     }
 
-    if (m->phase != s_shown) {
+    if (m->phase != s_shown || m->source != s_shown_source) {
         s_shown = m->phase;
+        s_shown_source = m->source;
         ui_pixel_mascot_jump(s_mascot);
     }
 }
@@ -274,35 +281,39 @@ void vibe_ui_start(void)
     s_mu = xSemaphoreCreateMutex();
     s_scr = ui_pixel_screen_create("VIBE");
 
-    lv_obj_t *panel = ui_pixel_panel_create(s_scr, 10, 46, 220, 198, UI_PAPER);
+    lv_obj_t *panel = ui_pixel_panel_create(s_scr, 10, 46, 220, 202, UI_PAPER);
 
     s_led = ink_box(panel, 4, 4, 16, 16, UI_MUTED);
 
     s_phase = ui_pixel_label(panel, "OFFLINE", &lv_font_montserrat_20, UI_INK);
+    lv_obj_set_width(s_phase, 128);
+    lv_label_set_long_mode(s_phase, LV_LABEL_LONG_DOT);
     lv_obj_set_pos(s_phase, 26, 0);
 
     s_clock = ui_pixel_label(panel, "00:00", &lv_font_montserrat_20, UI_RED);
     lv_obj_align(s_clock, LV_ALIGN_TOP_RIGHT, -2, 0);
     lv_obj_add_flag(s_clock, LV_OBJ_FLAG_HIDDEN);
 
-    s_line_tl = ui_pixel_label(panel, "TYPE --  LINK --", &lv_font_montserrat_14, UI_INK);
+    s_line_tl = ui_pixel_label(panel, "VOICE  BLE --", &lv_font_montserrat_14, UI_INK);
+    lv_obj_set_width(s_line_tl, 196);
+    lv_label_set_long_mode(s_line_tl, LV_LABEL_LONG_DOT);
     lv_obj_set_pos(s_line_tl, 4, 24);
 
     lv_obj_t *meter = lv_obj_create(panel);
     lv_obj_remove_flag(meter, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(meter, 196, 40);
+    lv_obj_set_size(meter, 196, 46);
     lv_obj_set_pos(meter, 4, 46);
     lv_obj_set_style_bg_color(meter, lv_color_hex(0xE8EEF0), 0);
-    lv_obj_set_style_border_width(meter, 3, 0);
+    lv_obj_set_style_border_width(meter, 2, 0);
     lv_obj_set_style_border_color(meter, lv_color_hex(UI_INK), 0);
-    lv_obj_set_style_radius(meter, 0, 0);
+    lv_obj_set_style_radius(meter, 6, 0);
     lv_obj_set_style_pad_all(meter, 0, 0);
     for (int i = 0; i < VIBE_UI_BARS; i++) {
         s_bars[i] = lv_obj_create(meter);
         lv_obj_remove_flag(s_bars[i], LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_set_size(s_bars[i], 5, 3);
-        lv_obj_set_pos(s_bars[i], 14 + i * 6, 18);
-        lv_obj_set_style_radius(s_bars[i], 0, 0);
+        lv_obj_set_size(s_bars[i], 4, 4);
+        lv_obj_set_pos(s_bars[i], 14 + i * 6, 21);
+        lv_obj_set_style_radius(s_bars[i], 2, 0);
         lv_obj_set_style_border_width(s_bars[i], 0, 0);
         lv_obj_set_style_pad_all(s_bars[i], 0, 0);
         lv_obj_set_style_bg_color(s_bars[i], lv_color_hex(UI_MUTED), 0);
@@ -311,17 +322,21 @@ void vibe_ui_start(void)
     s_line_name = ui_pixel_label(panel, "FoloVibe", &lv_font_montserrat_14, UI_INK);
     lv_obj_set_width(s_line_name, 196);
     lv_label_set_long_mode(s_line_name, LV_LABEL_LONG_DOT);
-    lv_obj_set_pos(s_line_name, 4, 90);
+    lv_obj_set_pos(s_line_name, 4, 98);
     s_line_batt = ui_pixel_label(panel, "BAT --", &lv_font_montserrat_14, UI_INK);
-    lv_obj_set_pos(s_line_batt, 4, 108);
+    lv_obj_set_pos(s_line_batt, 4, 116);
     s_line_tx = ui_pixel_label(panel, "AUDIO WAITING", &lv_font_montserrat_14, UI_INK);
-    lv_obj_set_pos(s_line_tx, 4, 126);
+    lv_obj_set_width(s_line_tx, 196);
+    lv_label_set_long_mode(s_line_tx, LV_LABEL_LONG_DOT);
+    lv_obj_set_pos(s_line_tx, 4, 134);
     s_line_last = ui_pixel_label(panel, "LAST --", &lv_font_montserrat_14, UI_INK);
-    lv_obj_set_pos(s_line_last, 4, 144);
+    lv_obj_set_width(s_line_last, 196);
+    lv_label_set_long_mode(s_line_last, LV_LABEL_LONG_DOT);
+    lv_obj_set_pos(s_line_last, 4, 152);
 
-    s_key_ok = key_chip(panel, 4, 164);
-    s_key_dn = key_chip(panel, 72, 164);
-    s_key_up = key_chip(panel, 140, 164);
+    s_key_ok = key_chip(panel, 4, 166);
+    s_key_dn = key_chip(panel, 72, 166);
+    s_key_up = key_chip(panel, 140, 166);
 
     // 沿用官方 VIBE 基线的固定坐标；该屏幕的草地从 y=286 开始，
     // 38x48 的吉祥物放在 y=248 时正好站在草地上方，且跳跃动画可安全修改 y。
