@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBar: StatusBar?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.applicationIconImage = AppIcon.image()
         AppModel.shared.start()
         statusBar = StatusBar()
         if AppModel.shared.settings.current.launchAtLogin != LoginItem.enabled {

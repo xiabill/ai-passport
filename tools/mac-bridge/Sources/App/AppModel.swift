@@ -2,11 +2,31 @@ import Combine
 import FoloVibeCore
 import Foundation
 
-enum AppTab: String, CaseIterable {
+enum AppTab: String, CaseIterable, Hashable {
     case status = "状态"
     case settings = "设置"
     case logs = "日志"
     case debug = "调试"
+
+    var title: String { rawValue }
+
+    var subtitle: String {
+        switch self {
+        case .status: return "连接与运行状态"
+        case .settings: return "输入法与设备偏好"
+        case .logs: return "查看事件与错误"
+        case .debug: return "诊断与硬件测试"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .status: return "rectangle.3.group"
+        case .settings: return "slider.horizontal.3"
+        case .logs: return "text.alignleft"
+        case .debug: return "wrench.and.screwdriver"
+        }
+    }
 }
 
 final class AppModel: ObservableObject {

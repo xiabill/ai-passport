@@ -12,61 +12,154 @@ struct SettingsView: View {
 
     var body: some View {
         ScrollView {
-            Form {
-                Section(header: Text("连接")) {
-                    TextField("设备名前缀", text: prefixBinding)
-                    TextField("音频输出设备", text: outputBinding)
-                    Toggle("断开后自动重连", isOn: autoReconnect)
-                }
-                Section(header: Text("输入法按键")) {
-                    Picker("Typeless", selection: talkBinding) {
-                        ForEach(Hotkey.talkKeys, id: \.name) { Text($0.name).tag($0.name) }
-                    }
-                    Picker("豆包", selection: doubaoBinding) {
-                        ForEach(Hotkey.doubaoKeys, id: \.name) { Text($0.name).tag($0.name) }
-                    }
-                    Picker("回车", selection: sendBinding) {
-                        ForEach(Hotkey.sendKeys, id: \.name) { Text($0.name).tag($0.name) }
-                    }
-                    Text("中键：单击听写、双击翻译、长按随便问；上键控制豆包；下键发送回车。Typeless 默认 Fn，翻译为 Fn+Shift，随便问为 Fn+Space。")
-                        .foregroundColor(.secondary)
-                }
-                Section(header: Text("闭环补按")) {
-                    Toggle("热键没落到 Typeless 时自动补按", isOn: retapOn)
-                    HStack {
-                        Text("最早")
-                        TextField("秒", value: retapFrom, formatter: number)
-                            .frame(width: 60)
-                        Text("最晚")
-                        TextField("秒", value: retapTo, formatter: number)
-                            .frame(width: 60)
-                        Text("最多")
-                        TextField("次", value: retapMax, formatter: intNumber)
-                            .frame(width: 50)
+            VStack(alignment: .leading, spacing: 20) {
+                PageHeader(
+                    title: "设置",
+                    subtitle: "把硬件按键和两个输入法配置成你的工作流",
+                    trailing: AnyView(Button("恢复默认") { store.reset() }))
+
+                SurfaceCard("连接设备", subtitle: "Bridge 会自动寻找名称以此前缀开头的 Passport") {
+                    VStack(spacing: 15) {
+                        SettingRow("设备名前缀", subtitle: "默认 FoloVibe") {
+                            TextField("FoloVibe", text: prefixBinding)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 220)
+                        }
+                        SettingRow("音频输出设备", subtitle: "Typeless 和 Bridge 使用同一个虚拟音频设备") {
+                            TextField("BlackHole 2ch", text: outputBinding)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 220)
+                        }
+                        Divider()
+                        Toggle(isOn: autoReconnect) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("断开后自动重连").font(.callout.weight(.medium))
+                                Text("设备重新出现时自动恢复连接").font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
-                Section(header: Text("Typeless")) {
-                    HStack {
-                        Text("轮询间隔（秒）")
-                        TextField("秒", value: poll, formatter: number)
-                            .frame(width: 70)
+
+                SurfaceCard("硬件按键", subtitle: "每个动作都显示在硬件上，避免记忆复杂快捷键") {
+                    VStack(alignment: .leading, spacing: 14) {
+                        keyRow("中键 · 单击", "Typeless 语音输入", talkBinding, Hotkey.talkKeys, .blue, "mic.fill")
+                        keyRow("中键 · 双击", "Typeless 翻译（自动追加 Shift）", talkBinding, Hotkey.talkKeys, .purple, "character.bubble")
+                        keyRow("中键 · 长按", "Typeless 随便问（自动追加 Space）", talkBinding, Hotkey.talkKeys, .orange, "sparkles")
+                        Divider()
+                        keyRow("上键", "豆包语音输入", doubaoBinding, Hotkey.doubaoKeys, .green, "mic")
+                        keyRow("下键", "发送回车", sendBinding, Hotkey.sendKeys, .accentColor, "return")
+                        Text("当前约定：Typeless 默认 Fn；翻译为 Fn + Shift；随便问为 Fn + Space。豆包使用免按模式。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    Text("当前麦克风：\(model.typelessMicLabel)")
-                        .foregroundColor(model.typelessMicOK ? .secondary : .orange)
                 }
-                Section(header: Text("启动")) {
-                    Toggle("开机启动", isOn: loginBinding)
-                    Toggle("启动后只留菜单栏，不弹出窗口", isOn: hidden)
+
+                SurfaceCard("Typeless 闭环", subtitle: "Bridge 会观察 Typeless 状态，在快捷键没有生效时自动补按") {
+                    VStack(alignment: .leading, spacing: 15) {
+                        Toggle(isOn: retapOn) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("启用自动补按").font(.callout.weight(.medium))
+                                Text("只在检测到状态不一致时补按，不改变正常输入流程").font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        HStack(spacing: 12) {
+                            valueField("开始等待", value: retapFrom, suffix: "秒")
+                            valueField("结束等待", value: retapTo, suffix: "秒")
+                            valueField("最多补按", value: retapMax, suffix: "次")
+                        }
+                        Divider()
+                        SettingRow("状态轮询", subtitle: "读取 Typeless 最近状态的间隔") {
+                            HStack(spacing: 6) {
+                                TextField("2", value: poll, formatter: number)
+                                    .textFieldStyle(.roundedBorder)
+                                    .frame(width: 72)
+                                Text("秒").foregroundStyle(.secondary)
+                            }
+                        }
+                        Label(
+                            model.typelessMicOK ? "当前麦克风：\(model.typelessMicLabel)" : "当前麦克风不匹配：\(model.typelessMicLabel)",
+                            systemImage: model.typelessMicOK ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(model.typelessMicOK ? .green : .orange)
+                    }
                 }
-                Section {
-                    HStack {
-                        Button("恢复默认") { store.reset() }
-                        Button("打开辅助功能设置") { Permissions.openAccessibility(); KeyTap.promptTrust() }
-                        Button("打开蓝牙设置") { Permissions.openBluetooth() }
+
+                SurfaceCard("启动与权限", subtitle: "这些选项只影响 Bridge 自身，不会修改 Typeless 设置") {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Toggle(isOn: loginBinding) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("开机启动").font(.callout.weight(.medium))
+                                Text("登录 macOS 后自动启动 Bridge").font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        Toggle(isOn: hidden) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("启动后只留菜单栏").font(.callout.weight(.medium))
+                                Text("适合日常使用，仍可从菜单栏重新打开窗口").font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        Divider()
+                        HStack(spacing: 10) {
+                            Button("打开辅助功能") { Permissions.openAccessibility(); KeyTap.promptTrust() }
+                            Button("打开蓝牙设置") { Permissions.openBluetooth() }
+                        }
                     }
                 }
             }
-            .padding(16)
+            .frame(maxWidth: 760, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(28)
+        }
+    }
+
+    private func keyRow(
+        _ title: String,
+        _ subtitle: String,
+        _ binding: Binding<String>,
+        _ keys: [Hotkey],
+        _ tint: Color,
+        _ symbol: String
+    ) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol)
+                .foregroundStyle(tint)
+                .frame(width: 28, height: 28)
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.callout.weight(.medium))
+                Text(subtitle).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Picker("", selection: binding) {
+                ForEach(keys, id: \.name) { Text($0.name).tag($0.name) }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(width: 150, alignment: .trailing)
+        }
+    }
+
+    private func valueField(_ label: String, value: Binding<Double>, suffix: String) -> some View {
+        HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(label).font(.caption).foregroundStyle(.secondary)
+                TextField(label, value: value, formatter: number)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 76)
+            }
+            Text(suffix).font(.caption).foregroundStyle(.secondary).padding(.top, 18)
+        }
+    }
+
+    private func valueField(_ label: String, value: Binding<Int>, suffix: String) -> some View {
+        HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(label).font(.caption).foregroundStyle(.secondary)
+                TextField(label, value: value, formatter: intNumber)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 76)
+            }
+            Text(suffix).font(.caption).foregroundStyle(.secondary).padding(.top, 18)
         }
     }
 

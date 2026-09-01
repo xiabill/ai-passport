@@ -24,7 +24,10 @@ final class StatusBar: NSObject, NSMenuDelegate {
         menu.addItem(action("退出", #selector(quit), "q"))
         menu.delegate = self
         item.menu = menu
-        item.button?.title = "Vibe"
+        item.button?.image = NSImage(systemSymbolName: "waveform.and.mic", accessibilityDescription: "FoloVibe Bridge")
+        item.button?.image?.isTemplate = true
+        item.button?.title = ""
+        item.button?.toolTip = "FoloVibe Bridge"
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.refresh() }
         refresh()
     }
@@ -40,11 +43,7 @@ final class StatusBar: NSObject, NSMenuDelegate {
     private func refresh() {
         let m = AppModel.shared
         let snap = m.bleSnap
-        let title: String
-        if snap.streaming { title = "● Vibe" }
-        else if snap.subscribed { title = "Vibe" }
-        else { title = "○ Vibe" }
-        item.button?.title = title
+        item.button?.toolTip = snap.streaming ? "FoloVibe Bridge · 正在输入" : "FoloVibe Bridge · \(snap.phase)"
         phaseItem.title = "设备：\(snap.phase)  \(snap.deviceName)"
         typelessItem.title = "输入：\(m.activeInputTitle)  Typeless：\(m.typelessState.title)"
         if !m.axOK { problemItem.title = "辅助功能未开" }

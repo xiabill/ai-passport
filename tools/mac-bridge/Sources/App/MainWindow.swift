@@ -14,15 +14,17 @@ enum MainWindow {
         let root = RootView(model: AppModel.shared)
         let hosting = NSHostingView(rootView: root)
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 960, height: 640),
+            contentRect: NSRect(x: 0, y: 0, width: 1120, height: 760),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false)
-        window.title = "FoloVibe"
+        window.title = "FoloVibe Bridge"
         window.contentView = hosting
         window.center()
         window.isReleasedWhenClosed = false
-        window.minSize = NSSize(width: 760, height: 480)
+        window.minSize = NSSize(width: 900, height: 620)
+        window.titlebarAppearsTransparent = false
+        window.toolbarStyle = .unified
         window.makeKeyAndOrderFront(nil)
         Self.window = window
     }

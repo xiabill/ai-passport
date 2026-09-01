@@ -6,95 +6,131 @@ struct StatusView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("总览").font(.title2.weight(.semibold))
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    card("设备", [
-                        ("状态", model.bleSnap.phase),
-                        ("名称", model.bleSnap.deviceName),
-                        ("RSSI", model.bleSnap.rssi.map { "\($0) dBm" } ?? "—"),
-                        ("MTU", "\(model.bleSnap.mtu)"),
-                    ])
-                    card("音频", [
-                        ("推流", model.bleSnap.streaming ? "进行中" : "未推流"),
-                        ("包", "\(model.bleSnap.packets)"),
-                        ("丢包", "\(model.bleSnap.lost)"),
-                        ("峰值", "\(model.audioPeak)"),
-                    ])
-                    card("Typeless", [
-                        ("状态", model.typelessState.title),
-                        ("进程", model.typeless.running ? "运行中" : "未打开"),
-                        ("麦克风", model.typelessMicLabel),
-                        ("听写", model.settings.current.talkKey),
-                        ("翻译", "(model.settings.current.talkKey)+Shift"),
-                        ("随便问", "(model.settings.current.talkKey)+Space"),
-                    ])
-                    card("输入法", [
-                        ("当前", model.activeInputTitle),
-                        ("Typeless", model.settings.current.talkKey),
-                        ("豆包", model.settings.current.doubaoKey),
-                        ("回车", model.settings.current.sendKey),
-                    ])
-                    card("权限", [
-                        ("辅助功能", model.axOK ? "已开" : "未开"),
-                        ("系统蓝牙", model.bleSnap.bluetoothOn ? "已开" : "未开"),
-                        ("BlackHole", model.blackholeOK ? "已找到" : "未找到"),
-                        ("Typeless 麦", model.typelessMicOK ? "匹配" : "不匹配"),
-                    ])
+            VStack(alignment: .leading, spacing: 20) {
+                PageHeader(
+                    title: "状态总览",
+                    subtitle: "硬件、音频和输入法都在这里快速确认",
+                    trailing: AnyView(
+                        HStack(spacing: 9) {
+                            StatusPill(title: connectionTitle, color: connectionColor, symbol: connectionSymbol)
+                            Button("重连") { model.ble.reconnect() }
+                        }))
+
+                connectionCard
+                quickActions
+
+                HStack(alignment: .top, spacing: 16) {
+                    healthCard
+                    audioCard
                 }
-                levelBar
-                problems
-                HStack {
-                    Button("重连设备") { model.ble.reconnect() }
-                    Button("打开主窗口设置") { model.tab = .settings }
+
+                if !issueList.isEmpty { issuesCard }
+            }
+            .frame(maxWidth: 920, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(28)
+        }
+    }
+
+    private var connectionCard: some View {
+        SurfaceCard {
+            HStack(spacing: 16) {
+                Image(systemName: connectionSymbol)
+                    .font(.system(size: 25, weight: .semibold))
+                    .foregroundStyle(connectionColor)
+                    .frame(width: 56, height: 56)
+                    .background(connectionColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 15))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(connectionTitle).font(.title3.weight(.semibold))
+                    Text(model.bleSnap.deviceName == "—" ? "正在寻找 FoloVibe 设备" : model.bleSnap.deviceName)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(model.bleSnap.phase).font(.callout.weight(.medium))
+                    Text(model.bleSnap.rssi.map { "RSSI \($0) dBm" } ?? "RSSI —")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Divider()
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                MetricTile(label: "蓝牙", value: model.bleSnap.bluetoothOn ? "已开启" : "未开启", symbol: "dot.radiowaves.left.and.right", tint: model.bleSnap.bluetoothOn ? .green : .orange)
+                MetricTile(label: "服务", value: model.bleSnap.subscribed ? "已订阅" : "等待中", symbol: "antenna.radiowaves.left.and.right", tint: model.bleSnap.subscribed ? .green : .orange)
+                MetricTile(label: "MTU", value: "\(model.bleSnap.mtu)", symbol: "arrow.left.arrow.right", tint: .blue)
+            }
+        }
+    }
+
+    private var quickActions: some View {
+        SurfaceCard("硬件操作", subtitle: "按键会自动触发对应输入法，下面是当前映射") {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                action(title: "语音输入", detail: "单击中键", shortcut: model.settings.current.talkKey, symbol: "mic.fill", tint: .blue)
+                action(title: "翻译", detail: "双击中键", shortcut: "\(model.settings.current.talkKey) + Shift", symbol: "character.bubble", tint: .purple)
+                action(title: "随便问", detail: "长按中键", shortcut: "\(model.settings.current.talkKey) + Space", symbol: "sparkles", tint: .orange)
+            }
+        }
+    }
+
+    private func action(title: String, detail: String, shortcut: String, symbol: String, tint: Color) -> some View {
+        HStack(spacing: 11) {
+            Image(systemName: symbol)
+                .foregroundStyle(tint)
+                .frame(width: 30, height: 30)
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.callout.weight(.semibold))
+                Text(detail).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+            ShortcutChip(text: shortcut)
+        }
+    }
+
+    private var healthCard: some View {
+        SurfaceCard("运行检查", subtitle: "输入前建议全部显示为正常") {
+            VStack(alignment: .leading, spacing: 13) {
+                CheckRow(title: "辅助功能", detail: model.axOK ? "可以发送快捷键" : "需要在系统设置中授权", ok: model.axOK)
+                CheckRow(title: "BlackHole 音频", detail: model.blackholeOK ? "输出设备可用" : "未找到配置的输出设备", ok: model.blackholeOK)
+                CheckRow(title: "Typeless", detail: model.typeless.running ? "应用正在运行" : "请先打开 Typeless", ok: model.typeless.running)
+                CheckRow(title: "Typeless 麦克风", detail: model.typelessMicOK ? model.typelessMicLabel : "需要选择正确的音频设备", ok: model.typelessMicOK)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var audioCard: some View {
+        SurfaceCard("音频活动", subtitle: "来自 Passport 的实时音频") {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(model.bleSnap.streaming ? "正在输入" : "等待输入")
+                        .font(.title3.weight(.semibold))
                     Spacer()
-                    Text("最近操作：\(model.lastAction)").foregroundColor(.secondary)
+                    Text("峰值 \(model.audioPeak)")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
                 }
-            }
-            .padding(20)
-        }
-    }
-
-    private func card(_ title: String, _ rows: [(String, String)]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.headline)
-            ForEach(rows, id: \.0) { row in
+                WaveformMeter(level: CGFloat(model.audioPeak) / 32767, active: model.bleSnap.streaming)
                 HStack {
-                    Text(row.0).foregroundColor(.secondary)
+                    Text("音频包 \(model.bleSnap.packets)")
                     Spacer()
-                    Text(row.1)
+                    Text("丢包 \(model.bleSnap.lost)")
                 }
-                .font(.callout)
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
         }
-        .padding(14)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .cornerRadius(10)
+        .frame(maxWidth: .infinity)
     }
 
-    private var levelBar: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("输入电平").font(.headline)
-            GeometryReader { geo in
-                let w = max(4, geo.size.width * CGFloat(min(model.audioPeak, 8000)) / 8000)
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color.gray.opacity(0.2))
-                    Capsule().fill(model.bleSnap.streaming ? Color.red : Color.accentColor)
-                        .frame(width: w)
+    private var issuesCard: some View {
+        SurfaceCard("需要处理", subtitle: "按顺序完成这些项目即可恢复完整功能") {
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(issueList, id: \.self) { issue in
+                    Label(issue, systemImage: "arrow.right.circle")
+                        .font(.callout)
+                        .foregroundStyle(.orange)
                 }
-            }
-            .frame(height: 10)
-        }
-    }
-
-    private var problems: some View {
-        let items = issueList
-        return VStack(alignment: .leading, spacing: 6) {
-            Text("检查项").font(.headline)
-            if items.isEmpty {
-                Text("没有明显问题。").foregroundColor(.secondary)
-            } else {
-                ForEach(items, id: \.self) { Text("• " + $0) }
             }
         }
     }
@@ -112,5 +148,26 @@ struct StatusView: View {
             out.append("把 Typeless 麦克风改成 \(model.settings.current.outputDevice)")
         }
         return out
+    }
+
+    private var connectionTitle: String {
+        if model.bleSnap.streaming { return "正在输入" }
+        if model.bleSnap.subscribed { return "设备已就绪" }
+        if model.bleSnap.connected { return "正在连接" }
+        return model.bleSnap.phase
+    }
+
+    private var connectionColor: Color {
+        if model.bleSnap.streaming { return .red }
+        if model.bleSnap.subscribed { return .green }
+        if model.bleSnap.connected { return .orange }
+        return .secondary
+    }
+
+    private var connectionSymbol: String {
+        if model.bleSnap.streaming { return "waveform.and.mic" }
+        if model.bleSnap.subscribed { return "checkmark.circle.fill" }
+        if model.bleSnap.connected { return "arrow.triangle.2.circlepath" }
+        return "dot.radiowaves.left.and.right"
     }
 }

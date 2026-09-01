@@ -8,69 +8,94 @@ struct DebugView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("调试与测试").font(.title2.weight(.semibold))
+                PageHeader(
+                    title: "调试与测试",
+                    subtitle: "只在排查问题或验收硬件时使用这些工具")
 
-                group("按键") {
-                    HStack {
-                        Button("点 Typeless 键") { KeyTap.tap(model.settings.current.talk) }
-                        Button("点豆包键") { KeyTap.tap(model.settings.current.doubao) }
-                        Button("点回车键") { KeyTap.tap(model.settings.current.send) }
+                SurfaceCard("快捷键测试", subtitle: "焦点要在会接收键盘输入的应用中") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Button { KeyTap.tap(model.settings.current.talk) } label: { Label("Typeless", systemImage: "mic") }
+                            Button { KeyTap.tap(model.settings.current.doubao) } label: { Label("豆包", systemImage: "mic.fill") }
+                            Button { KeyTap.tap(model.settings.current.send) } label: { Label("回车", systemImage: "return") }
+                        }
+                        Text("如果按键没有反应，请先确认辅助功能权限已开启。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    Text("焦点要在会吃键盘的地方。没开辅助功能时什么都不会发生。")
-                        .foregroundColor(.secondary)
                 }
 
-                group("模拟设备事件") {
-                    HStack {
+                SurfaceCard("模拟硬件事件", subtitle: "不经过 BLE，直接验证 Bridge 的映射和状态闭环") {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                         ForEach(VibeEvent.allCases, id: \.self) { ev in
-                            Button(ev.title) { model.simulate(ev) }
+                            Button { model.simulate(ev) } label: {
+                                HStack {
+                                    Image(systemName: eventSymbol(ev))
+                                    Text(ev.title)
+                                    Spacer()
+                                }
+                            }
                         }
                     }
-                    Text("不经过 BLE，直接走热键和闭环逻辑。")
-                        .foregroundColor(.secondary)
                 }
 
-                group("音频") {
-                    HStack {
-                        Button("440Hz 测试音") { model.audio.playTestTone() }
-                        Button("重建音频引擎") { model.audio.rebuild(reason: "手动") }
-                        Button(model.mic.isArmed ? "取消麦测试" : "录下一轮设备麦") {
-                            if model.mic.isArmed { model.mic.cancel() } else { model.mic.arm() }
+                SurfaceCard("音频工具", subtitle: "确认输出设备和 Passport 麦克风链路") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Button { model.audio.playTestTone() } label: { Label("播放测试音", systemImage: "speaker.wave.2") }
+                            Button { model.audio.rebuild(reason: "手动") } label: { Label("重建音频引擎", systemImage: "arrow.clockwise") }
+                            Button {
+                                if model.mic.isArmed { model.mic.cancel() } else { model.mic.arm() }
+                            } label: {
+                                Label(model.mic.isArmed ? "取消麦测试" : "录一轮设备麦", systemImage: model.mic.isArmed ? "stop.circle" : "record.circle")
+                            }
                         }
+                        Text(model.mic.result)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("先点录音，再在 Passport 上按确定说话，最后按确定停止。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    Text(model.mic.result).foregroundColor(.secondary)
-                    Text("麦测试：先点按钮，再在 Passport 上按确定说话、再按确定停止，会存 WAV 并用扬声器回放。")
-                        .foregroundColor(.secondary)
                 }
 
-                group("连接") {
-                    HStack {
-                        Button("重连 BLE") { model.ble.reconnect() }
-                        Button("复制 UUID") { copyUUIDs() }
+                SurfaceCard("连接诊断", subtitle: "用于确认 BLE 服务和音频包是否正常") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Button { model.ble.reconnect() } label: { Label("重连 BLE", systemImage: "arrow.triangle.2.circlepath") }
+                            Button { copyUUIDs() } label: { Label("复制 UUID", systemImage: "doc.on.doc") }
+                        }
+                        InfoRow(label: "最近包头", value: model.bleSnap.lastPacketHex.isEmpty ? "—" : model.bleSnap.lastPacketHex)
+                            .font(.system(.caption, design: .monospaced))
+                        InfoRow(label: "音频包", value: "\(model.bleSnap.packets)")
+                        InfoRow(label: "丢包", value: "\(model.bleSnap.lost)", valueColor: model.bleSnap.lost == 0 ? .primary : .orange)
                     }
-                    Text("最近包头：\(model.bleSnap.lastPacketHex.isEmpty ? "—" : model.bleSnap.lastPacketHex)")
-                        .font(.system(.body, design: .monospaced))
-                    Text("包 \(model.bleSnap.packets) · 丢 \(model.bleSnap.lost) · 推流 \(model.bleSnap.streaming ? "是" : "否")")
                 }
 
-                group("自检") {
-                    Button("跑内置自检") { runSelfCheck() }
-                    Text(model.debugNote).foregroundColor(.secondary)
+                SurfaceCard("自检结果") {
+                    HStack(spacing: 12) {
+                        Button { runSelfCheck() } label: { Label("运行自检", systemImage: "checkmark.seal") }
+                        Text(model.debugNote.isEmpty ? "尚未运行" : model.debugNote)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
-            .padding(20)
+            .frame(maxWidth: 900, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(28)
         }
     }
 
-    private func group<Content: View>(_ title: String, @ViewBuilder _ content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.headline)
-            content()
+    private func eventSymbol(_ event: VibeEvent) -> String {
+        switch event {
+        case .start, .stop: return "mic"
+        case .typelessTranslate: return "character.bubble"
+        case .typelessAsk: return "sparkles"
+        case .doubaoStart, .doubaoStop, .doubaoStopAndSend: return "mic.fill"
+        case .enter: return "return"
+        case .cancel: return "xmark.circle"
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .cornerRadius(10)
     }
 
     private func copyUUIDs() {

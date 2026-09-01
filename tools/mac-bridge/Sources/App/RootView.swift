@@ -5,60 +5,92 @@ struct RootView: View {
     @ObservedObject var model: AppModel
 
     var body: some View {
-        HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("FoloVibe")
+        NavigationSplitView {
+            sidebar
+        } detail: {
+            detail
+        }
+        .navigationSplitViewColumnWidth(min: 210, ideal: 238, max: 280)
+    }
+
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 11) {
+                Image(systemName: "waveform.and.mic")
                     .font(.title2.weight(.semibold))
-                    .padding(.bottom, 8)
-                ForEach(AppTab.allCases, id: \.self) { tab in
-                    Button(action: { model.tab = tab }) {
-                        HStack {
-                            Text(tab.rawValue)
-                            Spacer()
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .background(model.tab == tab ? Color.accentColor.opacity(0.18) : Color.clear)
-                        .cornerRadius(6)
-                    }
-                    .buttonStyle(.plain)
+                    .foregroundStyle(.tint)
+                    .frame(width: 34, height: 34)
+                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("FoloVibe").font(.headline)
+                    Text("Bridge").font(.caption).foregroundStyle(.secondary)
                 }
-                Spacer()
-                statusFooter
             }
-            .padding(14)
-            .frame(width: 168)
-            .background(Color(nsColor: .windowBackgroundColor))
+            .padding(.horizontal, 16)
+            .padding(.top, 18)
+            .padding(.bottom, 16)
+
+            List(selection: Binding<AppTab?>(
+                get: { model.tab },
+                set: { if let tab = $0 { model.tab = tab } })) {
+                Section("工作区") {
+                    ForEach(AppTab.allCases, id: \.self) { tab in
+                        Label(tab.title, systemImage: tab.symbol)
+                            .tag(tab)
+                    }
+                }
+            }
+            .listStyle(.sidebar)
 
             Divider()
-
-            Group {
-                switch model.tab {
-                case .status: StatusView(model: model)
-                case .settings: SettingsView(model: model)
-                case .logs: LogView(model: model)
-                case .debug: DebugView(model: model)
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            sidebarFooter
         }
     }
 
-    private var statusFooter: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
-                Circle().fill(dot).frame(width: 8, height: 8)
-                Text(model.bleSnap.phase).font(.caption).foregroundColor(.secondary)
+    private var sidebarFooter: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(connectionColor)
+                    .frame(width: 8, height: 8)
+                Text(connectionTitle).font(.caption.weight(.semibold))
+                Spacer()
             }
-            Text(model.typelessState.title).font(.caption).foregroundColor(.secondary)
-            Text("输入：\(model.activeInputTitle)").font(.caption).foregroundColor(.secondary)
+            Text(model.bleSnap.deviceName)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            HStack(spacing: 5) {
+                Image(systemName: "waveform")
+                Text(model.activeInputTitle == "—" ? "等待硬件操作" : model.activeInputTitle)
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        .padding(16)
+    }
+
+    @ViewBuilder
+    private var detail: some View {
+        switch model.tab {
+        case .status: StatusView(model: model)
+        case .settings: SettingsView(model: model)
+        case .logs: LogView(model: model)
+        case .debug: DebugView(model: model)
         }
     }
 
-    private var dot: Color {
+    private var connectionTitle: String {
+        if model.bleSnap.streaming { return "正在输入" }
+        if model.bleSnap.subscribed { return "设备已就绪" }
+        if model.bleSnap.connected { return "正在连接" }
+        return model.bleSnap.phase
+    }
+
+    private var connectionColor: Color {
         if model.bleSnap.streaming { return .red }
         if model.bleSnap.subscribed { return .green }
-        if model.bleSnap.connected { return .yellow }
-        return .gray
+        if model.bleSnap.connected { return .orange }
+        return .secondary
     }
 }

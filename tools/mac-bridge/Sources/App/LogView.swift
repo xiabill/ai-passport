@@ -13,47 +13,68 @@ struct LogView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("日志").font(.title2.weight(.semibold))
-                Spacer()
-                Toggle("自动滚到底", isOn: Binding(get: { filter.autoScroll }, set: { filter.autoScroll = $0 }))
-                    .toggleStyle(.checkbox)
-                Button("复制可见") { copyVisible() }
-                Button("打开文件") { NSWorkspace.shared.open(Log.url) }
-                Button("清空") { store.clear() }
-            }
-            HStack {
-                TextField("搜索", text: Binding(get: { filter.search }, set: { filter.search = $0 }))
+        VStack(alignment: .leading, spacing: 18) {
+            PageHeader(
+                title: "日志",
+                subtitle: "按时间查看蓝牙、音频、按键和 Typeless 事件",
+                trailing: AnyView(
+                    HStack(spacing: 8) {
+                        Button("打开文件") { NSWorkspace.shared.open(Log.url) }
+                        Button("复制") { copyVisible() }
+                        Button("清空", role: .destructive) { store.clear() }
+                    }))
+            HStack(spacing: 10) {
+                Label("\(visible.count) 条", systemImage: "line.3.horizontal.decrease.circle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                TextField("搜索日志", text: Binding(get: { filter.search }, set: { filter.search = $0 }))
                     .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 240)
-                ForEach(LogCategory.all, id: \.self) { cat in
-                    Toggle(cat, isOn: Binding(
-                        get: { !filter.hidden.contains(cat) },
-                        set: { on in
-                            if on { filter.hidden.remove(cat) } else { filter.hidden.insert(cat) }
-                        }))
+                    .frame(maxWidth: 280)
+                Spacer()
+                Toggle("自动滚动", isOn: Binding(get: { filter.autoScroll }, set: { filter.autoScroll = $0 }))
                     .toggleStyle(.checkbox)
-                }
             }
+            filterBar
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 2) {
-                        ForEach(visible) { line in
-                            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Text(line.time).foregroundColor(.secondary).frame(width: 90, alignment: .leading)
-                                Text(line.category)
-                                    .foregroundColor(color(line.category))
-                                    .frame(width: 72, alignment: .leading)
-                                Text(line.message)
-                            }
-                            .font(.system(.caption, design: .monospaced))
-                            .id(line.id)
+                    if visible.isEmpty {
+                        VStack(spacing: 9) {
+                            Image(systemName: "doc.text.magnifyingglass")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.secondary)
+                            Text("没有匹配的日志").font(.headline)
+                            Text("尝试清除搜索或打开更多分类")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
+                            .frame(maxWidth: .infinity, minHeight: 300)
+                    } else {
+                        LazyVStack(alignment: .leading, spacing: 8) {
+                            ForEach(visible) { line in
+                                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                                    Text(line.time)
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 86, alignment: .leading)
+                                    Text(line.category)
+                                        .foregroundStyle(color(line.category))
+                                        .frame(width: 66, alignment: .leading)
+                                    Text(line.message)
+                                        .foregroundStyle(.primary)
+                                        .textSelection(.enabled)
+                                    Spacer(minLength: 0)
+                                }
+                                .font(.system(.caption, design: .monospaced))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 7)
+                                .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 7))
+                                .id(line.id)
+                            }
+                        }
+                        .padding(12)
                     }
-                    .padding(8)
                 }
-                .background(Color(nsColor: .textBackgroundColor))
+                .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 14))
+                .overlay { RoundedRectangle(cornerRadius: 14).strokeBorder(Color.primary.opacity(0.08)) }
                 .onReceive(store.$lines) { lines in
                     if filter.autoScroll, let last = visible.last {
                         proxy.scrollTo(last.id, anchor: .bottom)
@@ -62,7 +83,29 @@ struct LogView: View {
                 }
             }
         }
-        .padding(16)
+        .frame(maxWidth: 1040, maxHeight: .infinity, alignment: .leading)
+        .padding(28)
+    }
+
+    private var filterBar: some View {
+        HStack(spacing: 8) {
+            Text("分类").font(.caption).foregroundStyle(.secondary)
+            ForEach(LogCategory.all, id: \.self) { cat in
+                let enabled = !filter.hidden.contains(cat)
+                Button {
+                    if enabled { filter.hidden.insert(cat) } else { filter.hidden.remove(cat) }
+                } label: {
+                    Text(cat)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(enabled ? color(cat) : .secondary)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 5)
+                        .background((enabled ? color(cat) : Color.primary).opacity(0.1), in: Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+        }
     }
 
     private var visible: [LogLine] {
