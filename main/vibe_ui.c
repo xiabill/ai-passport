@@ -49,22 +49,65 @@ static lv_obj_t *ink_box(lv_obj_t *parent, int x, int y, int w, int h, uint32_t 
 
 static lv_obj_t *key_chip(lv_obj_t *parent, int x, int y)
 {
-    lv_obj_t *box = ink_box(parent, x, y, 62, 34, UI_PAPER);
+    lv_obj_t *box = ink_box(parent, x, y, 64, 40, UI_PAPER);
     lv_obj_t *lab = lv_label_create(box);
-    lv_obj_set_width(lab, 56);
+    lv_obj_set_width(lab, 58);
+    lv_obj_set_height(lab, 36);
+    lv_label_set_long_mode(lab, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_text_font(lab, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_align(lab, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_line_space(lab, 0, 0);
     lv_obj_set_style_text_color(lab, lv_color_hex(UI_INK), 0);
     lv_obj_center(lab);
     lv_label_set_text(lab, "");
     return lab;
 }
 
+// Keep future labels readable on the 240px display. Explicit newlines remain
+// supported, while long labels are wrapped after at most five English words.
+static void wrap_key_text(const char *text, char *out, size_t cap)
+{
+    if (!cap) return;
+    size_t n = 0;
+    unsigned words = 0;
+    bool in_word = false;
+    for (const char *p = text; *p && n + 1 < cap; p++) {
+        char c = *p;
+        if (c == '\n') {
+            while (n && out[n - 1] == ' ') n--;
+            out[n++] = '\n';
+            words = 0;
+            in_word = false;
+            continue;
+        }
+        if (c == ' ') {
+            if (in_word && n + 1 < cap) out[n++] = ' ';
+            in_word = false;
+            continue;
+        }
+        if (!in_word) {
+            if (words >= 5) {
+                if (n && out[n - 1] == ' ') n--;
+                if (n + 1 >= cap) break;
+                out[n++] = '\n';
+                words = 0;
+            }
+            words++;
+            in_word = true;
+        }
+        out[n++] = c;
+    }
+    while (n && out[n - 1] == ' ') n--;
+    out[n] = '\0';
+}
+
 static void set_key(lv_obj_t *lab, const char *text, uint32_t fill)
 {
     lv_obj_t *box = lv_obj_get_parent(lab);
     lv_obj_set_style_bg_color(box, lv_color_hex(fill), 0);
-    lv_label_set_text(lab, text);
+    char wrapped[64];
+    wrap_key_text(text, wrapped, sizeof(wrapped));
+    lv_label_set_text(lab, wrapped);
 }
 
 static uint32_t phase_color(vibe_phase_t p)
@@ -211,35 +254,35 @@ static void paint(const vibe_ui_model_t *m)
 
     switch (m->phase) {
     case VIBE_PHASE_IDLE:
-        set_key(s_key_ok, "OK\n3 MODES", UI_YELLOW);
+        set_key(s_key_ok, "OK\nVOICE", UI_YELLOW);
         set_key(s_key_dn, "DOWN\nRETURN", UI_PAPER);
         set_key(s_key_up, "UP\nDOUBAO", UI_PAPER);
         break;
     case VIBE_PHASE_RECORDING:
         if (m->source == VIBE_SOURCE_DOUBAO) {
-            set_key(s_key_ok, "OK\nLOCK", UI_MUTED);
+            set_key(s_key_ok, "OK\nIDLE", UI_MUTED);
             set_key(s_key_dn, "DOWN\nSEND", UI_YELLOW);
             set_key(s_key_up, "UP\nSTOP", UI_RED);
         } else {
             set_key(s_key_ok, "OK\nSTOP", UI_RED);
             set_key(s_key_dn, "DOWN\nSEND", UI_YELLOW);
-            set_key(s_key_up, "UP\nLOCK", UI_MUTED);
+            set_key(s_key_up, "UP\nIDLE", UI_MUTED);
         }
         break;
     case VIBE_PHASE_PROCESSING:
-        set_key(s_key_ok, "OK\nLOCK", UI_MUTED);
+        set_key(s_key_ok, "OK\nIDLE", UI_MUTED);
         set_key(s_key_dn, m->queued_enter ? "DOWN\nWAIT" : "DOWN\nSEND", UI_ORANGE);
-        set_key(s_key_up, "UP\nLOCK", UI_MUTED);
+        set_key(s_key_up, "UP\nIDLE", UI_MUTED);
         break;
     case VIBE_PHASE_WAIT:
-        set_key(s_key_ok, "OK\n--", UI_MUTED);
-        set_key(s_key_dn, "DOWN\n--", UI_MUTED);
-        set_key(s_key_up, "UP\n--", UI_MUTED);
+        set_key(s_key_ok, "OK\nWAIT", UI_MUTED);
+        set_key(s_key_dn, "DOWN\nWAIT", UI_MUTED);
+        set_key(s_key_up, "UP\nWAIT", UI_MUTED);
         break;
     default:
-        set_key(s_key_ok, "OK\n--", UI_MUTED);
-        set_key(s_key_dn, "DOWN\n--", UI_MUTED);
-        set_key(s_key_up, "UP\n--", UI_MUTED);
+        set_key(s_key_ok, "OK\nWAIT", UI_MUTED);
+        set_key(s_key_dn, "DOWN\nWAIT", UI_MUTED);
+        set_key(s_key_up, "UP\nWAIT", UI_MUTED);
         break;
     }
 

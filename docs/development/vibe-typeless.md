@@ -150,7 +150,8 @@ The VIBE page shows BLE/Typeless state, battery, audio status, a green/yellow/re
 Power behavior:
 
 - Backlight is 100% while in use, drops to 20% after 18 seconds idle, and turns off after 60 seconds.
-- The first button press while the screen is dark only wakes the screen.
+- After 15 minutes continuously idle, the ESP32-C3 enters deep sleep, stopping the application and BLE to reduce battery use; pressing the GPIO0 button wakes it into a clean boot and fresh advertisement.
+- The first press while the backlight is dark but before deep sleep only wakes the screen; a deep-sleep wake is a full restart.
 - BLE uses a slower 30–50 ms connection interval with slave latency while idle, and 7.5–15 ms with zero latency while talking.
 
 ## BLE contract

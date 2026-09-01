@@ -9,6 +9,7 @@ extern "C" {
 
 #define VIBE_PWR_DIM_MS 18000U
 #define VIBE_PWR_OFF_MS 60000U
+#define VIBE_PWR_DEEP_SLEEP_MS (15U * 60U * 1000U)
 
 typedef enum {
     VIBE_SCREEN_BRIGHT = 0,
@@ -16,8 +17,10 @@ typedef enum {
     VIBE_SCREEN_OFF,
 } vibe_screen_t;
 
-// Pure policy: busy (recording) stays bright; 18 s dim; 60 s off.
+// Pure policy: busy (recording) stays bright; 18 s dim; 60 s backlight off.
 vibe_screen_t vibe_power_next(vibe_screen_t cur, uint32_t idle_ms, bool busy);
+// After 15 minutes idle, enter ESP32 deep sleep and wake on the function key.
+bool vibe_power_should_deep_sleep(uint32_t idle_ms, bool busy);
 
 void vibe_power_init(void);
 void vibe_power_note_activity(void);
