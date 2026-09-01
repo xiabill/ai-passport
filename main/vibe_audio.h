@@ -14,9 +14,10 @@ bool vibe_audio_recording(void);
 typedef enum {
     VIBE_BEEP_START = 1,
     VIBE_BEEP_END = 2,
+    VIBE_BEEP_EDIT = 4,
 } vibe_beep_t;
 
-// Request a start/end cue; the audio task plays it when the codec is free.
+// Request a start/end/edit cue; the audio task plays it when the codec is free.
 void vibe_audio_beep(vibe_beep_t type);
 
 #ifdef __cplusplus

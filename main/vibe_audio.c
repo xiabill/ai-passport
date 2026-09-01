@@ -52,52 +52,118 @@ static void send_eos(void)
     vibe_ble_audio_send(hdr, VIBE_AUDIO_HDR_LEN);
 }
 
+static bool take_pending_beep(vibe_beep_t *type)
+{
+    const uint8_t pending = s_beep_pending;
+    if (!pending) return false;
+
+    // End is always the final state the user needs to hear. Edit is next so a
+    // double/long press gets feedback even if no recording was active.
+    if (pending & VIBE_BEEP_END) *type = VIBE_BEEP_END;
+    else if (pending & VIBE_BEEP_EDIT) *type = VIBE_BEEP_EDIT;
+    else *type = VIBE_BEEP_START;
+    s_beep_pending = (uint8_t)(pending & (uint8_t)~*type);
+    return true;
+}
+
 static void play_button_beep(vibe_beep_t type)
 {
-    const bool starting = type == VIBE_BEEP_START;
-    const unsigned first_hz = starting ? 660U : 880U;
-    const unsigned second_hz = starting ? 1040U : 440U;
-    const unsigned first_samples = starting ? 96U : 112U;
-    const unsigned second_samples = starting ? 160U : 288U;
-    const unsigned total_samples = first_samples + second_samples;
+    typedef struct {
+        unsigned hz;
+        unsigned samples;
+    } beep_segment_t;
+    static const beep_segment_t start[] = {
+        {560U, 880U},   // 110 ms
+        {0U,   200U},   // 25 ms gap
+        {760U, 880U},   // 110 ms
+        {0U,   200U},   // 25 ms gap
+        {1040U, 1280U}, // 160 ms
+    };
+    static const beep_segment_t end[] = {
+        {660U, 720U},  // 90 ms
+        {0U,   200U},  // 25 ms gap
+        {400U, 1840U}, // 230 ms
+    };
+    static const beep_segment_t edit[] = {
+        {920U, 440U},  // 55 ms
+        {0U,   200U},  // 25 ms gap
+        {560U, 880U},  // 110 ms
+    };
 
-    ESP_LOGI(TAG, "button beep %s", starting ? "start" : "end");
+    const beep_segment_t *segments;
+    unsigned segment_count;
+    const char *label;
+    if (type == VIBE_BEEP_START) {
+        segments = start;
+        segment_count = sizeof(start) / sizeof(start[0]);
+        label = "start";
+    } else if (type == VIBE_BEEP_END) {
+        segments = end;
+        segment_count = sizeof(end) / sizeof(end[0]);
+        label = "end";
+    } else {
+        segments = edit;
+        segment_count = sizeof(edit) / sizeof(edit[0]);
+        label = "edit";
+    }
+
+    unsigned total_samples = 0;
+    for (unsigned i = 0; i < segment_count; i++) total_samples += segments[i].samples;
+    const unsigned duration_ms = (total_samples * 1000U) / BEEP_SAMPLE_RATE;
+    ESP_LOGI(TAG, "button beep %s (%ums, volume=%u)", label, duration_ms, BEEP_VOLUME);
     if (bsp_audio_set_format(BEEP_SAMPLE_RATE, 16, 1) != ESP_OK) {
-        ESP_LOGW(TAG, "button %s beep format failed", starting ? "start" : "end");
+        ESP_LOGW(TAG, "button %s beep format failed", label);
         return;
     }
 
-    // Start: two rising notes. End: a lower, longer falling note.
     // Match the audible level used by the audio test. The old value (25%) was
     // too quiet on the device's small speaker, especially for the end cue.
     bsp_audio_set_volume(BEEP_VOLUME);
     int16_t pcm[64];
-    for (unsigned base = 0; base < total_samples; base += 64) {
+    for (unsigned base = 0; base < total_samples; base += 64U) {
+        unsigned segment = 0;
+        unsigned offset = base;
+        while (segment + 1U < segment_count && offset >= segments[segment].samples) {
+            offset -= segments[segment].samples;
+            segment++;
+        }
         for (unsigned i = 0; i < 64; i++) {
             unsigned n = base + i;
             if (n >= total_samples) {
                 pcm[i] = 0;
                 continue;
             }
-            const bool second = n >= first_samples;
-            const unsigned hz = second ? second_hz : first_hz;
+
+            unsigned local = offset + i;
+            unsigned current = segment;
+            while (current + 1U < segment_count && local >= segments[current].samples) {
+                local -= segments[current].samples;
+                current++;
+            }
+            const unsigned hz = segments[current].hz;
+            if (hz == 0U) {
+                pcm[i] = 0;
+                continue;
+            }
+
             const unsigned half_period = BEEP_SAMPLE_RATE / (2U * hz);
             int amp = BEEP_AMPLITUDE;
-            if (n < 12) amp = (amp * (int)n) / 12;
-            else if (n >= total_samples - 16) {
-                amp = (amp * (int)(total_samples - n)) / 16;
+            if (n < 64U) amp = (amp * (int)n) / 64;
+            else if (n + 64U >= total_samples) {
+                amp = (amp * (int)(total_samples - n)) / 64;
             }
-            pcm[i] = ((n / half_period) & 1U) ? (int16_t)amp : (int16_t)-amp;
+            pcm[i] = ((local / half_period) & 1U) ? (int16_t)amp : (int16_t)-amp;
         }
         if (bsp_audio_write(pcm, sizeof(pcm)) != ESP_OK) {
-            ESP_LOGW(TAG, "button beep write failed");
+            ESP_LOGW(TAG, "button %s beep write failed", label);
             break;
         }
     }
-    // The codec write fills the DMA queue asynchronously. Let the cue drain
-    // before closing the codec, otherwise suspend can truncate it.
-    vTaskDelay(pdMS_TO_TICKS(starting ? 45 : 60));
+    // The codec write fills the DMA queue asynchronously. Let the whole cue
+    // drain before closing the codec, otherwise suspend can truncate it.
+    vTaskDelay(pdMS_TO_TICKS(duration_ms + 120U));
     bsp_audio_suspend();
+    ESP_LOGI(TAG, "button beep %s done", label);
 }
 
 static void audio_task(void *arg)
@@ -114,17 +180,9 @@ static void audio_task(void *arg)
 
     bool capture_started = false;
     for (;;) {
-        // 在录音开始前或刚结束后播放，避免和 I2S 采集并行访问 codec。
-        if (s_beep_pending != 0 && (!capture_started || !s_recording)) {
-            const uint8_t pending = s_beep_pending;
-            // If both transitions arrived before the audio task ran, the end
-            // cue is the useful final state and must be heard. Otherwise play
-            // start first. Clear both when consuming the end cue so it cannot
-            // be lost behind another recording transition.
-            const vibe_beep_t beep = (pending & VIBE_BEEP_END)
-                ? VIBE_BEEP_END : VIBE_BEEP_START;
-            s_beep_pending = (beep == VIBE_BEEP_END)
-                ? 0 : (uint8_t)(pending & ~VIBE_BEEP_START);
+        vibe_beep_t beep;
+        // Play start before the first capture loop, or any cue while idle.
+        if ((!capture_started || !s_recording) && take_pending_beep(&beep)) {
             play_button_beep(beep);
         }
 
@@ -185,6 +243,13 @@ static void audio_task(void *arg)
         send_eos();
         bsp_audio_suspend();
         ESP_LOGI(TAG, "capture stop");
+
+        // Handle the stop cue immediately after the capture stream is closed.
+        // This removes the old timing hole where a later transition could
+        // replace the end cue before the audio task reached the idle loop.
+        if (!s_recording && take_pending_beep(&beep)) {
+            play_button_beep(beep);
+        }
     }
 }
 
@@ -207,9 +272,10 @@ bool vibe_audio_recording(void)
 
 void vibe_audio_beep(vibe_beep_t type)
 {
-    if (type == VIBE_BEEP_START || type == VIBE_BEEP_END) {
+    if (type == VIBE_BEEP_START || type == VIBE_BEEP_END || type == VIBE_BEEP_EDIT) {
         s_beep_pending |= (uint8_t)type;
         ESP_LOGI(TAG, "queued %s beep (volume %u)",
-                 type == VIBE_BEEP_START ? "start" : "end", BEEP_VOLUME);
+                 type == VIBE_BEEP_START ? "start" :
+                 type == VIBE_BEEP_END ? "end" : "edit", BEEP_VOLUME);
     }
 }

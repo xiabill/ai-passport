@@ -56,6 +56,7 @@ typedef struct {
     uint8_t n_events;
     bool start_capture;
     bool stop_capture;
+    bool edit_action;
 } vibe_out_t;
 
 void vibe_state_init(vibe_state_t *s);

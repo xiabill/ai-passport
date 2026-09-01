@@ -81,6 +81,7 @@ static void apply(vibe_in_t in, uint8_t typeless_byte)
         vibe_ble_link_fast(false);
         vibe_power_note_activity();
     }
+    if (o.edit_action) vibe_audio_beep(VIBE_BEEP_EDIT);
     for (uint8_t i = 0; i < o.n_events; i++) {
         vibe_ble_event_send(o.ble_events[i]);
     }

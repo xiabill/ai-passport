@@ -77,10 +77,12 @@ int main(void)
     o = vibe_state_apply(&s, VIBE_IN_UP_DOUBLE, 0);
     assert(s.phase == VIBE_PHASE_IDLE);
     assert(!o.start_capture && !o.stop_capture);
+    assert(o.edit_action);
     assert(o.n_events == 1 && o.ble_events[0] == VIBE_BLE_DOUBAO_SELECT_ALL);
 
     o = vibe_state_apply(&s, VIBE_IN_UP_LONG, 0);
     assert(s.phase == VIBE_PHASE_IDLE);
+    assert(o.edit_action);
     assert(o.n_events == 1 && o.ble_events[0] == VIBE_BLE_DOUBAO_CLEAR);
 
     linked_idle(&s);

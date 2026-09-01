@@ -3,7 +3,7 @@
 
 static vibe_out_t out_none(void)
 {
-    vibe_out_t o = {{0, 0}, 0, false, false};
+    vibe_out_t o = {{0, 0}, 0, false, false, false};
     return o;
 }
 
@@ -79,7 +79,10 @@ static vibe_out_t doubao_edit(vibe_state_t *s, uint8_t event)
         s->queued_enter = false;
         ready_phase(s);
     }
-    if (s->phase == VIBE_PHASE_IDLE) push_event(&o, event);
+    if (s->phase == VIBE_PHASE_IDLE) {
+        push_event(&o, event);
+        o.edit_action = true;
+    }
     return o;
 }
 
