@@ -31,10 +31,8 @@ CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
 CONFIG_LV_COLOR_DEPTH_16=y
 CONFIG_LV_FONT_MONTSERRAT_14=y
 CONFIG_LV_FONT_MONTSERRAT_20=y
-# Use LVGL's antialiased Source Han Sans SC subset for consistent CJK
-# proportions, baseline, and punctuation rendering on the 240x320 display.
-CONFIG_LV_FONT_SOURCE_HAN_SANS_SC_14_CJK=y
-CONFIG_LV_FONT_SOURCE_HAN_SANS_SC_16_CJK=y
+# CJK UI fonts are generated from all Chinese characters in main/*.c by
+# tools/generate_cjk_font.py, so the small LVGL demo subset is not enabled.
 # LVGL 内置 malloc 池大小(KB)。它是独立静态区、不与系统堆共享,配大了会白白占用 RAM。
 # 本 demo UI 简单,24KB 足够;若自建复杂界面出现绘制卡死/看门狗,调大此值。
 CONFIG_LV_MEM_SIZE_KILOBYTES=32

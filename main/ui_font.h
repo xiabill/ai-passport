@@ -6,11 +6,10 @@
 extern "C" {
 #endif
 
-// Keep the UI's font names stable while using LVGL's antialiased Source Han
-// Sans SC subsets. This gives CJK glyphs the same baseline and visual weight
-// instead of mixing a hand-rasterized 1bpp font with Montserrat.
-#define ui_font_cjk_14 lv_font_source_han_sans_sc_14_cjk
-#define ui_font_cjk_16 lv_font_source_han_sans_sc_16_cjk
+// Generated from every CJK character used by the firmware UI. The checked-in
+// source is antialiased 4bpp data with a Montserrat fallback for Latin text.
+extern const lv_font_t ui_font_cjk_14;
+extern const lv_font_t ui_font_cjk_16;
 
 #ifdef __cplusplus
 }
