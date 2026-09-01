@@ -69,12 +69,14 @@ static void apply(vibe_in_t in, uint8_t typeless_byte)
     xSemaphoreGive(s_mu);
 
     if (o.start_capture) {
+        vibe_audio_beep(VIBE_BEEP_START);
         vibe_audio_set_recording(true);
         vibe_power_set_busy(true);
         vibe_ble_link_fast(true);
     }
     if (o.stop_capture) {
         vibe_audio_set_recording(false);
+        vibe_audio_beep(VIBE_BEEP_END);
         vibe_power_set_busy(false);
         vibe_ble_link_fast(false);
         vibe_power_note_activity();
@@ -111,7 +113,6 @@ esp_err_t vibe_app_start(void)
 void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
 {
     if (ev == BSP_BTN_PRESS) {
-        vibe_audio_beep();
         vibe_ble_note_activity();
         if (!vibe_power_on_input()) s_swallow_click = true;
         return;

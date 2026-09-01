@@ -10,8 +10,14 @@ extern "C" {
 esp_err_t vibe_audio_start(void);
 void vibe_audio_set_recording(bool on);
 bool vibe_audio_recording(void);
-// 请求一个短促的按键提示音；只置位标志，由音频任务异步播放。
-void vibe_audio_beep(void);
+
+typedef enum {
+    VIBE_BEEP_START = 1,
+    VIBE_BEEP_END = 2,
+} vibe_beep_t;
+
+// Request a start/end cue; the audio task plays it when the codec is free.
+void vibe_audio_beep(vibe_beep_t type);
 
 #ifdef __cplusplus
 }

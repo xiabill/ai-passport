@@ -153,6 +153,7 @@ Power behavior (switchable from the macOS Bridge status page):
 - Eco mode dims to 8% after 10 seconds, turns the backlight off after 1 minute, and enters deep sleep after 5 minutes; while disconnected, BLE advertising pauses after 60 seconds of idle.
 - Both modes use the GPIO0 three-button ladder as the wake source. The first function-key press during standby only wakes the screen; deep-sleep wake performs a full application restart. In Eco mode, a normal function key also resumes BLE advertising for Mac reconnection.
 - Doubao upper key: single click toggles Doubao voice input, quick double-click performs macOS Select All (Cmd+A), and long press selects all and deletes the current text. If editing is triggered during Doubao recording, recording stops before the edit action.
+- Audio cues: recording start uses two rising notes; recording end uses a lower, longer note so the state is clear without looking at the display.
 - Neither mode physically disconnects the battery; use the hardware power button for zero-power storage.
 - BLE uses a slower 30–50 ms connection interval with slave latency while idle, and 7.5–15 ms with zero latency while talking.
 

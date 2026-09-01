@@ -37,6 +37,8 @@ Power modes: Standard keeps the display at 50%, dims to 15% three seconds after 
 
 Doubao upper key: single click toggles voice input, quick double-click performs macOS Select All (Cmd+A), and long press selects all and deletes the current text field.
 
+Audio cues: recording start uses two rising notes; recording end uses a lower, longer note.
+
 ## Protocol
 
 - Center single/double/long presses start Typeless Dictate/Translation/Ask anything; UP controls Doubao and DOWN sends Return.

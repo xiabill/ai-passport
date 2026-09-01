@@ -17,7 +17,6 @@ static const char *TAG = "vibe_audio";
 #define SILENCE_PEAK 500
 #define SILENCE_BLOCKS (30 * 50)  // 30 s of 20 ms blocks
 #define BEEP_SAMPLE_RATE 8000U
-#define BEEP_SAMPLES 256U
 #define BEEP_AMPLITUDE 6000
 
 static TaskHandle_t s_task;
@@ -25,7 +24,7 @@ static volatile bool s_recording;
 static vibe_adpcm_state_t s_adpcm;
 static uint16_t s_seq;
 static int s_quiet;
-static volatile bool s_beep_pending;
+static volatile vibe_beep_t s_beep_pending;
 
 static uint8_t peak_level(const int16_t *pcm, int n)
 {
@@ -50,35 +49,49 @@ static void send_eos(void)
     vibe_ble_audio_send(hdr, VIBE_AUDIO_HDR_LEN);
 }
 
-static void play_button_beep(void)
+static void play_button_beep(vibe_beep_t type)
 {
-    ESP_LOGI(TAG, "button beep");
+    const bool starting = type == VIBE_BEEP_START;
+    const unsigned first_hz = starting ? 660U : 880U;
+    const unsigned second_hz = starting ? 1040U : 440U;
+    const unsigned first_samples = starting ? 96U : 112U;
+    const unsigned second_samples = starting ? 160U : 288U;
+    const unsigned total_samples = first_samples + second_samples;
+
+    ESP_LOGI(TAG, "button beep %s", starting ? "start" : "end");
     if (bsp_audio_set_format(BEEP_SAMPLE_RATE, 16, 1) != ESP_OK) {
-        ESP_LOGW(TAG, "button beep format failed");
+        ESP_LOGW(TAG, "button %s beep format failed", starting ? "start" : "end");
         return;
     }
 
-    // 约 32 ms 的短方波，带极短淡入淡出，避免在扬声器上产生爆音。
+    // Start: two rising notes. End: a lower, longer falling note.
     bsp_audio_set_volume(25);
     int16_t pcm[64];
-    for (unsigned base = 0; base < BEEP_SAMPLES; base += 64) {
+    for (unsigned base = 0; base < total_samples; base += 64) {
         for (unsigned i = 0; i < 64; i++) {
             unsigned n = base + i;
+            if (n >= total_samples) {
+                pcm[i] = 0;
+                continue;
+            }
+            const bool second = n >= first_samples;
+            const unsigned hz = second ? second_hz : first_hz;
+            const unsigned half_period = BEEP_SAMPLE_RATE / (2U * hz);
             int amp = BEEP_AMPLITUDE;
             if (n < 12) amp = (amp * (int)n) / 12;
-            else if (n >= BEEP_SAMPLES - 12) {
-                amp = (amp * (int)(BEEP_SAMPLES - n)) / 12;
+            else if (n >= total_samples - 16) {
+                amp = (amp * (int)(total_samples - n)) / 16;
             }
-            pcm[i] = ((n / 2U) & 1U) ? (int16_t)amp : (int16_t)-amp;
+            pcm[i] = ((n / half_period) & 1U) ? (int16_t)amp : (int16_t)-amp;
         }
         if (bsp_audio_write(pcm, sizeof(pcm)) != ESP_OK) {
             ESP_LOGW(TAG, "button beep write failed");
             break;
         }
     }
-    // The codec write fills the DMA queue asynchronously. Let the 32 ms tone
-    // drain before closing the codec, otherwise suspend can truncate it.
-    vTaskDelay(pdMS_TO_TICKS(45));
+    // The codec write fills the DMA queue asynchronously. Let the cue drain
+    // before closing the codec, otherwise suspend can truncate it.
+    vTaskDelay(pdMS_TO_TICKS(starting ? 45 : 60));
     bsp_audio_suspend();
 }
 
@@ -97,9 +110,10 @@ static void audio_task(void *arg)
     bool capture_started = false;
     for (;;) {
         // 在录音开始前或刚结束后播放，避免和 I2S 采集并行访问 codec。
-        if (s_beep_pending && (!capture_started || !s_recording)) {
-            s_beep_pending = false;
-            play_button_beep();
+        if (s_beep_pending != 0 && (!capture_started || !s_recording)) {
+            vibe_beep_t beep = s_beep_pending;
+            s_beep_pending = 0;
+            play_button_beep(beep);
         }
 
         if (!s_recording) {
@@ -179,7 +193,9 @@ bool vibe_audio_recording(void)
     return s_recording;
 }
 
-void vibe_audio_beep(void)
+void vibe_audio_beep(vibe_beep_t type)
 {
-    s_beep_pending = true;
+    if (type == VIBE_BEEP_START || type == VIBE_BEEP_END) {
+        s_beep_pending = type;
+    }
 }
