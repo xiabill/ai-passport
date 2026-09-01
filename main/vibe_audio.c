@@ -11,6 +11,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 static const char *TAG = "vibe_audio";
 
@@ -19,6 +20,7 @@ static const char *TAG = "vibe_audio";
 #define BEEP_SAMPLE_RATE 8000U
 #define BEEP_AMPLITUDE 6300 // 70% of the previous level
 #define BEEP_VOLUME 80U
+#define BEEP_PI 3.14159265358979323846f
 
 static TaskHandle_t s_task;
 static volatile bool s_recording;
@@ -72,22 +74,25 @@ static void play_button_beep(vibe_beep_t type)
         unsigned hz;
         unsigned samples;
     } beep_segment_t;
+    // Use short musical intervals instead of unrelated alarm frequencies.
+    // C5-E5-G5 makes a gentle rising start cue; the other cues resolve
+    // downward so the user can distinguish them without looking at the UI.
     static const beep_segment_t start[] = {
-        {560U, 560U},  // 70 ms
-        {0U,   120U},  // 15 ms gap
-        {760U, 560U},  // 70 ms
-        {0U,   120U},  // 15 ms gap
-        {1040U, 880U}, // 110 ms
+        {523U, 520U},  // C5, 65 ms
+        {0U,   80U},   // 10 ms gap
+        {659U, 520U},  // E5, 65 ms
+        {0U,   80U},   // 10 ms gap
+        {784U, 760U},  // G5, 95 ms
     };
     static const beep_segment_t end[] = {
-        {660U, 720U},  // 90 ms
-        {0U,   200U},  // 25 ms gap
-        {400U, 1840U}, // 230 ms
+        {784U, 680U},  // G5, 85 ms
+        {0U,   160U},  // 20 ms gap
+        {523U, 1680U}, // C5, 210 ms
     };
     static const beep_segment_t edit[] = {
-        {920U, 440U},  // 55 ms
-        {0U,   200U},  // 25 ms gap
-        {560U, 880U},  // 110 ms
+        {659U, 400U},  // E5, 50 ms
+        {0U,   144U},  // 18 ms gap
+        {523U, 760U},  // C5, 95 ms
     };
 
     const beep_segment_t *segments;
@@ -110,14 +115,14 @@ static void play_button_beep(vibe_beep_t type)
     unsigned total_samples = 0;
     for (unsigned i = 0; i < segment_count; i++) total_samples += segments[i].samples;
     const unsigned duration_ms = (total_samples * 1000U) / BEEP_SAMPLE_RATE;
-    ESP_LOGI(TAG, "button beep %s (%ums, volume=%u)", label, duration_ms, BEEP_VOLUME);
+    ESP_LOGI(TAG, "button chime %s (%ums, sine, volume=%u)", label, duration_ms, BEEP_VOLUME);
     if (bsp_audio_set_format(BEEP_SAMPLE_RATE, 16, 1) != ESP_OK) {
         ESP_LOGW(TAG, "button %s beep format failed", label);
         return;
     }
 
-    // Match the audible level used by the audio test. The old value (25%) was
-    // too quiet on the device's small speaker, especially for the end cue.
+    // Keep the level below the old alarm-like cue while letting the smoother
+    // waveform remain clearly audible through the small speaker.
     bsp_audio_set_volume(BEEP_VOLUME);
     int16_t pcm[64];
     for (unsigned base = 0; base < total_samples; base += 64U) {
@@ -146,13 +151,23 @@ static void play_button_beep(vibe_beep_t type)
                 continue;
             }
 
-            const unsigned half_period = BEEP_SAMPLE_RATE / (2U * hz);
-            int amp = BEEP_AMPLITUDE;
-            if (n < 64U) amp = (amp * (int)n) / 64;
-            else if (n + 64U >= total_samples) {
-                amp = (amp * (int)(total_samples - n)) / 64;
+            // A short per-note envelope removes clicks at both note and gap
+            // boundaries. A quiet second harmonic gives the sine tone a bit
+            // of warmth without bringing back the harsh square-wave edge.
+            const unsigned note_samples = segments[current].samples;
+            const unsigned envelope_samples = note_samples / 6U < 96U
+                ? (note_samples / 6U < 8U ? 8U : note_samples / 6U)
+                : 96U;
+            float gain = 1.0f;
+            if (local < envelope_samples) {
+                gain = (float)local / (float)envelope_samples;
+            } else if (local + envelope_samples > note_samples) {
+                gain = (float)(note_samples - local) / (float)envelope_samples;
             }
-            pcm[i] = ((local / half_period) & 1U) ? (int16_t)amp : (int16_t)-amp;
+            const float phase = 2.0f * BEEP_PI * (float)hz * (float)local /
+                                (float)BEEP_SAMPLE_RATE;
+            const float wave = 0.92f * sinf(phase) + 0.08f * sinf(phase * 2.0f);
+            pcm[i] = (int16_t)(wave * (float)BEEP_AMPLITUDE * gain);
         }
         if (bsp_audio_write(pcm, sizeof(pcm)) != ESP_OK) {
             ESP_LOGW(TAG, "button %s beep write failed", label);
