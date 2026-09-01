@@ -24,10 +24,10 @@ AI Passport vibe-typeless 固件的 macOS 伴侣。这是完整应用：总览�
 ```bash
 cd tools/mac-bridge
 ./build.sh
-open FoloVibeBridge.app
+open /Applications/FoloVibeBridge.app
 ```
 
-`./build.sh` 会先跑 `swift run FoloVibeCoreTests` 再打包。不需要完整 Xcode，Swift 5.9+ 工具链和 Apple Command Line Tools 即可。给 FoloVibe Bridge 打开蓝牙、辅助功能和输入监控。Typeless 默认 Fn，豆包默认右⌥（免按模式），两边的麦克风都选 `BlackHole 2ch`。
+`./build.sh` 会先跑 `swift run FoloVibeCoreTests`，再打包并默认安装到 `/Applications/FoloVibeBridge.app`。不需要完整 Xcode，Swift 5.9+ 工具链和 Apple Command Line Tools 即可。首次启动时，状态页和设置页会提供授权/音频设置向导；完成系统设置后点击“再次检查”即可复查。给 FoloVibe Bridge 打开蓝牙、辅助功能和输入监控。Typeless 默认 Fn，豆包默认右⌥（免按模式），两边的麦克风都选 `BlackHole 2ch`。
 
 日志：`~/Library/Logs/folovibe-bridge.log`
 

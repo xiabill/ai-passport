@@ -70,6 +70,7 @@ final class AppModel: ObservableObject {
     private var lastPrefix = ""
     private var lastTypelessPoll = Date.distantPast
     private var activeInput: ActiveInput?
+    private var lastMicWarning = ""
 
     private init() {}
 
@@ -79,17 +80,33 @@ final class AppModel: ObservableObject {
         ble.autoReconnect = settings.current.autoReconnect
         ble.onEvent = { [weak self] ev in self?.handle(ev) }
         applyAudio()
-        axOK = KeyTap.trusted
-        if !axOK { Log.sys("辅助功能未开，按键无法发给 Typeless") }
-        let mic = Permissions.typelessMicLabel()
-        typelessMicLabel = mic ?? "未读取"
-        if let mic, !Permissions.typelessMicOK(settings.current.outputDevice) {
-            Log.typeless("当前麦克风是 \(mic)，应改为 \(settings.current.outputDevice)")
-        }
+        refreshChecks()
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.tick()
         }
         Log.sys("FoloVibe 已启动")
+    }
+
+    /// Refresh permission and setup checks after the user returns from a system
+    /// settings page. The timer also calls this, but exposing it makes the
+    /// guided setup flow explicit and immediately responsive.
+    func refreshChecks() {
+        let wasAXOK = axOK
+        axOK = KeyTap.trusted
+        blackholeOK = AudioOutput.deviceExists(settings.current.outputDevice)
+        typelessMicLabel = Permissions.typelessMicLabel() ?? "未读取"
+        typelessMicOK = Permissions.typelessMicOK(settings.current.outputDevice)
+        loginOn = LoginItem.enabled
+
+        if wasAXOK != axOK {
+            Log.sys(axOK ? "辅助功能已授权，可以发送快捷键" : "辅助功能未开，按键无法发给 Typeless")
+        }
+        if !typelessMicOK, typelessMicLabel != "未读取", typelessMicLabel != lastMicWarning {
+            Log.typeless("当前麦克风是 \(typelessMicLabel)，应改为 \(settings.current.outputDevice)")
+            lastMicWarning = typelessMicLabel
+        } else if typelessMicOK {
+            lastMicWarning = ""
+        }
     }
 
     func applyAudio() {
@@ -179,11 +196,7 @@ final class AppModel: ObservableObject {
 
         bleSnap = ble.snapshot
         audioPeak = audio.peak
-        axOK = KeyTap.trusted
-        blackholeOK = AudioOutput.deviceExists(settings.current.outputDevice)
-        typelessMicLabel = Permissions.typelessMicLabel() ?? "未读取"
-        typelessMicOK = Permissions.typelessMicOK(settings.current.outputDevice)
-        loginOn = LoginItem.enabled
+        refreshChecks()
 
         let interval = max(0.5, settings.current.typelessPollSec)
         let hot = bleSnap.streaming

@@ -70,10 +70,10 @@ From the repository root:
 ```bash
 cd tools/mac-bridge
 ./build.sh
-open FoloVibeBridge.app
+open /Applications/FoloVibeBridge.app
 ```
 
-`build.sh` first runs the core tests, then builds the release executable and packages a local `FoloVibeBridge.app`. The app is intentionally built locally rather than committed as a machine-specific binary.
+`build.sh` first runs the core tests, then builds a release executable, packages it, and installs it to `/Applications/FoloVibeBridge.app` by default; it also keeps the local bundle in the repository directory. The status and settings pages include a guided permission/audio setup flow with explicit checks and a re-check action. The app is intentionally built locally rather than committed as a machine-specific binary.
 
 On first launch:
 

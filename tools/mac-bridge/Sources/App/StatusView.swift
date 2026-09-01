@@ -16,6 +16,7 @@ struct StatusView: View {
                             Button("重连") { model.ble.reconnect() }
                         }))
 
+                SetupGuideView(model: model)
                 connectionCard
                 quickActions
 

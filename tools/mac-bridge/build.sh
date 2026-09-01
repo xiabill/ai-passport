@@ -3,14 +3,22 @@ set -euo pipefail
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "$root"
 app="${root}/FoloVibeBridge.app"
+install_app="${FOLO_VIBE_INSTALL_APP:-/Applications/FoloVibeBridge.app}"
 mkdir -p "$app/Contents/MacOS"
 cp "$root/Info.plist" "$app/Contents/Info.plist"
 
 package_app() {
     local binary="$1"
     cp "$binary" "$app/Contents/MacOS/FoloVibeBridge"
-    echo "built $app"
-    echo "run: open \"$app\""
+    if [[ "${FOLO_VIBE_SKIP_INSTALL:-0}" != "1" ]]; then
+        mkdir -p "$(dirname -- "$install_app")"
+        ditto --rsrc --extattr --acl "$app" "$install_app"
+        echo "installed $install_app"
+        echo "run: open \"$install_app\""
+    else
+        echo "built $app"
+        echo "run: open \"$app\""
+    fi
 }
 
 # SwiftPM can select a newer SDK than an older standalone Swift toolchain can

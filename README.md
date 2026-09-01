@@ -21,7 +21,8 @@ cd ai-passport
 # macOS companion
 cd tools/mac-bridge
 ./build.sh
-open FoloVibeBridge.app
+# build.sh installs to /Applications by default
+open /Applications/FoloVibeBridge.app
 ```
 
 The firmware requires ESP-IDF 5.5.3 and an ESP32-C3 board. Follow the [full guide](docs/development/vibe-typeless.md) before flashing an existing device: the merged image must not overwrite the protected `cardid` partition.

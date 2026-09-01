@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- 新增 macOS 设置向导：检查辅助功能、蓝牙、Passport、BlackHole、Typeless 和麦克风，提供直接设置入口，并支持从系统设置返回后的“再次检查”。
+- macOS Bridge 构建后默认安装到 `/Applications/FoloVibeBridge.app`；可用 `FOLO_VIBE_INSTALL_APP` 覆盖安装位置。
 - 优化 VIBE 硬件屏幕：保留像素风，重新整理聆听/处理中状态，压缩绿黄红声波的高度，明确显示 Typeless 听写/翻译/随便问与豆包动作，并为机器人增加落地阴影和状态切换动画。
 - 设备省电：空闲 18 秒背光降到 20%、60 秒熄屏（第一下按键只唤醒）；BLE 空闲
   30–50 ms + latency 20，说话时切回 7.5–15 ms。

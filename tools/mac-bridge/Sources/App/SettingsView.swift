@@ -18,6 +18,8 @@ struct SettingsView: View {
                     subtitle: "把硬件按键和两个输入法配置成你的工作流",
                     trailing: AnyView(Button("恢复默认") { store.reset() }))
 
+                SetupGuideView(model: model)
+
                 SurfaceCard("连接设备", subtitle: "Bridge 会自动寻找名称以此前缀开头的 Passport") {
                     VStack(spacing: 15) {
                         SettingRow("设备名前缀", subtitle: "默认 FoloVibe") {
@@ -102,6 +104,7 @@ struct SettingsView: View {
                         HStack(spacing: 10) {
                             Button("打开辅助功能") { Permissions.openAccessibility(); KeyTap.promptTrust() }
                             Button("打开蓝牙设置") { Permissions.openBluetooth() }
+                            Button("再次检查") { model.refreshChecks() }
                         }
                     }
                 }

@@ -24,10 +24,10 @@ For the end-to-end firmware, BLE, Typeless, flashing, permissions, and troublesh
 ```bash
 cd tools/mac-bridge
 ./build.sh
-open FoloVibeBridge.app
+open /Applications/FoloVibeBridge.app
 ```
 
-`./build.sh` runs `swift run FoloVibeCoreTests` then packages the app. Full Xcode is not required; a Swift 5.9+ toolchain and Apple Command Line Tools are enough. Grant Bluetooth and Accessibility/Input Monitoring. Set Typeless to the Typeless key (default Fn), Doubao to the Doubao key (default Right Option in toggle mode), and both microphones to `BlackHole 2ch`.
+`./build.sh` runs `swift run FoloVibeCoreTests`, packages the app, and installs it to `/Applications/FoloVibeBridge.app` by default. Full Xcode is not required; a Swift 5.9+ toolchain and Apple Command Line Tools are enough. The status and settings pages include a guided setup flow with permission/setup checks and a “Check again” action after returning from System Settings. Grant Bluetooth and Accessibility/Input Monitoring. Set Typeless to the Typeless key (default Fn), Doubao to the Doubao key (default Right Option in toggle mode), and both microphones to `BlackHole 2ch`.
 
 Logs: `~/Library/Logs/folovibe-bridge.log`
 

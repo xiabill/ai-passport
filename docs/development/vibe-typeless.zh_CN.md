@@ -73,7 +73,7 @@ cd tools/mac-bridge
 open FoloVibeBridge.app
 ```
 
-`build.sh` 会先运行核心测试，再构建 release 可执行文件并打包本地 `FoloVibeBridge.app`。应用不把机器相关的二进制提交到仓库，其他人下载源码后可以自行构建。
+`build.sh` 会先运行核心测试，再构建 release 可执行文件，并默认安装到 `/Applications/FoloVibeBridge.app`；同时保留仓库目录下的本地 bundle。应用不把机器相关的二进制提交到仓库，其他人下载源码后可以自行构建。状态页和设置页包含授权/音频设置向导，用户从系统设置返回后可点击“再次检查”确认状态。
 
 首次打开后：
 

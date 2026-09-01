@@ -21,7 +21,8 @@ cd ai-passport
 # macOS 伴侣
 cd tools/mac-bridge
 ./build.sh
-open FoloVibeBridge.app
+# build.sh 默认会安装到 /Applications
+open /Applications/FoloVibeBridge.app
 ```
 
 固件需要 ESP-IDF 5.5.3 和 ESP32-C3 设备。给已有设备刷机前请阅读[完整教程](docs/development/vibe-typeless.zh_CN.md)：合并固件不能覆盖受保护的 `cardid` 分区。

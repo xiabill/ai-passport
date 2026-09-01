@@ -6,6 +6,11 @@
 
 ## Unreleased
 
+- Added a guided macOS setup flow with Accessibility, Bluetooth, Passport,
+  BlackHole, Typeless, and microphone checks, direct setup actions, and an
+  explicit re-check after returning from System Settings.
+- macOS Bridge builds now install the generated app to `/Applications/FoloVibeBridge.app`
+  by default; `FOLO_VIBE_INSTALL_APP` can override the destination.
 - Refined the VIBE hardware screen without changing its pixel-art identity:
   clearer listening/processing states, compact green-yellow-red waveform
   scaling, readable action labels for Typeless/Translation/Ask/Doubao, and a

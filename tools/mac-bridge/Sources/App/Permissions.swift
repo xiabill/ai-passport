@@ -3,23 +3,49 @@ import Foundation
 import FoloVibeCore
 
 enum Permissions {
-    static func openAccessibility() {
+    @discardableResult
+    static func openAccessibility() -> Bool {
         let urls = [
             "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility",
             "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
         ]
-        for s in urls {
-            if let url = URL(string: s) {
-                NSWorkspace.shared.open(url)
-                return
-            }
-        }
+        return openSettings(urls)
     }
 
-    static func openBluetooth() {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.bluetooth") {
-            NSWorkspace.shared.open(url)
+    @discardableResult
+    static func openBluetooth() -> Bool {
+        openSettings([
+            "x-apple.systempreferences:com.apple.Bluetooth-Settings.extension",
+            "x-apple.systempreferences:com.apple.preference.bluetooth",
+        ])
+    }
+
+    @discardableResult
+    static func openSound() -> Bool {
+        openSettings([
+            "x-apple.systempreferences:com.apple.Sound-Settings.extension",
+            "x-apple.systempreferences:com.apple.preference.sound",
+        ])
+    }
+
+    @discardableResult
+    static func openTypeless() -> Bool {
+        let candidates = [
+            "/Applications/Typeless.app",
+            NSHomeDirectory() + "/Applications/Typeless.app",
+        ]
+        for path in candidates where FileManager.default.fileExists(atPath: path) {
+            return NSWorkspace.shared.open(URL(fileURLWithPath: path))
         }
+        return false
+    }
+
+    private static func openSettings(_ strings: [String]) -> Bool {
+        for string in strings {
+            guard let url = URL(string: string), NSWorkspace.shared.open(url) else { continue }
+            return true
+        }
+        return false
     }
 
     static func typelessMicLabel() -> String? {
