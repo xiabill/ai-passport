@@ -62,6 +62,9 @@ final class AppModel: ObservableObject {
     @Published var lastAction = "—"
     @Published var debugNote = ""
     @Published var activeInputTitle = "—"
+    @Published var audioDeviceNames: [String] = []
+    @Published var audioTestNote = "尚未测试"
+    @Published var repairNote = ""
 
     private var expect: TypelessState = .idle
     private var lastHotkey = Date.distantPast
@@ -93,6 +96,7 @@ final class AppModel: ObservableObject {
     func refreshChecks() {
         let wasAXOK = axOK
         axOK = KeyTap.trusted
+        audioDeviceNames = AudioOutput.outputDeviceNames()
         blackholeOK = AudioOutput.deviceExists(settings.current.outputDevice)
         typelessMicLabel = Permissions.typelessMicLabel() ?? "未读取"
         typelessMicOK = Permissions.typelessMicOK(settings.current.outputDevice)
@@ -107,6 +111,73 @@ final class AppModel: ObservableObject {
         } else if typelessMicOK {
             lastMicWarning = ""
         }
+    }
+
+    /// Fixes the first blocking setup item and stops so the user can observe
+    /// the result. Permissions and third-party installation remain explicit;
+    /// safe local repairs, such as selecting an already-installed BlackHole
+    /// device or restarting a BLE scan, happen automatically.
+    func repairSetup() {
+        refreshChecks()
+        bleSnap = ble.snapshot
+        if !axOK {
+            Permissions.openAccessibility()
+            KeyTap.promptTrust()
+            repairNote = "已打开辅助功能设置：请打开 FoloVibe Bridge，再点“再次检查”。"
+            return
+        }
+        if !bleSnap.bluetoothOn {
+            Permissions.openBluetooth()
+            repairNote = "已打开蓝牙设置；开启后点“再次检查”。"
+            return
+        }
+        if !bleSnap.subscribed {
+            ble.reconnect()
+            repairNote = "已重新扫描 Passport；请保持设备开机并靠近 Mac。"
+            return
+        }
+        if !blackholeOK {
+            if let installed = audioDeviceNames.first(where: {
+                $0.localizedCaseInsensitiveContains("blackhole")
+            }) {
+                settings.current.outputDevice = installed
+                applyAudio()
+                repairNote = "已切换到已安装的 (installed)，正在重新检查音频链路。"
+            } else {
+                Permissions.openBlackHoleDownload()
+                repairNote = "未检测到 BlackHole，已打开官方安装页；安装后点“再次检查”。"
+            }
+            return
+        }
+        if !typeless.running {
+            _ = Permissions.openTypeless()
+            repairNote = "已尝试打开 Typeless；启动后点“再次检查”。"
+            return
+        }
+        if !typelessMicOK {
+            _ = Permissions.openTypeless()
+            repairNote = "已打开 Typeless，请在“语音输入”中选择 (settings.current.outputDevice)，再点“再次检查”。"
+            return
+        }
+        repairNote = "检查完成，没有发现需要修复的项目。"
+    }
+
+    func playAudioTest() {
+        guard blackholeOK else {
+            audioTestNote = "无法测试：请先选择可用的音频输出设备。"
+            return
+        }
+        audio.playTestTone()
+        audioTestNote = "已播放 2 秒测试音；请确认音频包计数或目标软件有反应。"
+    }
+
+    func toggleMicTest() {
+        if mic.isArmed {
+            mic.cancel()
+        } else {
+            mic.arm()
+        }
+        audioTestNote = mic.result
     }
 
     func applyAudio() {
@@ -197,6 +268,7 @@ final class AppModel: ObservableObject {
         bleSnap = ble.snapshot
         audioPeak = audio.peak
         refreshChecks()
+        if mic.result != "未测试" { audioTestNote = mic.result }
 
         let interval = max(0.5, settings.current.typelessPollSec)
         let hot = bleSnap.streaming

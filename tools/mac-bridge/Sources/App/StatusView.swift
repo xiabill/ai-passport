@@ -25,6 +25,8 @@ struct StatusView: View {
                     audioCard
                 }
 
+                audioTestCard
+
                 if !issueList.isEmpty { issuesCard }
             }
             .frame(maxWidth: 920, alignment: .leading)
@@ -122,6 +124,37 @@ struct StatusView: View {
             }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var audioTestCard: some View {
+        SurfaceCard("声音效果测试", subtitle: "按顺序验证设备麦克风 → BLE → Bridge → 虚拟音频设备") {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    Button { model.playAudioTest() } label: {
+                        Label("播放测试音", systemImage: "speaker.wave.2.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Button { model.toggleMicTest() } label: {
+                        Label(
+                            model.mic.isArmed ? "取消录音测试" : "录一段设备麦克风",
+                            systemImage: model.mic.isArmed ? "stop.circle" : "record.circle")
+                    }
+                    Button { model.refreshChecks() } label: {
+                        Label("刷新链路", systemImage: "arrow.clockwise")
+                    }
+                }
+                Text(model.audioTestNote)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                HStack(spacing: 18) {
+                    Label(model.blackholeOK ? "输出设备可用" : "输出设备缺失", systemImage: model.blackholeOK ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    Label(model.bleSnap.packets > 0 ? "收到 BLE 音频包" : "等待 BLE 音频包", systemImage: model.bleSnap.packets > 0 ? "checkmark.circle.fill" : "hourglass")
+                    Text("丢包 (model.bleSnap.lost)")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+        }
     }
 
     private var issuesCard: some View {

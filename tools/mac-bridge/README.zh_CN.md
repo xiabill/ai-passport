@@ -29,6 +29,8 @@ open /Applications/FoloVibeBridge.app
 
 `./build.sh` 会先跑 `swift run FoloVibeCoreTests`，再打包并默认安装到 `/Applications/FoloVibeBridge.app`。不需要完整 Xcode，Swift 5.9+ 工具链和 Apple Command Line Tools 即可。首次启动时，状态页和设置页会提供授权/音频设置向导；完成系统设置后点击“再次检查”即可复查。给 FoloVibe Bridge 打开蓝牙、辅助功能和输入监控。Typeless 默认 Fn，豆包默认右⌥（免按模式），两边的麦克风都选 `BlackHole 2ch`。
 
+状态页的“声音效果测试”可以播放测试音、录制并回放一轮 Passport 麦克风，并显示 BLE 音频包和丢包情况。设置页的每个动作都支持从列表选择快捷键，或点击“录入”后直接按下目标键；如果未检测到 BlackHole，向导可以打开官方安装页和声音设置。
+
 日志：`~/Library/Logs/folovibe-bridge.log`
 
 ## 协议

@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var model: AppModel
     @ObservedObject var store: SettingsStore
+    @State private var captureTarget: KeyCaptureTarget?
 
     init(model: AppModel) {
         self.model = model
@@ -27,10 +28,29 @@ struct SettingsView: View {
                                 .textFieldStyle(.roundedBorder)
                                 .frame(width: 220)
                         }
-                        SettingRow("音频输出设备", subtitle: "Typeless 和 Bridge 使用同一个虚拟音频设备") {
-                            TextField("BlackHole 2ch", text: outputBinding)
-                                .textFieldStyle(.roundedBorder)
+                        SettingRow("音频输出设备", subtitle: "选择 Passport 音频要送入的虚拟设备") {
+                            HStack(spacing: 8) {
+                                Picker("输出设备", selection: outputBinding) {
+                                    ForEach(audioDeviceOptions, id: \.self) { name in
+                                        Text(name).tag(name)
+                                    }
+                                }
+                                .labelsHidden()
                                 .frame(width: 220)
+                                Button { model.refreshChecks() } label: {
+                                    Image(systemName: "arrow.clockwise")
+                                }
+                                .help("刷新音频设备列表")
+                            }
+                        }
+                        if !model.blackholeOK {
+                            HStack(spacing: 8) {
+                                Label("未找到当前输出设备", systemImage: "exclamationmark.triangle.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                                Button("安装 BlackHole") { Permissions.openBlackHoleDownload() }
+                                Button("打开声音设置") { Permissions.openSound() }
+                            }
                         }
                         Divider()
                         Toggle(isOn: autoReconnect) {
@@ -44,13 +64,14 @@ struct SettingsView: View {
 
                 SurfaceCard("硬件按键", subtitle: "每个动作都显示在硬件上，避免记忆复杂快捷键") {
                     VStack(alignment: .leading, spacing: 14) {
-                        keyRow("中键 · 单击", "Typeless 语音输入", talkBinding, Hotkey.talkKeys, .blue, "mic.fill")
-                        keyRow("中键 · 双击", "Typeless 翻译（自动追加 Shift）", talkBinding, Hotkey.talkKeys, .purple, "character.bubble")
-                        keyRow("中键 · 长按", "Typeless 随便问（自动追加 Space）", talkBinding, Hotkey.talkKeys, .orange, "sparkles")
+                        keyRow("中键 · 单击", "Typeless 语音输入", talkBinding, Hotkey.talkKeys, .blue, "mic.fill", .talk)
+                        keyRow("中键 · 双击", "Typeless 翻译（自动追加 Shift）", talkBinding, Hotkey.talkKeys, .purple, "character.bubble", .talk)
+                        keyRow("中键 · 长按", "Typeless 随便问（自动追加 Space）", talkBinding, Hotkey.talkKeys, .orange, "sparkles", .talk)
                         Divider()
-                        keyRow("上键", "豆包语音输入", doubaoBinding, Hotkey.doubaoKeys, .green, "mic")
-                        keyRow("下键", "发送回车", sendBinding, Hotkey.sendKeys, .accentColor, "return")
-                        Text("当前约定：Typeless 默认 Fn；翻译为 Fn + Shift；随便问为 Fn + Space。豆包使用免按模式。")
+                        keyRow("上键", "豆包语音输入", doubaoBinding, Hotkey.doubaoKeys, .green, "mic", .doubao)
+                        keyRow("下键", "发送回车", sendBinding, Hotkey.sendKeys, .accentColor, "return", .send)
+                        keyRow("取消动作", "停止当前输入，不发送内容", cancelBinding, Hotkey.cancelKeys, .red, "xmark.circle", .cancel)
+                        Text("可以直接从列表选择，也可以点“录入”后按实体键。翻译和随便问会自动在 Typeless 基础键上追加 Shift / Space。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -113,6 +134,11 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(28)
         }
+        .sheet(item: $captureTarget) { target in
+            KeyCaptureSheet(title: target.title, keys: target.keys) { key in
+                setKey(target, key)
+            }
+        }
     }
 
     private func keyRow(
@@ -121,7 +147,8 @@ struct SettingsView: View {
         _ binding: Binding<String>,
         _ keys: [Hotkey],
         _ tint: Color,
-        _ symbol: String
+        _ symbol: String,
+        _ target: KeyCaptureTarget
     ) -> some View {
         HStack(spacing: 12) {
             Image(systemName: symbol)
@@ -139,6 +166,10 @@ struct SettingsView: View {
             .labelsHidden()
             .pickerStyle(.menu)
             .frame(width: 150, alignment: .trailing)
+            Button("录入") { captureTarget = target }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .help("按下要映射的按键")
         }
     }
 
@@ -183,6 +214,11 @@ struct SettingsView: View {
     private var outputBinding: Binding<String> {
         Binding(get: { store.current.outputDevice }, set: { store.current.outputDevice = $0 })
     }
+    private var audioDeviceOptions: [String] {
+        var names = model.audioDeviceNames
+        if !names.contains(store.current.outputDevice) { names.insert(store.current.outputDevice, at: 0) }
+        return names.isEmpty ? [store.current.outputDevice] : names
+    }
     private var autoReconnect: Binding<Bool> {
         Binding(get: { store.current.autoReconnect }, set: { store.current.autoReconnect = $0 })
     }
@@ -223,5 +259,38 @@ struct SettingsView: View {
                 LoginItem.set($0)
                 store.current.launchAtLogin = $0
             })
+    }
+
+    private func setKey(_ target: KeyCaptureTarget, _ key: Hotkey) {
+        switch target {
+        case .talk: store.current.talkKey = key.name
+        case .doubao: store.current.doubaoKey = key.name
+        case .send: store.current.sendKey = key.name
+        case .cancel: store.current.cancelKey = key.name
+        }
+    }
+
+    private enum KeyCaptureTarget: String, Identifiable {
+        case talk, doubao, send, cancel
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .talk: return "Typeless 基础键"
+            case .doubao: return "豆包快捷键"
+            case .send: return "发送键"
+            case .cancel: return "取消键"
+            }
+        }
+
+        var keys: [Hotkey] {
+            switch self {
+            case .talk: return Hotkey.talkKeys
+            case .doubao: return Hotkey.doubaoKeys
+            case .send: return Hotkey.sendKeys
+            case .cancel: return Hotkey.cancelKeys
+            }
+        }
     }
 }

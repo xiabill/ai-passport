@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+- Expanded diagnostics with a first-blocker auto-repair flow, real CoreAudio
+  output-device discovery, guided BlackHole installation, audio test controls,
+  and per-action hotkey capture for the macOS Bridge.
 - Added a guided macOS setup flow with Accessibility, Bluetooth, Passport,
   BlackHole, Typeless, and microphone checks, direct setup actions, and an
   explicit re-check after returning from System Settings.

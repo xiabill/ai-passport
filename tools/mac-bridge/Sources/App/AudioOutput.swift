@@ -123,6 +123,23 @@ final class AudioOutput {
     }
 
     static func findOutputDevice(nameContains needle: String) -> AudioDeviceID? {
+        let devices = outputDevices()
+        for dev in devices {
+            guard let name = deviceName(dev), name.localizedCaseInsensitiveContains(needle) else {
+                continue
+            }
+            return dev
+        }
+        return nil
+    }
+
+    static func outputDeviceNames() -> [String] {
+        outputDevices().compactMap(deviceName).sorted {
+            $0.localizedCaseInsensitiveCompare($1) == .orderedAscending
+        }
+    }
+
+    private static func outputDevices() -> [AudioDeviceID] {
         var addr = AudioObjectPropertyAddress(
             mSelector: kAudioHardwarePropertyDevices,
             mScope: kAudioObjectPropertyScopeGlobal,
@@ -130,19 +147,13 @@ final class AudioOutput {
         var size: UInt32 = 0
         guard AudioObjectGetPropertyDataSize(
             AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size) == noErr
-        else { return nil }
+        else { return [] }
         var devices = [AudioDeviceID](
             repeating: 0, count: Int(size) / MemoryLayout<AudioDeviceID>.size)
         guard AudioObjectGetPropertyData(
             AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size, &devices) == noErr
-        else { return nil }
-        for dev in devices {
-            guard deviceHasOutput(dev), let name = deviceName(dev), name.contains(needle) else {
-                continue
-            }
-            return dev
-        }
-        return nil
+        else { return [] }
+        return devices.filter(deviceHasOutput)
     }
 
     static func deviceExists(_ needle: String) -> Bool {

@@ -65,9 +65,13 @@ struct SetupGuideView: View {
                         .tint(steps.allSatisfy { $0.ok } ? .green : .accentColor)
                     Text("\(steps.filter { $0.ok }.count)/\(steps.count) 已完成")
                         .font(.callout.weight(.semibold))
-                        .foregroundStyle(steps.allSatisfy(\.ok) ? .green : .primary)
+                        .foregroundStyle(steps.allSatisfy { $0.ok } ? .green : .primary)
                         .monospacedDigit()
                     Spacer()
+                    Button { model.repairSetup() } label: {
+                        Label("自动修复", systemImage: "wand.and.stars")
+                    }
+                    .buttonStyle(.borderedProminent)
                     Button { model.refreshChecks() } label: {
                         Label("再次检查", systemImage: "arrow.clockwise")
                     }
@@ -86,7 +90,9 @@ struct SetupGuideView: View {
                         .font(.callout.weight(.medium))
                         .foregroundStyle(.green)
                 } else {
-                    Label("授权后如果状态没有变化，请等待一秒再点“再次检查”。", systemImage: "info.circle")
+                    Label(
+                        model.repairNote.isEmpty ? "授权后如果状态没有变化，请等待一秒再点“再次检查”。" : model.repairNote,
+                        systemImage: model.repairNote.isEmpty ? "info.circle" : "wrench.and.screwdriver")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

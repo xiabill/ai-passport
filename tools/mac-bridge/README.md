@@ -29,6 +29,8 @@ open /Applications/FoloVibeBridge.app
 
 `./build.sh` runs `swift run FoloVibeCoreTests`, packages the app, and installs it to `/Applications/FoloVibeBridge.app` by default. Full Xcode is not required; a Swift 5.9+ toolchain and Apple Command Line Tools are enough. The status and settings pages include a guided setup flow with permission/setup checks and a “Check again” action after returning from System Settings. Grant Bluetooth and Accessibility/Input Monitoring. Set Typeless to the Typeless key (default Fn), Doubao to the Doubao key (default Right Option in toggle mode), and both microphones to `BlackHole 2ch`.
 
+The status page includes audio-effect tests for the configured output, a Passport microphone record/playback round, and BLE packet/loss checks. Every mapping in Settings supports both a picker and direct key capture. If BlackHole is missing, the setup guide can open its official installation page and macOS Sound settings.
+
 Logs: `~/Library/Logs/folovibe-bridge.log`
 
 ## Protocol

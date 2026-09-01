@@ -29,6 +29,12 @@ enum Permissions {
     }
 
     @discardableResult
+    static func openBlackHoleDownload() -> Bool {
+        guard let url = URL(string: "https://existential.audio/blackhole/") else { return false }
+        return NSWorkspace.shared.open(url)
+    }
+
+    @discardableResult
     static func openTypeless() -> Bool {
         let candidates = [
             "/Applications/Typeless.app",
