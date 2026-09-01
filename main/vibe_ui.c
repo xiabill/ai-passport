@@ -368,13 +368,15 @@ void vibe_ui_start(void)
     lv_obj_t *meter = lv_obj_create(panel);
     lv_obj_remove_flag(meter, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_size(meter, 196, 42);
-    lv_obj_set_pos(meter, 4, 44);
+    // Align the meter to the panel's content center instead of relying on a
+    // hard-coded x offset that leaves it a few pixels left of the buttons.
+    lv_obj_align(meter, LV_ALIGN_TOP_MID, 0, 44);
     lv_obj_set_style_bg_color(meter, lv_color_hex(0xE8EEF0), 0);
     lv_obj_set_style_border_width(meter, 2, 0);
     lv_obj_set_style_border_color(meter, lv_color_hex(UI_INK), 0);
     lv_obj_set_style_radius(meter, 6, 0);
     lv_obj_set_style_pad_all(meter, 0, 0);
-    s_meter_hint = ui_pixel_label(meter, "待机 · 按键说话", &ui_font_cjk_14, UI_MUTED);
+    s_meter_hint = ui_pixel_label(meter, "待机 · 按键说话", &ui_font_cjk_14, UI_TEXT_MUTED);
     lv_obj_set_width(s_meter_hint, 190);
     lv_obj_set_height(s_meter_hint, 38);
     lv_obj_set_style_text_align(s_meter_hint, LV_TEXT_ALIGN_CENTER, 0);
@@ -383,7 +385,7 @@ void vibe_ui_start(void)
         s_bars[i] = lv_obj_create(meter);
         lv_obj_remove_flag(s_bars[i], LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_set_size(s_bars[i], 4, 4);
-        lv_obj_set_pos(s_bars[i], 14 + i * 6, 19);
+        lv_obj_set_pos(s_bars[i], 15 + i * 6, 19);
         lv_obj_set_style_radius(s_bars[i], 2, 0);
         lv_obj_set_style_border_width(s_bars[i], 0, 0);
         lv_obj_set_style_pad_all(s_bars[i], 0, 0);

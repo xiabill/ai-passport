@@ -1950,639 +1950,639 @@ static const uint8_t ui_font_cjk_14_glyph_bitmap[] = {
 static const lv_font_fmt_txt_glyph_dsc_t ui_font_cjk_14_glyph_dsc[] = {
     { .bitmap_index = 0, .adv_w = 0, .box_w = 0, .box_h = 0, .ofs_x = 0, .ofs_y = 0 },
     /* U+4E00 "一" */
-    { .bitmap_index = 0, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 0, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E0A "上" */
-    { .bitmap_index = 98, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 98, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E0D "不" */
-    { .bitmap_index = 196, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 196, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E0E "与" */
-    { .bitmap_index = 294, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 294, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E14 "且" */
-    { .bitmap_index = 392, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 392, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E22 "丢" */
-    { .bitmap_index = 490, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 490, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E2A "个" */
-    { .bitmap_index = 588, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 588, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E2D "中" */
-    { .bitmap_index = 686, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 686, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E34 "临" */
-    { .bitmap_index = 784, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 784, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E3A "为" */
-    { .bitmap_index = 882, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 882, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E45 "久" */
-    { .bitmap_index = 980, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 980, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E5F "也" */
-    { .bitmap_index = 1078, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1078, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E86 "了" */
-    { .bitmap_index = 1176, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1176, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E8B "事" */
-    { .bitmap_index = 1274, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1274, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E8E "于" */
-    { .bitmap_index = 1372, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1372, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4EAE "亮" */
-    { .bitmap_index = 1470, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1470, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4EBA "人" */
-    { .bitmap_index = 1568, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1568, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4ECE "从" */
-    { .bitmap_index = 1666, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1666, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4ED3 "仓" */
-    { .bitmap_index = 1764, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1764, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4EF6 "件" */
-    { .bitmap_index = 1862, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1862, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4EFB "任" */
-    { .bitmap_index = 1960, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1960, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F11 "休" */
-    { .bitmap_index = 2058, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2058, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F1A "会" */
-    { .bitmap_index = 2156, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2156, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F4E "低" */
-    { .bitmap_index = 2254, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2254, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F55 "何" */
-    { .bitmap_index = 2352, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2352, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F5C "作" */
-    { .bitmap_index = 2450, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2450, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F7F "使" */
-    { .bitmap_index = 2548, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2548, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F8B "例" */
-    { .bitmap_index = 2646, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2646, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4FBF "便" */
-    { .bitmap_index = 2744, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2744, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4FDD "保" */
-    { .bitmap_index = 2842, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2842, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+4FEE "修" */
-    { .bitmap_index = 2940, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2940, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+503C "值" */
-    { .bitmap_index = 3038, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3038, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+505A "做" */
-    { .bitmap_index = 3136, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3136, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+505C "停" */
-    { .bitmap_index = 3234, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3234, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5148 "先" */
-    { .bitmap_index = 3332, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3332, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5149 "光" */
-    { .bitmap_index = 3430, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3430, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+514D "免" */
-    { .bitmap_index = 3528, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3528, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5165 "入" */
-    { .bitmap_index = 3626, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3626, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5168 "全" */
-    { .bitmap_index = 3724, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3724, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5171 "共" */
-    { .bitmap_index = 3822, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3822, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5185 "内" */
-    { .bitmap_index = 3920, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3920, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+518D "再" */
-    { .bitmap_index = 4018, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4018, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+51B2 "冲" */
-    { .bitmap_index = 4116, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4116, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+51ED "凭" */
-    { .bitmap_index = 4214, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4214, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+51FA "出" */
-    { .bitmap_index = 4312, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4312, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+51FD "函" */
-    { .bitmap_index = 4410, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4410, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5206 "分" */
-    { .bitmap_index = 4508, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4508, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+521B "创" */
-    { .bitmap_index = 4606, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4606, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+521D "初" */
-    { .bitmap_index = 4704, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4704, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5220 "删" */
-    { .bitmap_index = 4802, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4802, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5224 "判" */
-    { .bitmap_index = 4900, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4900, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5230 "到" */
-    { .bitmap_index = 4998, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4998, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5236 "制" */
-    { .bitmap_index = 5096, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5096, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5237 "刷" */
-    { .bitmap_index = 5194, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5194, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+523B "刻" */
-    { .bitmap_index = 5292, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5292, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+529F "功" */
-    { .bitmap_index = 5390, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5390, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+52A0 "加" */
-    { .bitmap_index = 5488, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5488, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+52A1 "务" */
-    { .bitmap_index = 5586, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5586, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+52A8 "动" */
-    { .bitmap_index = 5684, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5684, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+52A9 "助" */
-    { .bitmap_index = 5782, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5782, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5305 "包" */
-    { .bitmap_index = 5880, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5880, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5316 "化" */
-    { .bitmap_index = 5978, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5978, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+533A "区" */
-    { .bitmap_index = 6076, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6076, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5355 "单" */
-    { .bitmap_index = 6174, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6174, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5360 "占" */
-    { .bitmap_index = 6272, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6272, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5373 "即" */
-    { .bitmap_index = 6370, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6370, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5386 "历" */
-    { .bitmap_index = 6468, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6468, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+538B "压" */
-    { .bitmap_index = 6566, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6566, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+539F "原" */
-    { .bitmap_index = 6664, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6664, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+53CD "反" */
-    { .bitmap_index = 6762, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6762, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+53D1 "发" */
-    { .bitmap_index = 6860, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6860, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+53D6 "取" */
-    { .bitmap_index = 6958, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6958, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+53D8 "变" */
-    { .bitmap_index = 7056, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7056, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+53EA "只" */
-    { .bitmap_index = 7154, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7154, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+53EF "可" */
-    { .bitmap_index = 7252, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7252, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+53F2 "史" */
-    { .bitmap_index = 7350, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7350, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5408 "合" */
-    { .bitmap_index = 7448, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7448, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5409 "吉" */
-    { .bitmap_index = 7546, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7546, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+540C "同" */
-    { .bitmap_index = 7644, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7644, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+540E "后" */
-    { .bitmap_index = 7742, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7742, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+542F "启" */
-    { .bitmap_index = 7840, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7840, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+544A "告" */
-    { .bitmap_index = 7938, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7938, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5468 "周" */
-    { .bitmap_index = 8036, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8036, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+548C "和" */
-    { .bitmap_index = 8134, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8134, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5524 "唤" */
-    { .bitmap_index = 8232, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8232, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5668 "器" */
-    { .bitmap_index = 8330, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8330, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+56DE "回" */
-    { .bitmap_index = 8428, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8428, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+56E0 "因" */
-    { .bitmap_index = 8526, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8526, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+56F4 "围" */
-    { .bitmap_index = 8624, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8624, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+56FA "固" */
-    { .bitmap_index = 8722, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8722, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5728 "在" */
-    { .bitmap_index = 8820, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8820, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5730 "地" */
-    { .bitmap_index = 8918, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8918, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5750 "坐" */
-    { .bitmap_index = 9016, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9016, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5757 "块" */
-    { .bitmap_index = 9114, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9114, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+57FA "基" */
-    { .bitmap_index = 9212, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9212, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+585E "塞" */
-    { .bitmap_index = 9310, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9310, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5904 "处" */
-    { .bitmap_index = 9408, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9408, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+590D "复" */
-    { .bitmap_index = 9506, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9506, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5927 "大" */
-    { .bitmap_index = 9604, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9604, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5929 "天" */
-    { .bitmap_index = 9702, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9702, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5931 "失" */
-    { .bitmap_index = 9800, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9800, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5957 "套" */
-    { .bitmap_index = 9898, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9898, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+597D "好" */
-    { .bitmap_index = 9996, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9996, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+59CB "始" */
-    { .bitmap_index = 10094, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10094, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B57 "字" */
-    { .bitmap_index = 10192, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10192, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B58 "存" */
-    { .bitmap_index = 10290, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10290, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B83 "它" */
-    { .bitmap_index = 10388, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10388, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B89 "安" */
-    { .bitmap_index = 10486, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10486, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B98 "官" */
-    { .bitmap_index = 10584, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10584, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B9A "定" */
-    { .bitmap_index = 10682, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10682, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B9E "实" */
-    { .bitmap_index = 10780, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10780, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5BF9 "对" */
-    { .bitmap_index = 10878, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10878, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C0F "小" */
-    { .bitmap_index = 10976, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10976, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C1A "尚" */
-    { .bitmap_index = 11074, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11074, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C31 "就" */
-    { .bitmap_index = 11172, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11172, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C42 "层" */
-    { .bitmap_index = 11270, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11270, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C4F "屏" */
-    { .bitmap_index = 11368, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11368, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C65 "履" */
-    { .bitmap_index = 11466, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11466, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5CF0 "峰" */
-    { .bitmap_index = 11564, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11564, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5DF2 "已" */
-    { .bitmap_index = 11662, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11662, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5DFE "巾" */
-    { .bitmap_index = 11760, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11760, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E26 "带" */
-    { .bitmap_index = 11858, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11858, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E38 "常" */
-    { .bitmap_index = 11956, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11956, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E55 "幕" */
-    { .bitmap_index = 12054, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12054, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E73 "平" */
-    { .bitmap_index = 12152, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12152, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E7F "广" */
-    { .bitmap_index = 12250, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12250, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E93 "库" */
-    { .bitmap_index = 12348, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12348, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E94 "应" */
-    { .bitmap_index = 12446, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12446, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E95 "底" */
-    { .bitmap_index = 12544, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12544, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5EA6 "度" */
-    { .bitmap_index = 12642, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12642, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5EFA "建" */
-    { .bitmap_index = 12740, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12740, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F00 "开" */
-    { .bitmap_index = 12838, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12838, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F0F "式" */
-    { .bitmap_index = 12936, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12936, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F20 "张" */
-    { .bitmap_index = 13034, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13034, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F55 "录" */
-    { .bitmap_index = 13132, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13132, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F62 "形" */
-    { .bitmap_index = 13230, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13230, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F85 "待" */
-    { .bitmap_index = 13328, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13328, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F97 "得" */
-    { .bitmap_index = 13426, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13426, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5FC3 "心" */
-    { .bitmap_index = 13524, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13524, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+5FEB "快" */
-    { .bitmap_index = 13622, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13622, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6062 "恢" */
-    { .bitmap_index = 13720, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13720, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6210 "成" */
-    { .bitmap_index = 13818, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13818, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+624B "手" */
-    { .bitmap_index = 13916, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13916, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+626B "扫" */
-    { .bitmap_index = 14014, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14014, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6296 "抖" */
-    { .bitmap_index = 14112, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14112, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+62C9 "拉" */
-    { .bitmap_index = 14210, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14210, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+62D6 "拖" */
-    { .bitmap_index = 14308, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14308, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6301 "持" */
-    { .bitmap_index = 14406, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14406, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6309 "按" */
-    { .bitmap_index = 14504, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14504, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6362 "换" */
-    { .bitmap_index = 14602, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14602, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+636E "据" */
-    { .bitmap_index = 14700, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14700, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+63A5 "接" */
-    { .bitmap_index = 14798, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14798, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+63A7 "控" */
-    { .bitmap_index = 14896, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14896, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+63CF "描" */
-    { .bitmap_index = 14994, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14994, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+63D0 "提" */
-    { .bitmap_index = 15092, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15092, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+64AD "播" */
-    { .bitmap_index = 15190, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15190, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+64CD "操" */
-    { .bitmap_index = 15288, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15288, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+64E6 "擦" */
-    { .bitmap_index = 15386, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15386, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6536 "收" */
-    { .bitmap_index = 15484, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15484, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6539 "改" */
-    { .bitmap_index = 15582, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15582, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+653E "放" */
-    { .bitmap_index = 15680, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15680, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6545 "故" */
-    { .bitmap_index = 15778, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15778, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6570 "数" */
-    { .bitmap_index = 15876, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15876, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6574 "整" */
-    { .bitmap_index = 15974, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15974, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6587 "文" */
-    { .bitmap_index = 16072, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16072, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+65AD "断" */
-    { .bitmap_index = 16170, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16170, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+65B0 "新" */
-    { .bitmap_index = 16268, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16268, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+65B9 "方" */
-    { .bitmap_index = 16366, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16366, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+65E0 "无" */
-    { .bitmap_index = 16464, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16464, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+65F6 "时" */
-    { .bitmap_index = 16562, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16562, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+660E "明" */
-    { .bitmap_index = 16660, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16660, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+662F "是" */
-    { .bitmap_index = 16758, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16758, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+663E "显" */
-    { .bitmap_index = 16856, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16856, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+666F "景" */
-    { .bitmap_index = 16954, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16954, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+66F4 "更" */
-    { .bitmap_index = 17052, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17052, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6700 "最" */
-    { .bitmap_index = 17150, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17150, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6709 "有" */
-    { .bitmap_index = 17248, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17248, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+671F "期" */
-    { .bitmap_index = 17346, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17346, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+672A "未" */
-    { .bitmap_index = 17444, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17444, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+672C "本" */
-    { .bitmap_index = 17542, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17542, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+673A "机" */
-    { .bitmap_index = 17640, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17640, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6765 "来" */
-    { .bitmap_index = 17738, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17738, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+677F "板" */
-    { .bitmap_index = 17836, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17836, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+67E5 "查" */
-    { .bitmap_index = 17934, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17934, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+67F1 "柱" */
-    { .bitmap_index = 18032, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18032, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6807 "标" */
-    { .bitmap_index = 18130, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18130, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6837 "样" */
-    { .bitmap_index = 18228, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18228, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6838 "核" */
-    { .bitmap_index = 18326, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18326, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6839 "根" */
-    { .bitmap_index = 18424, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18424, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+68C0 "检" */
-    { .bitmap_index = 18522, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18522, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6A21 "模" */
-    { .bitmap_index = 18620, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18620, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6A59 "橙" */
-    { .bitmap_index = 18718, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18718, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6B21 "次" */
-    { .bitmap_index = 18816, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18816, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6B62 "止" */
-    { .bitmap_index = 18914, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18914, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6B63 "正" */
-    { .bitmap_index = 19012, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19012, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6BB5 "段" */
-    { .bitmap_index = 19110, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19110, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6BCF "每" */
-    { .bitmap_index = 19208, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19208, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6CBF "沿" */
-    { .bitmap_index = 19306, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19306, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6CE2 "波" */
-    { .bitmap_index = 19404, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19404, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6D3E "派" */
-    { .bitmap_index = 19502, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19502, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6D41 "流" */
-    { .bitmap_index = 19600, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19600, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6D88 "消" */
-    { .bitmap_index = 19698, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19698, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6E10 "渐" */
-    { .bitmap_index = 19796, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19796, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+6EE1 "满" */
-    { .bitmap_index = 19894, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19894, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7269 "物" */
-    { .bitmap_index = 19992, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19992, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+72EC "独" */
-    { .bitmap_index = 20090, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20090, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+73AF "环" */
-    { .bitmap_index = 20188, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20188, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7406 "理" */
-    { .bitmap_index = 20286, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20286, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7528 "用" */
-    { .bitmap_index = 20384, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20384, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7535 "电" */
-    { .bitmap_index = 20482, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20482, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+753B "画" */
-    { .bitmap_index = 20580, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20580, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7559 "留" */
-    { .bitmap_index = 20678, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20678, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7684 "的" */
-    { .bitmap_index = 20776, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20776, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+76F4 "直" */
-    { .bitmap_index = 20874, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20874, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+76F8 "相" */
-    { .bitmap_index = 20972, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20972, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7701 "省" */
-    { .bitmap_index = 21070, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21070, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+770B "看" */
-    { .bitmap_index = 21168, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21168, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7720 "眠" */
-    { .bitmap_index = 21266, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21266, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+773C "眼" */
-    { .bitmap_index = 21364, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21364, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+77AC "瞬" */
-    { .bitmap_index = 21462, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21462, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+77E5 "知" */
-    { .bitmap_index = 21560, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21560, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+77ED "短" */
-    { .bitmap_index = 21658, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21658, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+786C "硬" */
-    { .bitmap_index = 21756, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21756, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+786E "确" */
-    { .bitmap_index = 21854, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21854, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+793A "示" */
-    { .bitmap_index = 21952, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21952, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7965 "祥" */
-    { .bitmap_index = 22050, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22050, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+79BB "离" */
-    { .bitmap_index = 22148, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22148, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+79D2 "秒" */
-    { .bitmap_index = 22246, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22246, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7A7A "空" */
-    { .bitmap_index = 22344, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22344, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7ACB "立" */
-    { .bitmap_index = 22442, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22442, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7AD9 "站" */
-    { .bitmap_index = 22540, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22540, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7B49 "等" */
-    { .bitmap_index = 22638, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22638, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7BA1 "管" */
-    { .bitmap_index = 22736, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22736, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7D27 "紧" */
-    { .bitmap_index = 22834, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22834, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EA2 "红" */
-    { .bitmap_index = 22932, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22932, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EA7 "级" */
-    { .bitmap_index = 23030, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23030, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EAF "纯" */
-    { .bitmap_index = 23128, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23128, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EBF "线" */
-    { .bitmap_index = 23226, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23226, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EC6 "细" */
-    { .bitmap_index = 23324, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23324, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7ECF "经" */
-    { .bitmap_index = 23422, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23422, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EDC "络" */
-    { .bitmap_index = 23520, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23520, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EEA "绪" */
-    { .bitmap_index = 23618, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23618, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7F13 "缓" */
-    { .bitmap_index = 23716, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23716, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7F29 "缩" */
-    { .bitmap_index = 23814, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23814, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7F51 "网" */
-    { .bitmap_index = 23912, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23912, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+7FFB "翻" */
-    { .bitmap_index = 24010, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24010, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8005 "者" */
-    { .bitmap_index = 24108, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24108, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+800C "而" */
-    { .bitmap_index = 24206, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24206, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+80CC "背" */
-    { .bitmap_index = 24304, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24304, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+80FD "能" */
-    { .bitmap_index = 24402, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24402, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+811A "脚" */
-    { .bitmap_index = 24500, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24500, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8138 "脸" */
-    { .bitmap_index = 24598, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24598, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+81EA "自" */
-    { .bitmap_index = 24696, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24696, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8272 "色" */
-    { .bitmap_index = 24794, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24794, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8282 "节" */
-    { .bitmap_index = 24892, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24892, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8349 "草" */
-    { .bitmap_index = 24990, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24990, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+83DC "菜" */
-    { .bitmap_index = 25088, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25088, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8981 "要" */
-    { .bitmap_index = 25186, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25186, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+89C1 "见" */
-    { .bitmap_index = 25284, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25284, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+89C6 "视" */
-    { .bitmap_index = 25382, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25382, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BA1 "计" */
-    { .bitmap_index = 25480, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25480, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BBF "访" */
-    { .bitmap_index = 25578, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25578, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BC1 "证" */
-    { .bitmap_index = 25676, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25676, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BD1 "译" */
-    { .bitmap_index = 25774, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25774, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BDD "话" */
-    { .bitmap_index = 25872, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25872, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BE5 "该" */
-    { .bitmap_index = 25970, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25970, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BED "语" */
-    { .bitmap_index = 26068, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26068, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BF4 "说" */
-    { .bitmap_index = 26166, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26166, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8C03 "调" */
-    { .bitmap_index = 26264, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26264, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8C46 "豆" */
-    { .bitmap_index = 26362, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26362, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8C61 "象" */
-    { .bitmap_index = 26460, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26460, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8D25 "败" */
-    { .bitmap_index = 26558, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26558, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8D70 "走" */
-    { .bitmap_index = 26656, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26656, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8DC3 "跃" */
-    { .bitmap_index = 26754, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26754, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8DD1 "跑" */
-    { .bitmap_index = 26852, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26852, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8DEF "路" */
-    { .bitmap_index = 26950, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26950, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8DF3 "跳" */
-    { .bitmap_index = 27048, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27048, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8F7B "轻" */
-    { .bitmap_index = 27146, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27146, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8F83 "较" */
-    { .bitmap_index = 27244, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27244, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8FD1 "近" */
-    { .bitmap_index = 27342, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27342, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8FD4 "返" */
-    { .bitmap_index = 27440, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27440, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8FD9 "这" */
-    { .bitmap_index = 27538, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27538, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8FDB "进" */
-    { .bitmap_index = 27636, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27636, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+8FDE "连" */
-    { .bitmap_index = 27734, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27734, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9000 "退" */
-    { .bitmap_index = 27832, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27832, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9001 "送" */
-    { .bitmap_index = 27930, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27930, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9009 "选" */
-    { .bitmap_index = 28028, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28028, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+901F "速" */
-    { .bitmap_index = 28126, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28126, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+907F "避" */
-    { .bitmap_index = 28224, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28224, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+90E8 "部" */
-    { .bitmap_index = 28322, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28322, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+90FD "都" */
-    { .bitmap_index = 28420, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28420, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+914D "配" */
-    { .bitmap_index = 28518, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28518, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9192 "醒" */
-    { .bitmap_index = 28616, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28616, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+91C7 "采" */
-    { .bitmap_index = 28714, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28714, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+91CC "里" */
-    { .bitmap_index = 28812, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28812, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+91CD "重" */
-    { .bitmap_index = 28910, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28910, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+91CF "量" */
-    { .bitmap_index = 29008, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29008, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+94FA "铺" */
-    { .bitmap_index = 29106, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29106, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9501 "锁" */
-    { .bitmap_index = 29204, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29204, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+952E "键" */
-    { .bitmap_index = 29302, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29302, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+95EE "问" */
-    { .bitmap_index = 29400, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29400, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+95F2 "闲" */
-    { .bitmap_index = 29498, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29498, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+963B "阻" */
-    { .bitmap_index = 29596, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29596, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9644 "附" */
-    { .bitmap_index = 29694, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29694, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9664 "除" */
-    { .bitmap_index = 29792, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29792, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+968F "随" */
-    { .bitmap_index = 29890, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29890, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9690 "隐" */
-    { .bitmap_index = 29988, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29988, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9759 "静" */
-    { .bitmap_index = 30086, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30086, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+975E "非" */
-    { .bitmap_index = 30184, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30184, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9760 "靠" */
-    { .bitmap_index = 30282, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30282, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9762 "面" */
-    { .bitmap_index = 30380, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30380, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+97F3 "音" */
-    { .bitmap_index = 30478, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30478, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9875 "页" */
-    { .bitmap_index = 30576, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30576, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9891 "频" */
-    { .bitmap_index = 30674, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30674, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9A8C "验" */
-    { .bitmap_index = 30772, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30772, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9AD8 "高" */
-    { .bitmap_index = 30870, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30870, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
     /* U+9ED8 "默" */
-    { .bitmap_index = 30968, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30968, .adv_w = 224, .box_w = 14, .box_h = 14, .ofs_x = 0, .ofs_y = -1 },
 };
 
 static const uint16_t ui_font_cjk_14_unicode_list[] = { 0, 10, 13, 14, 20, 34, 42, 45, 52, 58, 69, 95, 134, 139, 142, 174, 186, 206, 211, 246, 251, 273, 282, 334, 341, 348, 383, 395, 447, 477, 494, 572, 602, 604, 840, 841, 845, 869, 872, 881, 901, 909, 946, 1005, 1018, 1021, 1030, 1051, 1053, 1056, 1060, 1072, 1078, 1079, 1083, 1183, 1184, 1185, 1192, 1193, 1285, 1302, 1338, 1365, 1376, 1395, 1414, 1419, 1439, 1485, 1489, 1494, 1496, 1514, 1519, 1522, 1544, 1545, 1548, 1550, 1583, 1610, 1640, 1676, 1828, 2152, 2270, 2272, 2292, 2298, 2344, 2352, 2384, 2391, 2554, 2654, 2820, 2829, 2855, 2857, 2865, 2903, 2941, 3019, 3415, 3416, 3459, 3465, 3480, 3482, 3486, 3577, 3599, 3610, 3633, 3650, 3663, 3685, 3824, 4082, 4094, 4134, 4152, 4181, 4211, 4223, 4243, 4244, 4245, 4262, 4346, 4352, 4367, 4384, 4437, 4450, 4485, 4503, 4547, 4587, 4706, 5136, 5195, 5227, 5270, 5321, 5334, 5377, 5385, 5474, 5486, 5541, 5543, 5583, 5584, 5805, 5837, 5862, 5942, 5945, 5950, 5957, 6000, 6004, 6023, 6061, 6064, 6073, 6112, 6134, 6158, 6191, 6206, 6255, 6388, 6400, 6409, 6431, 6442, 6444, 6458, 6501, 6527, 6629, 6641, 6663, 6711, 6712, 6713, 6848, 7201, 7257, 7457, 7522, 7523, 7605, 7631, 7871, 7906, 7998, 8001, 8072, 8208, 8417, 9321, 9452, 9647, 9734, 10024, 10037, 10043, 10073, 10372, 10484, 10488, 10497, 10507, 10528, 10556, 10668, 10725, 10733, 10860, 10862, 11066, 11109, 11195, 11218, 11386, 11467, 11481, 11593, 11681, 12071, 12450, 12455, 12463, 12479, 12486, 12495, 12508, 12522, 12563, 12585, 12625, 12795, 12805, 12812, 13004, 13053, 13082, 13112, 13290, 13426, 13442, 13641, 13788, 15233, 15297, 15302, 15777, 15807, 15809, 15825, 15837, 15845, 15853, 15860, 15875, 15942, 15969, 16165, 16240, 16323, 16337, 16367, 16371, 16763, 16771, 16849, 16852, 16857, 16859, 16862, 16896, 16897, 16905, 16927, 17023, 17128, 17149, 17229, 17298, 17351, 17356, 17357, 17359, 18170, 18177, 18222, 18414, 18418, 18491, 18500, 18532, 18575, 18576, 18777, 18782, 18784, 18786, 18931, 19061, 19089, 19596, 19672, 20696 };
@@ -2612,8 +2612,8 @@ const lv_font_t ui_font_cjk_14 = {
     .get_glyph_dsc = lv_font_get_glyph_dsc_fmt_txt,
     .get_glyph_bitmap = lv_font_get_bitmap_fmt_txt,
     .release_glyph = NULL,
-    .line_height = 14,
-    .base_line = 0,
+    .line_height = 16,
+    .base_line = 3,
     .subpx = LV_FONT_SUBPX_NONE,
     .kerning = LV_FONT_KERNING_NONE,
     .static_bitmap = 1,
@@ -5166,639 +5166,639 @@ static const uint8_t ui_font_cjk_16_glyph_bitmap[] = {
 static const lv_font_fmt_txt_glyph_dsc_t ui_font_cjk_16_glyph_dsc[] = {
     { .bitmap_index = 0, .adv_w = 0, .box_w = 0, .box_h = 0, .ofs_x = 0, .ofs_y = 0 },
     /* U+4E00 "一" */
-    { .bitmap_index = 0, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 0, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E0A "上" */
-    { .bitmap_index = 128, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 128, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E0D "不" */
-    { .bitmap_index = 256, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 256, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E0E "与" */
-    { .bitmap_index = 384, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 384, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E14 "且" */
-    { .bitmap_index = 512, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 512, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E22 "丢" */
-    { .bitmap_index = 640, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 640, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E2A "个" */
-    { .bitmap_index = 768, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 768, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E2D "中" */
-    { .bitmap_index = 896, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 896, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E34 "临" */
-    { .bitmap_index = 1024, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1024, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E3A "为" */
-    { .bitmap_index = 1152, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1152, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E45 "久" */
-    { .bitmap_index = 1280, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1280, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E5F "也" */
-    { .bitmap_index = 1408, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1408, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E86 "了" */
-    { .bitmap_index = 1536, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1536, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E8B "事" */
-    { .bitmap_index = 1664, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1664, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4E8E "于" */
-    { .bitmap_index = 1792, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1792, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4EAE "亮" */
-    { .bitmap_index = 1920, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 1920, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4EBA "人" */
-    { .bitmap_index = 2048, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2048, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4ECE "从" */
-    { .bitmap_index = 2176, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2176, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4ED3 "仓" */
-    { .bitmap_index = 2304, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2304, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4EF6 "件" */
-    { .bitmap_index = 2432, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2432, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4EFB "任" */
-    { .bitmap_index = 2560, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2560, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F11 "休" */
-    { .bitmap_index = 2688, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2688, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F1A "会" */
-    { .bitmap_index = 2816, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2816, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F4E "低" */
-    { .bitmap_index = 2944, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 2944, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F55 "何" */
-    { .bitmap_index = 3072, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3072, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F5C "作" */
-    { .bitmap_index = 3200, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3200, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F7F "使" */
-    { .bitmap_index = 3328, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3328, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4F8B "例" */
-    { .bitmap_index = 3456, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3456, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4FBF "便" */
-    { .bitmap_index = 3584, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3584, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4FDD "保" */
-    { .bitmap_index = 3712, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3712, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+4FEE "修" */
-    { .bitmap_index = 3840, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3840, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+503C "值" */
-    { .bitmap_index = 3968, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 3968, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+505A "做" */
-    { .bitmap_index = 4096, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4096, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+505C "停" */
-    { .bitmap_index = 4224, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4224, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5148 "先" */
-    { .bitmap_index = 4352, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4352, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5149 "光" */
-    { .bitmap_index = 4480, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4480, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+514D "免" */
-    { .bitmap_index = 4608, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4608, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5165 "入" */
-    { .bitmap_index = 4736, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4736, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5168 "全" */
-    { .bitmap_index = 4864, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4864, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5171 "共" */
-    { .bitmap_index = 4992, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 4992, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5185 "内" */
-    { .bitmap_index = 5120, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5120, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+518D "再" */
-    { .bitmap_index = 5248, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5248, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+51B2 "冲" */
-    { .bitmap_index = 5376, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5376, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+51ED "凭" */
-    { .bitmap_index = 5504, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5504, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+51FA "出" */
-    { .bitmap_index = 5632, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5632, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+51FD "函" */
-    { .bitmap_index = 5760, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5760, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5206 "分" */
-    { .bitmap_index = 5888, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 5888, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+521B "创" */
-    { .bitmap_index = 6016, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6016, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+521D "初" */
-    { .bitmap_index = 6144, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6144, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5220 "删" */
-    { .bitmap_index = 6272, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6272, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5224 "判" */
-    { .bitmap_index = 6400, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6400, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5230 "到" */
-    { .bitmap_index = 6528, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6528, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5236 "制" */
-    { .bitmap_index = 6656, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6656, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5237 "刷" */
-    { .bitmap_index = 6784, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6784, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+523B "刻" */
-    { .bitmap_index = 6912, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 6912, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+529F "功" */
-    { .bitmap_index = 7040, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7040, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+52A0 "加" */
-    { .bitmap_index = 7168, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7168, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+52A1 "务" */
-    { .bitmap_index = 7296, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7296, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+52A8 "动" */
-    { .bitmap_index = 7424, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7424, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+52A9 "助" */
-    { .bitmap_index = 7552, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7552, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5305 "包" */
-    { .bitmap_index = 7680, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7680, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5316 "化" */
-    { .bitmap_index = 7808, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7808, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+533A "区" */
-    { .bitmap_index = 7936, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 7936, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5355 "单" */
-    { .bitmap_index = 8064, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8064, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5360 "占" */
-    { .bitmap_index = 8192, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8192, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5373 "即" */
-    { .bitmap_index = 8320, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8320, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5386 "历" */
-    { .bitmap_index = 8448, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8448, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+538B "压" */
-    { .bitmap_index = 8576, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8576, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+539F "原" */
-    { .bitmap_index = 8704, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8704, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+53CD "反" */
-    { .bitmap_index = 8832, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8832, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+53D1 "发" */
-    { .bitmap_index = 8960, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 8960, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+53D6 "取" */
-    { .bitmap_index = 9088, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9088, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+53D8 "变" */
-    { .bitmap_index = 9216, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9216, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+53EA "只" */
-    { .bitmap_index = 9344, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9344, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+53EF "可" */
-    { .bitmap_index = 9472, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9472, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+53F2 "史" */
-    { .bitmap_index = 9600, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9600, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5408 "合" */
-    { .bitmap_index = 9728, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9728, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5409 "吉" */
-    { .bitmap_index = 9856, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9856, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+540C "同" */
-    { .bitmap_index = 9984, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 9984, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+540E "后" */
-    { .bitmap_index = 10112, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10112, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+542F "启" */
-    { .bitmap_index = 10240, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10240, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+544A "告" */
-    { .bitmap_index = 10368, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10368, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5468 "周" */
-    { .bitmap_index = 10496, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10496, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+548C "和" */
-    { .bitmap_index = 10624, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10624, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5524 "唤" */
-    { .bitmap_index = 10752, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10752, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5668 "器" */
-    { .bitmap_index = 10880, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 10880, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+56DE "回" */
-    { .bitmap_index = 11008, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11008, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+56E0 "因" */
-    { .bitmap_index = 11136, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11136, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+56F4 "围" */
-    { .bitmap_index = 11264, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11264, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+56FA "固" */
-    { .bitmap_index = 11392, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11392, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5728 "在" */
-    { .bitmap_index = 11520, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11520, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5730 "地" */
-    { .bitmap_index = 11648, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11648, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5750 "坐" */
-    { .bitmap_index = 11776, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11776, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5757 "块" */
-    { .bitmap_index = 11904, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 11904, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+57FA "基" */
-    { .bitmap_index = 12032, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12032, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+585E "塞" */
-    { .bitmap_index = 12160, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12160, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5904 "处" */
-    { .bitmap_index = 12288, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12288, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+590D "复" */
-    { .bitmap_index = 12416, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12416, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5927 "大" */
-    { .bitmap_index = 12544, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12544, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5929 "天" */
-    { .bitmap_index = 12672, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12672, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5931 "失" */
-    { .bitmap_index = 12800, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12800, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5957 "套" */
-    { .bitmap_index = 12928, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 12928, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+597D "好" */
-    { .bitmap_index = 13056, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13056, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+59CB "始" */
-    { .bitmap_index = 13184, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13184, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B57 "字" */
-    { .bitmap_index = 13312, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13312, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B58 "存" */
-    { .bitmap_index = 13440, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13440, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B83 "它" */
-    { .bitmap_index = 13568, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13568, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B89 "安" */
-    { .bitmap_index = 13696, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13696, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B98 "官" */
-    { .bitmap_index = 13824, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13824, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B9A "定" */
-    { .bitmap_index = 13952, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 13952, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5B9E "实" */
-    { .bitmap_index = 14080, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14080, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5BF9 "对" */
-    { .bitmap_index = 14208, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14208, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C0F "小" */
-    { .bitmap_index = 14336, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14336, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C1A "尚" */
-    { .bitmap_index = 14464, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14464, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C31 "就" */
-    { .bitmap_index = 14592, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14592, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C42 "层" */
-    { .bitmap_index = 14720, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14720, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C4F "屏" */
-    { .bitmap_index = 14848, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14848, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5C65 "履" */
-    { .bitmap_index = 14976, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 14976, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5CF0 "峰" */
-    { .bitmap_index = 15104, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15104, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5DF2 "已" */
-    { .bitmap_index = 15232, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15232, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5DFE "巾" */
-    { .bitmap_index = 15360, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15360, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E26 "带" */
-    { .bitmap_index = 15488, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15488, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E38 "常" */
-    { .bitmap_index = 15616, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15616, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E55 "幕" */
-    { .bitmap_index = 15744, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15744, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E73 "平" */
-    { .bitmap_index = 15872, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 15872, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E7F "广" */
-    { .bitmap_index = 16000, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16000, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E93 "库" */
-    { .bitmap_index = 16128, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16128, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E94 "应" */
-    { .bitmap_index = 16256, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16256, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5E95 "底" */
-    { .bitmap_index = 16384, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16384, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5EA6 "度" */
-    { .bitmap_index = 16512, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16512, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5EFA "建" */
-    { .bitmap_index = 16640, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16640, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F00 "开" */
-    { .bitmap_index = 16768, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16768, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F0F "式" */
-    { .bitmap_index = 16896, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 16896, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F20 "张" */
-    { .bitmap_index = 17024, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17024, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F55 "录" */
-    { .bitmap_index = 17152, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17152, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F62 "形" */
-    { .bitmap_index = 17280, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17280, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F85 "待" */
-    { .bitmap_index = 17408, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17408, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5F97 "得" */
-    { .bitmap_index = 17536, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17536, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5FC3 "心" */
-    { .bitmap_index = 17664, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17664, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+5FEB "快" */
-    { .bitmap_index = 17792, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17792, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6062 "恢" */
-    { .bitmap_index = 17920, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 17920, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6210 "成" */
-    { .bitmap_index = 18048, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18048, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+624B "手" */
-    { .bitmap_index = 18176, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18176, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+626B "扫" */
-    { .bitmap_index = 18304, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18304, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6296 "抖" */
-    { .bitmap_index = 18432, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18432, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+62C9 "拉" */
-    { .bitmap_index = 18560, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18560, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+62D6 "拖" */
-    { .bitmap_index = 18688, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18688, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6301 "持" */
-    { .bitmap_index = 18816, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18816, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6309 "按" */
-    { .bitmap_index = 18944, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 18944, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6362 "换" */
-    { .bitmap_index = 19072, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19072, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+636E "据" */
-    { .bitmap_index = 19200, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19200, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+63A5 "接" */
-    { .bitmap_index = 19328, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19328, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+63A7 "控" */
-    { .bitmap_index = 19456, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19456, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+63CF "描" */
-    { .bitmap_index = 19584, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19584, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+63D0 "提" */
-    { .bitmap_index = 19712, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19712, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+64AD "播" */
-    { .bitmap_index = 19840, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19840, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+64CD "操" */
-    { .bitmap_index = 19968, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 19968, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+64E6 "擦" */
-    { .bitmap_index = 20096, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20096, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6536 "收" */
-    { .bitmap_index = 20224, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20224, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6539 "改" */
-    { .bitmap_index = 20352, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20352, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+653E "放" */
-    { .bitmap_index = 20480, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20480, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6545 "故" */
-    { .bitmap_index = 20608, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20608, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6570 "数" */
-    { .bitmap_index = 20736, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20736, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6574 "整" */
-    { .bitmap_index = 20864, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20864, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6587 "文" */
-    { .bitmap_index = 20992, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 20992, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+65AD "断" */
-    { .bitmap_index = 21120, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21120, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+65B0 "新" */
-    { .bitmap_index = 21248, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21248, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+65B9 "方" */
-    { .bitmap_index = 21376, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21376, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+65E0 "无" */
-    { .bitmap_index = 21504, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21504, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+65F6 "时" */
-    { .bitmap_index = 21632, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21632, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+660E "明" */
-    { .bitmap_index = 21760, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21760, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+662F "是" */
-    { .bitmap_index = 21888, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 21888, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+663E "显" */
-    { .bitmap_index = 22016, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22016, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+666F "景" */
-    { .bitmap_index = 22144, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22144, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+66F4 "更" */
-    { .bitmap_index = 22272, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22272, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6700 "最" */
-    { .bitmap_index = 22400, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22400, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6709 "有" */
-    { .bitmap_index = 22528, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22528, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+671F "期" */
-    { .bitmap_index = 22656, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22656, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+672A "未" */
-    { .bitmap_index = 22784, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22784, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+672C "本" */
-    { .bitmap_index = 22912, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 22912, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+673A "机" */
-    { .bitmap_index = 23040, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23040, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6765 "来" */
-    { .bitmap_index = 23168, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23168, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+677F "板" */
-    { .bitmap_index = 23296, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23296, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+67E5 "查" */
-    { .bitmap_index = 23424, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23424, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+67F1 "柱" */
-    { .bitmap_index = 23552, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23552, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6807 "标" */
-    { .bitmap_index = 23680, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23680, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6837 "样" */
-    { .bitmap_index = 23808, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23808, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6838 "核" */
-    { .bitmap_index = 23936, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 23936, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6839 "根" */
-    { .bitmap_index = 24064, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24064, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+68C0 "检" */
-    { .bitmap_index = 24192, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24192, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6A21 "模" */
-    { .bitmap_index = 24320, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24320, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6A59 "橙" */
-    { .bitmap_index = 24448, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24448, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6B21 "次" */
-    { .bitmap_index = 24576, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24576, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6B62 "止" */
-    { .bitmap_index = 24704, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24704, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6B63 "正" */
-    { .bitmap_index = 24832, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24832, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6BB5 "段" */
-    { .bitmap_index = 24960, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 24960, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6BCF "每" */
-    { .bitmap_index = 25088, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25088, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6CBF "沿" */
-    { .bitmap_index = 25216, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25216, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6CE2 "波" */
-    { .bitmap_index = 25344, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25344, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6D3E "派" */
-    { .bitmap_index = 25472, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25472, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6D41 "流" */
-    { .bitmap_index = 25600, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25600, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6D88 "消" */
-    { .bitmap_index = 25728, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25728, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6E10 "渐" */
-    { .bitmap_index = 25856, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25856, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+6EE1 "满" */
-    { .bitmap_index = 25984, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 25984, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7269 "物" */
-    { .bitmap_index = 26112, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26112, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+72EC "独" */
-    { .bitmap_index = 26240, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26240, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+73AF "环" */
-    { .bitmap_index = 26368, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26368, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7406 "理" */
-    { .bitmap_index = 26496, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26496, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7528 "用" */
-    { .bitmap_index = 26624, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26624, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7535 "电" */
-    { .bitmap_index = 26752, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26752, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+753B "画" */
-    { .bitmap_index = 26880, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 26880, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7559 "留" */
-    { .bitmap_index = 27008, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27008, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7684 "的" */
-    { .bitmap_index = 27136, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27136, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+76F4 "直" */
-    { .bitmap_index = 27264, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27264, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+76F8 "相" */
-    { .bitmap_index = 27392, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27392, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7701 "省" */
-    { .bitmap_index = 27520, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27520, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+770B "看" */
-    { .bitmap_index = 27648, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27648, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7720 "眠" */
-    { .bitmap_index = 27776, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27776, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+773C "眼" */
-    { .bitmap_index = 27904, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 27904, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+77AC "瞬" */
-    { .bitmap_index = 28032, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28032, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+77E5 "知" */
-    { .bitmap_index = 28160, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28160, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+77ED "短" */
-    { .bitmap_index = 28288, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28288, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+786C "硬" */
-    { .bitmap_index = 28416, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28416, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+786E "确" */
-    { .bitmap_index = 28544, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28544, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+793A "示" */
-    { .bitmap_index = 28672, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28672, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7965 "祥" */
-    { .bitmap_index = 28800, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28800, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+79BB "离" */
-    { .bitmap_index = 28928, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 28928, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+79D2 "秒" */
-    { .bitmap_index = 29056, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29056, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7A7A "空" */
-    { .bitmap_index = 29184, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29184, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7ACB "立" */
-    { .bitmap_index = 29312, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29312, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7AD9 "站" */
-    { .bitmap_index = 29440, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29440, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7B49 "等" */
-    { .bitmap_index = 29568, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29568, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7BA1 "管" */
-    { .bitmap_index = 29696, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29696, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7D27 "紧" */
-    { .bitmap_index = 29824, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29824, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EA2 "红" */
-    { .bitmap_index = 29952, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 29952, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EA7 "级" */
-    { .bitmap_index = 30080, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30080, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EAF "纯" */
-    { .bitmap_index = 30208, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30208, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EBF "线" */
-    { .bitmap_index = 30336, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30336, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EC6 "细" */
-    { .bitmap_index = 30464, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30464, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7ECF "经" */
-    { .bitmap_index = 30592, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30592, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EDC "络" */
-    { .bitmap_index = 30720, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30720, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7EEA "绪" */
-    { .bitmap_index = 30848, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30848, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7F13 "缓" */
-    { .bitmap_index = 30976, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 30976, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7F29 "缩" */
-    { .bitmap_index = 31104, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 31104, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7F51 "网" */
-    { .bitmap_index = 31232, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 31232, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+7FFB "翻" */
-    { .bitmap_index = 31360, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 31360, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8005 "者" */
-    { .bitmap_index = 31488, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 31488, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+800C "而" */
-    { .bitmap_index = 31616, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 31616, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+80CC "背" */
-    { .bitmap_index = 31744, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 31744, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+80FD "能" */
-    { .bitmap_index = 31872, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 31872, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+811A "脚" */
-    { .bitmap_index = 32000, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 32000, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8138 "脸" */
-    { .bitmap_index = 32128, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 32128, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+81EA "自" */
-    { .bitmap_index = 32256, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 32256, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8272 "色" */
-    { .bitmap_index = 32384, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 32384, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8282 "节" */
-    { .bitmap_index = 32512, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 32512, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8349 "草" */
-    { .bitmap_index = 32640, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 32640, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+83DC "菜" */
-    { .bitmap_index = 32768, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 32768, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8981 "要" */
-    { .bitmap_index = 32896, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 32896, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+89C1 "见" */
-    { .bitmap_index = 33024, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 33024, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+89C6 "视" */
-    { .bitmap_index = 33152, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 33152, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BA1 "计" */
-    { .bitmap_index = 33280, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 33280, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BBF "访" */
-    { .bitmap_index = 33408, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 33408, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BC1 "证" */
-    { .bitmap_index = 33536, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 33536, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BD1 "译" */
-    { .bitmap_index = 33664, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 33664, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BDD "话" */
-    { .bitmap_index = 33792, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 33792, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BE5 "该" */
-    { .bitmap_index = 33920, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 33920, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BED "语" */
-    { .bitmap_index = 34048, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 34048, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8BF4 "说" */
-    { .bitmap_index = 34176, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 34176, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8C03 "调" */
-    { .bitmap_index = 34304, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 34304, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8C46 "豆" */
-    { .bitmap_index = 34432, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 34432, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8C61 "象" */
-    { .bitmap_index = 34560, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 34560, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8D25 "败" */
-    { .bitmap_index = 34688, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 34688, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8D70 "走" */
-    { .bitmap_index = 34816, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 34816, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8DC3 "跃" */
-    { .bitmap_index = 34944, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 34944, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8DD1 "跑" */
-    { .bitmap_index = 35072, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 35072, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8DEF "路" */
-    { .bitmap_index = 35200, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 35200, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8DF3 "跳" */
-    { .bitmap_index = 35328, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 35328, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8F7B "轻" */
-    { .bitmap_index = 35456, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 35456, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8F83 "较" */
-    { .bitmap_index = 35584, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 35584, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8FD1 "近" */
-    { .bitmap_index = 35712, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 35712, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8FD4 "返" */
-    { .bitmap_index = 35840, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 35840, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8FD9 "这" */
-    { .bitmap_index = 35968, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 35968, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8FDB "进" */
-    { .bitmap_index = 36096, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 36096, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+8FDE "连" */
-    { .bitmap_index = 36224, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 36224, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9000 "退" */
-    { .bitmap_index = 36352, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 36352, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9001 "送" */
-    { .bitmap_index = 36480, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 36480, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9009 "选" */
-    { .bitmap_index = 36608, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 36608, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+901F "速" */
-    { .bitmap_index = 36736, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 36736, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+907F "避" */
-    { .bitmap_index = 36864, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 36864, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+90E8 "部" */
-    { .bitmap_index = 36992, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 36992, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+90FD "都" */
-    { .bitmap_index = 37120, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 37120, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+914D "配" */
-    { .bitmap_index = 37248, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 37248, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9192 "醒" */
-    { .bitmap_index = 37376, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 37376, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+91C7 "采" */
-    { .bitmap_index = 37504, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 37504, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+91CC "里" */
-    { .bitmap_index = 37632, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 37632, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+91CD "重" */
-    { .bitmap_index = 37760, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 37760, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+91CF "量" */
-    { .bitmap_index = 37888, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 37888, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+94FA "铺" */
-    { .bitmap_index = 38016, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 38016, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9501 "锁" */
-    { .bitmap_index = 38144, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 38144, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+952E "键" */
-    { .bitmap_index = 38272, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 38272, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+95EE "问" */
-    { .bitmap_index = 38400, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 38400, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+95F2 "闲" */
-    { .bitmap_index = 38528, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 38528, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+963B "阻" */
-    { .bitmap_index = 38656, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 38656, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9644 "附" */
-    { .bitmap_index = 38784, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 38784, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9664 "除" */
-    { .bitmap_index = 38912, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 38912, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+968F "随" */
-    { .bitmap_index = 39040, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 39040, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9690 "隐" */
-    { .bitmap_index = 39168, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 39168, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9759 "静" */
-    { .bitmap_index = 39296, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 39296, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+975E "非" */
-    { .bitmap_index = 39424, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 39424, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9760 "靠" */
-    { .bitmap_index = 39552, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 39552, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9762 "面" */
-    { .bitmap_index = 39680, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 39680, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+97F3 "音" */
-    { .bitmap_index = 39808, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 39808, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9875 "页" */
-    { .bitmap_index = 39936, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 39936, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9891 "频" */
-    { .bitmap_index = 40064, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 40064, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9A8C "验" */
-    { .bitmap_index = 40192, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 40192, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9AD8 "高" */
-    { .bitmap_index = 40320, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 40320, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
     /* U+9ED8 "默" */
-    { .bitmap_index = 40448, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = 0 },
+    { .bitmap_index = 40448, .adv_w = 256, .box_w = 16, .box_h = 16, .ofs_x = 0, .ofs_y = -1 },
 };
 
 static const uint16_t ui_font_cjk_16_unicode_list[] = { 0, 10, 13, 14, 20, 34, 42, 45, 52, 58, 69, 95, 134, 139, 142, 174, 186, 206, 211, 246, 251, 273, 282, 334, 341, 348, 383, 395, 447, 477, 494, 572, 602, 604, 840, 841, 845, 869, 872, 881, 901, 909, 946, 1005, 1018, 1021, 1030, 1051, 1053, 1056, 1060, 1072, 1078, 1079, 1083, 1183, 1184, 1185, 1192, 1193, 1285, 1302, 1338, 1365, 1376, 1395, 1414, 1419, 1439, 1485, 1489, 1494, 1496, 1514, 1519, 1522, 1544, 1545, 1548, 1550, 1583, 1610, 1640, 1676, 1828, 2152, 2270, 2272, 2292, 2298, 2344, 2352, 2384, 2391, 2554, 2654, 2820, 2829, 2855, 2857, 2865, 2903, 2941, 3019, 3415, 3416, 3459, 3465, 3480, 3482, 3486, 3577, 3599, 3610, 3633, 3650, 3663, 3685, 3824, 4082, 4094, 4134, 4152, 4181, 4211, 4223, 4243, 4244, 4245, 4262, 4346, 4352, 4367, 4384, 4437, 4450, 4485, 4503, 4547, 4587, 4706, 5136, 5195, 5227, 5270, 5321, 5334, 5377, 5385, 5474, 5486, 5541, 5543, 5583, 5584, 5805, 5837, 5862, 5942, 5945, 5950, 5957, 6000, 6004, 6023, 6061, 6064, 6073, 6112, 6134, 6158, 6191, 6206, 6255, 6388, 6400, 6409, 6431, 6442, 6444, 6458, 6501, 6527, 6629, 6641, 6663, 6711, 6712, 6713, 6848, 7201, 7257, 7457, 7522, 7523, 7605, 7631, 7871, 7906, 7998, 8001, 8072, 8208, 8417, 9321, 9452, 9647, 9734, 10024, 10037, 10043, 10073, 10372, 10484, 10488, 10497, 10507, 10528, 10556, 10668, 10725, 10733, 10860, 10862, 11066, 11109, 11195, 11218, 11386, 11467, 11481, 11593, 11681, 12071, 12450, 12455, 12463, 12479, 12486, 12495, 12508, 12522, 12563, 12585, 12625, 12795, 12805, 12812, 13004, 13053, 13082, 13112, 13290, 13426, 13442, 13641, 13788, 15233, 15297, 15302, 15777, 15807, 15809, 15825, 15837, 15845, 15853, 15860, 15875, 15942, 15969, 16165, 16240, 16323, 16337, 16367, 16371, 16763, 16771, 16849, 16852, 16857, 16859, 16862, 16896, 16897, 16905, 16927, 17023, 17128, 17149, 17229, 17298, 17351, 17356, 17357, 17359, 18170, 18177, 18222, 18414, 18418, 18491, 18500, 18532, 18575, 18576, 18777, 18782, 18784, 18786, 18931, 19061, 19089, 19596, 19672, 20696 };
@@ -5828,14 +5828,14 @@ const lv_font_t ui_font_cjk_16 = {
     .get_glyph_dsc = lv_font_get_glyph_dsc_fmt_txt,
     .get_glyph_bitmap = lv_font_get_bitmap_fmt_txt,
     .release_glyph = NULL,
-    .line_height = 16,
-    .base_line = 0,
+    .line_height = 18,
+    .base_line = 3,
     .subpx = LV_FONT_SUBPX_NONE,
     .kerning = LV_FONT_KERNING_NONE,
     .static_bitmap = 1,
     .underline_position = 0,
     .underline_thickness = 0,
     .dsc = &ui_font_cjk_16_dsc,
-    .fallback = &lv_font_montserrat_14,
+    .fallback = &lv_font_montserrat_16,
     .user_data = NULL,
 };

@@ -39,7 +39,8 @@ def glyph_chars():
     return sorted(chars)
 
 
-def make_font(size: int, name: str, fallback: str, chars: list[str]) -> str:
+def make_font(size: int, name: str, fallback: str, chars: list[str],
+              line_height: int, base_line: int, glyph_ofs_y: int) -> str:
     font = ImageFont.truetype(str(FONT_PATH), size, index=1)
     width = size
     height = size
@@ -61,7 +62,10 @@ def make_font(size: int, name: str, fallback: str, chars: list[str]) -> str:
                 left = round(pixels[x, y] * 15 / 255)
                 right = round(pixels[x + 1, y] * 15 / 255)
                 bitmaps.append((left << 4) | right)
-        desc.append((start, size * 16, width, height, 0, 0))
+        # Match the fallback font's line metrics. LVGL uses the label font's
+        # line_height/base_line for every glyph, including fallback glyphs;
+        # keeping CJK at 14/0 while Latin uses 16/3 makes mixed labels jump.
+        desc.append((start, size * 16, width, height, 0, glyph_ofs_y))
 
     range_start = min(ord(c) for c in chars)
     unicode_list = [ord(c) - range_start for c in chars]
@@ -119,8 +123,8 @@ def make_font(size: int, name: str, fallback: str, chars: list[str]) -> str:
         + "    .get_glyph_dsc = lv_font_get_glyph_dsc_fmt_txt,\n"
         + "    .get_glyph_bitmap = lv_font_get_bitmap_fmt_txt,\n"
         + "    .release_glyph = NULL,\n"
-        + f"    .line_height = {size},\n"
-        + "    .base_line = 0,\n"
+        + f"    .line_height = {line_height},\n"
+        + f"    .base_line = {base_line},\n"
         + "    .subpx = LV_FONT_SUBPX_NONE,\n"
         + "    .kerning = LV_FONT_KERNING_NONE,\n"
         + "    .static_bitmap = 1,\n"
@@ -161,9 +165,14 @@ def main():
         '#include "lvgl.h"\n'
         '#include "font/fmt_txt/lv_font_fmt_txt.h"\n\n'
     )
-    content += make_font(14, "ui_font_cjk_14", "&lv_font_montserrat_14", chars)
+    # These match Montserrat 14's 16px line / 3px baseline. The -1 glyph
+    # offset places the 14px CJK cell on that same visual baseline.
+    content += make_font(14, "ui_font_cjk_14", "&lv_font_montserrat_14", chars,
+                         line_height=16, base_line=3, glyph_ofs_y=-1)
     content += "\n"
-    content += make_font(16, "ui_font_cjk_16", "&lv_font_montserrat_14", chars)
+    # The 16px title font is baseline-compatible with Montserrat 16.
+    content += make_font(16, "ui_font_cjk_16", "&lv_font_montserrat_16", chars,
+                         line_height=18, base_line=3, glyph_ofs_y=-1)
     OUTPUT.write_text(content, encoding="utf-8")
     check_coverage(chars)
     print(f"generated {OUTPUT} with {len(chars)} CJK glyphs")
