@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- 新增多 Mac 切换：每台 Mac 的 Bridge 都可自动等待同一 Passport，当前 Mac 可从菜单栏、状态页或设置页释放设备，暂停 45 秒让另一台 Mac 自动接管，并支持手动恢复自动连接；仍保持一台设备一次只连接一台 Mac。
 - 增强诊断能力：新增按阻塞项逐步自动修复、CoreAudio 真实输出设备发现、BlackHole 安装引导、声音测试，以及每个动作独立的快捷键录入。
 - 新增 macOS 设置向导：检查辅助功能、蓝牙、Passport、BlackHole、Typeless 和麦克风，提供直接设置入口，并支持从系统设置返回后的“再次检查”。
 - macOS Bridge 构建后默认安装到 `/Applications/FoloVibeBridge.app`；可用 `FOLO_VIBE_INSTALL_APP` 覆盖安装位置。

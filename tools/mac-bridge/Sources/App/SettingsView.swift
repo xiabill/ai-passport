@@ -73,6 +73,27 @@ struct SettingsView: View {
                                 Text("设备重新出现时自动恢复连接").font(.caption).foregroundStyle(.secondary)
                             }
                         }
+                        Divider()
+                        HStack(spacing: 10) {
+                            Image(systemName: model.bleSnap.handoffPaused ? "pause.circle.fill" : "arrow.left.arrow.right.circle.fill")
+                                .foregroundStyle(model.bleSnap.handoffPaused ? .orange : .blue)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("多 Mac 切换").font(.callout.weight(.medium))
+                                Text(model.bleSnap.handoffPaused
+                                    ? "本机已暂时让出设备，另一台 Mac 可以自动接管"
+                                    : "同一设备一次连接一台 Mac，需要换电脑时先释放设备")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            if model.bleSnap.handoffPaused {
+                                Button("恢复自动连接") { model.ble.resumeAfterHandoff() }
+                                    .buttonStyle(.bordered)
+                            } else {
+                                Button("释放给另一台 Mac") { model.ble.releaseForHandoff() }
+                                    .buttonStyle(.borderedProminent)
+                            }
+                        }
                     }
                 }
 

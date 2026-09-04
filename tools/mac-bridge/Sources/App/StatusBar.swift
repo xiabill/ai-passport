@@ -6,6 +6,7 @@ final class StatusBar: NSObject, NSMenuDelegate {
     private let phaseItem = NSMenuItem()
     private let typelessItem = NSMenuItem()
     private let problemItem = NSMenuItem()
+    private let handoffItem = NSMenuItem()
 
     override init() {
         super.init()
@@ -20,6 +21,9 @@ final class StatusBar: NSObject, NSMenuDelegate {
         menu.addItem(.separator())
         menu.addItem(action("打开主窗口", #selector(open), "1"))
         menu.addItem(action("重连设备", #selector(reconnect), "r"))
+        menu.addItem(handoffItem)
+        handoffItem.target = self
+        handoffItem.action = #selector(handoff)
         menu.addItem(.separator())
         menu.addItem(action("退出", #selector(quit), "q"))
         menu.delegate = self
@@ -50,9 +54,15 @@ final class StatusBar: NSObject, NSMenuDelegate {
         else if !m.blackholeOK { problemItem.title = "未找到 BlackHole" }
         else if !m.typelessMicOK { problemItem.title = "Typeless 麦克风不匹配" }
         else { problemItem.title = "检查项正常" }
+        handoffItem.title = snap.handoffPaused ? "恢复自动连接" : "释放设备给另一台 Mac"
     }
 
     @objc private func open() { MainWindow.show() }
     @objc private func reconnect() { AppModel.shared.ble.reconnect() }
+    @objc private func handoff() {
+        guard let ble = AppModel.shared.ble else { return }
+        if ble.snapshot.handoffPaused { ble.resumeAfterHandoff() }
+        else { ble.releaseForHandoff() }
+    }
     @objc private func quit() { NSApp.terminate(nil) }
 }

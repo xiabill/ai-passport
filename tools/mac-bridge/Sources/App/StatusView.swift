@@ -14,6 +14,11 @@ struct StatusView: View {
                         HStack(spacing: 9) {
                             StatusPill(title: connectionTitle, color: connectionColor, symbol: connectionSymbol)
                             Button("重连") { model.ble.reconnect() }
+                            if model.bleSnap.handoffPaused {
+                                Button("恢复自动连接") { model.ble.resumeAfterHandoff() }
+                            } else {
+                                Button("切换 Mac") { model.ble.releaseForHandoff() }
+                            }
                         }))
 
                 SetupGuideView(model: model)

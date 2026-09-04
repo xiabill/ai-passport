@@ -92,6 +92,10 @@ The Bridge stores settings in the macOS user defaults database. Logs are written
 
 The Settings tab can also enable launch at login, auto reconnect, closed-loop retapping, and Typeless state polling. The Debug tab provides key-tap, simulated event, tone, reconnect, UUID, and microphone checks.
 
+### Switching one Passport between multiple Macs
+
+Install the Bridge on each Mac, keep the same `FoloVibe` device prefix, and enable auto reconnect on each installation. The current firmware and Bridge intentionally use one BLE connection per Passport, so one device is owned by one Mac at a time. To change computers, choose “Release device to another Mac” from the Bridge menu bar item, Status page, or Settings page. The current Mac disconnects and pauses its reconnect loop for 45 seconds; another Mac running Bridge can then discover and connect automatically. If no handoff occurs, the original Mac resumes its reconnect loop after the pause, or the user can choose “Resume auto reconnect” immediately. Simultaneous audio delivery to multiple Macs is not part of this mode; that would require per-connection subscription and input-routing changes in the firmware and Bridge.
+
 ## Build and flash the firmware
 
 Run the repository checks first:

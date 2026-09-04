@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- Added multi-Mac handoff: each Bridge can wait for the same Passport with auto reconnect enabled; the active Mac can release the device from the menu bar, Status, or Settings, pause for 45 seconds while another Mac takes over, and resume manually. One Passport still accepts one Mac at a time.
 - Expanded diagnostics with a first-blocker auto-repair flow, real CoreAudio
   output-device discovery, guided BlackHole installation, audio test controls,
   and per-action hotkey capture for the macOS Bridge.

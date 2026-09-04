@@ -16,6 +16,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         var lost = 0
         var lastPacketHex = ""
         var lastEvent: String = "—"
+        var handoffPaused = false
     }
 
     private var central: CBCentralManager!
@@ -28,6 +29,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     private let lock = NSLock()
     private var snap = Snapshot()
     private var desiredPowerMode: BridgePowerMode = .standard
+    private var handoffUntil = Date.distantPast
     var prefix = "FoloVibe"
     var autoReconnect = true
 
@@ -71,14 +73,61 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
 
     func reconnect() {
         queue.async { [self] in
+            handoffUntil = .distantPast
             if let p = peripheral { central.cancelPeripheralConnection(p) }
             peripheral = nil
             control = nil
             lastSeq = nil
-            update { $0.connected = false; $0.subscribed = false; $0.streaming = false }
+            update {
+                $0.connected = false
+                $0.subscribed = false
+                $0.streaming = false
+                $0.handoffPaused = false
+            }
             scan()
         }
     }
+
+    /// Release the device so another Mac running Bridge can take over.
+    /// The short pause prevents this Mac from immediately winning the scan
+    /// race again while the user changes computers.
+    func releaseForHandoff(seconds: TimeInterval = 45) {
+        queue.async { [self] in
+            let pause = max(10, seconds)
+            handoffUntil = Date().addingTimeInterval(pause)
+            let releaseUntil = handoffUntil
+            central.stopScan()
+            if let p = peripheral { central.cancelPeripheralConnection(p) }
+            peripheral = nil
+            control = nil
+            lastSeq = nil
+            update {
+                $0.connected = false
+                $0.subscribed = false
+                $0.streaming = false
+                $0.handoffPaused = true
+                $0.phase = "已释放，等待另一台 Mac"
+            }
+            Log.ble("已释放设备，\(Int(pause)) 秒内等待另一台 Mac 接管")
+            queue.asyncAfter(deadline: .now() + pause) { [weak self] in
+                guard let self, self.handoffUntil == releaseUntil else { return }
+                self.handoffUntil = .distantPast
+                self.update { $0.handoffPaused = false; $0.phase = "准备自动连接" }
+                if self.autoReconnect { self.scan() }
+                Log.ble("切换等待结束，恢复自动连接")
+            }
+        }
+    }
+
+    func resumeAfterHandoff() {
+        queue.async { [self] in
+            handoffUntil = .distantPast
+            update { $0.handoffPaused = false; $0.phase = "准备连接" }
+            scan()
+        }
+    }
+
+    private var isHandoffPaused: Bool { Date() < handoffUntil }
 
     private func update(_ change: (inout Snapshot) -> Void) {
         lock.lock()
@@ -87,6 +136,10 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     }
 
     private func scan() {
+        guard !isHandoffPaused else {
+            update { $0.handoffPaused = true; $0.phase = "已释放，等待另一台 Mac" }
+            return
+        }
         guard central.state == .poweredOn else { return }
         let uuid = CBUUID(string: VibeProtocol.serviceUUID)
         if let p = central.retrieveConnectedPeripherals(withServices: [uuid]).first {
@@ -127,6 +180,10 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        if isHandoffPaused {
+            central.cancelPeripheralConnection(peripheral)
+            return
+        }
         update { $0.connected = true; $0.phase = "发现服务"; $0.deviceName = peripheral.name ?? $0.deviceName }
         Log.ble("已连接 \(peripheral.name ?? "?")")
         peripheral.discoverServices([CBUUID(string: VibeProtocol.serviceUUID)])
@@ -137,7 +194,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     ) {
         update { $0.connected = false; $0.phase = "连接失败" }
         Log.ble("连接失败 \(error?.localizedDescription ?? "")")
-        if autoReconnect { scan() }
+        if autoReconnect && !isHandoffPaused { scan() }
     }
 
     func centralManager(
@@ -152,7 +209,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         control = nil
         lastSeq = nil
         Log.ble("断开 \(error?.localizedDescription ?? "正常")")
-        if autoReconnect { scan() }
+        if autoReconnect && !isHandoffPaused { scan() }
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
