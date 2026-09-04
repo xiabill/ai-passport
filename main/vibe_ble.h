@@ -27,6 +27,10 @@ void vibe_ble_link_fast(bool fast);
 // function-key activity resumes it so the Mac can reconnect.
 void vibe_ble_set_power_mode(bool eco);
 void vibe_ble_note_activity(void);
+// Stop BLE activity before manual light sleep and resume advertising after a
+// GPIO wake. The device intentionally gives up the Mac link while asleep.
+void vibe_ble_prepare_light_sleep(void);
+void vibe_ble_resume_after_light_sleep(void);
 
 #ifdef __cplusplus
 }

@@ -50,6 +50,7 @@ static esp_timer_handle_t s_idle_timer;
 static esp_timer_handle_t s_eco_adv_timer;
 static bool s_eco_mode;
 static bool s_adv_paused;
+static bool s_light_sleeping;
 
 #define ECO_ADV_GRACE_US (60 * 1000000LL)
 
@@ -225,6 +226,34 @@ void vibe_ble_note_activity(void)
     arm_eco_adv_timer();
 }
 
+void vibe_ble_prepare_light_sleep(void)
+{
+    s_light_sleeping = true;
+    if (s_idle_timer) esp_timer_stop(s_idle_timer);
+    if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
+    // A connected Mac is deliberately released before light sleep. This
+    // avoids keeping the radio link alive while the CPU and audio path sleep.
+    if (s_conn != BLE_HS_CONN_HANDLE_NONE) {
+        int rc = ble_gap_terminate(s_conn, BLE_ERR_REM_USER_CONN_TERM);
+        if (rc != 0 && rc != BLE_HS_EALREADY) {
+            ESP_LOGW(TAG, "light sleep BLE disconnect rc=%d", rc);
+        }
+    }
+    // This is harmless when no advertising is active and prevents a pending
+    // advertising cycle from starting while the device is asleep.
+    ble_gap_adv_stop();
+}
+
+void vibe_ble_resume_after_light_sleep(void)
+{
+    s_light_sleeping = false;
+    if (s_conn == BLE_HS_CONN_HANDLE_NONE) {
+        s_adv_paused = false;
+        advertise();
+        arm_eco_adv_timer();
+    }
+}
+
 static int gap_event(struct ble_gap_event *event, void *arg)
 {
     (void)arg;
@@ -232,7 +261,11 @@ static int gap_event(struct ble_gap_event *event, void *arg)
     case BLE_GAP_EVENT_CONNECT:
         if (event->connect.status != 0) {
             s_conn = BLE_HS_CONN_HANDLE_NONE;
-            advertise();
+            if (!s_light_sleeping) advertise();
+            return 0;
+        }
+        if (s_light_sleeping) {
+            ble_gap_terminate(event->connect.conn_handle, BLE_ERR_REM_USER_CONN_TERM);
             return 0;
         }
         s_conn = event->connect.conn_handle;
@@ -257,8 +290,10 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
         vibe_app_on_audio_sub(false);
         vibe_app_on_ble_link(false);
-        advertise();
-        arm_eco_adv_timer();
+        if (!s_light_sleeping) {
+            advertise();
+            arm_eco_adv_timer();
+        }
         return 0;
 
     case BLE_GAP_EVENT_SUBSCRIBE:
@@ -276,7 +311,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         return 0;
 
     case BLE_GAP_EVENT_ADV_COMPLETE:
-        if (s_conn == BLE_HS_CONN_HANDLE_NONE && !s_adv_paused) advertise();
+        if (s_conn == BLE_HS_CONN_HANDLE_NONE && !s_adv_paused && !s_light_sleeping) advertise();
         return 0;
 
     default:
