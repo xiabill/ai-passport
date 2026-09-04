@@ -14,11 +14,12 @@ struct DebugView: View {
 
                 SurfaceCard("快捷键测试", subtitle: "焦点要在会接收键盘输入的应用中") {
                     VStack(alignment: .leading, spacing: 12) {
-                        HStack {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                             Button { KeyTap.tap(model.settings.current.talk) } label: { Label("Typeless", systemImage: "mic") }
                             Button { KeyTap.tap(model.settings.current.doubao) } label: { Label("豆包", systemImage: "mic.fill") }
                             Button { KeyTap.tap(model.settings.current.send) } label: { Label("回车", systemImage: "return") }
                         }
+                        .buttonStyle(.bordered)
                         Text("如果按键没有反应，请先确认辅助功能权限已开启。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -41,7 +42,7 @@ struct DebugView: View {
 
                 SurfaceCard("音频工具", subtitle: "确认输出设备和 Passport 麦克风链路") {
                     VStack(alignment: .leading, spacing: 12) {
-                        HStack {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 10)], spacing: 10) {
                             Button { model.audio.playTestTone() } label: { Label("播放测试音", systemImage: "speaker.wave.2") }
                             Button { model.audio.rebuild(reason: "手动") } label: { Label("重建音频引擎", systemImage: "arrow.clockwise") }
                             Button {
@@ -50,6 +51,7 @@ struct DebugView: View {
                                 Label(model.mic.isArmed ? "取消麦测试" : "录一轮设备麦", systemImage: model.mic.isArmed ? "stop.circle" : "record.circle")
                             }
                         }
+                        .buttonStyle(.bordered)
                         Text(model.mic.result)
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -61,10 +63,11 @@ struct DebugView: View {
 
                 SurfaceCard("连接诊断", subtitle: "用于确认 BLE 服务和音频包是否正常") {
                     VStack(alignment: .leading, spacing: 12) {
-                        HStack {
+                        HStack(spacing: 10) {
                             Button { model.ble.reconnect() } label: { Label("重连 BLE", systemImage: "arrow.triangle.2.circlepath") }
                             Button { copyUUIDs() } label: { Label("复制 UUID", systemImage: "doc.on.doc") }
                         }
+                        .buttonStyle(.bordered)
                         InfoRow(label: "最近包头", value: model.bleSnap.lastPacketHex.isEmpty ? "—" : model.bleSnap.lastPacketHex)
                             .font(.system(.caption, design: .monospaced))
                         InfoRow(label: "音频包", value: "\(model.bleSnap.packets)")
@@ -81,7 +84,7 @@ struct DebugView: View {
                     }
                 }
             }
-            .frame(maxWidth: 900, alignment: .leading)
+            .frame(maxWidth: 920, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(28)
         }

@@ -13,15 +13,24 @@ struct StatusView: View {
                     trailing: AnyView(
                         HStack(spacing: 9) {
                             StatusPill(title: connectionTitle, color: connectionColor, symbol: connectionSymbol)
-                            Button("重连") { model.ble.reconnect() }
-                            if model.bleSnap.handoffPaused {
-                                Button("恢复自动连接") { model.ble.resumeAfterHandoff() }
-                            } else {
-                                Button("切换 Mac") { model.ble.releaseForHandoff() }
+                            Button { model.ble.reconnect() } label: {
+                                Label("重连", systemImage: "arrow.clockwise")
                             }
+                            .buttonStyle(.borderedProminent)
+                            Menu {
+                                if model.bleSnap.handoffPaused {
+                                    Button("恢复自动连接") { model.ble.resumeAfterHandoff() }
+                                } else {
+                                    Button("切换 Mac") { model.ble.releaseForHandoff() }
+                                }
+                            } label: {
+                                Image(systemName: "ellipsis.circle")
+                            }
+                            .menuStyle(.borderlessButton)
+                            .help("更多设备连接操作")
                         }))
 
-                SetupGuideView(model: model)
+                SetupGuideView(model: model, compactWhenReady: true)
                 connectionCard
                 powerModeCard
                 quickActions
@@ -35,7 +44,7 @@ struct StatusView: View {
 
                 if !issueList.isEmpty { issuesCard }
             }
-            .frame(maxWidth: 920, alignment: .leading)
+            .frame(maxWidth: 980, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(28)
         }
@@ -53,6 +62,8 @@ struct StatusView: View {
                     Text(connectionTitle).font(.title3.weight(.semibold))
                     Text(model.bleSnap.deviceName == "—" ? "正在寻找 FoloVibe 设备" : model.bleSnap.deviceName)
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 4) {
@@ -186,7 +197,7 @@ struct StatusView: View {
                 HStack(spacing: 18) {
                     Label(model.blackholeOK ? "输出设备可用" : "输出设备缺失", systemImage: model.blackholeOK ? "checkmark.circle.fill" : "xmark.circle.fill")
                     Label(model.bleSnap.packets > 0 ? "收到 BLE 音频包" : "等待 BLE 音频包", systemImage: model.bleSnap.packets > 0 ? "checkmark.circle.fill" : "hourglass")
-                    Text("丢包 (model.bleSnap.lost)")
+                    Text("丢包 \(model.bleSnap.lost)")
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)

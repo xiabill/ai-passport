@@ -9,26 +9,29 @@ struct RootView: View {
             sidebar
         } detail: {
             detail
+                .background(Color(nsColor: .windowBackgroundColor))
         }
-        .navigationSplitViewColumnWidth(min: 210, ideal: 238, max: 280)
+        .toolbar(removing: .sidebarToggle)
+        .toolbar(.hidden, for: .windowToolbar)
+        .navigationSplitViewColumnWidth(min: 216, ideal: 242, max: 286)
     }
 
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 11) {
+            HStack(spacing: 12) {
                 Image(systemName: "waveform.and.mic")
-                    .font(.title2.weight(.semibold))
+                    .font(.title2.weight(.bold))
                     .foregroundStyle(.tint)
-                    .frame(width: 34, height: 34)
-                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                    .frame(width: 38, height: 38)
+                    .background(Color.accentColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 11))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("FoloVibe").font(.headline)
-                    Text("Bridge").font(.caption).foregroundStyle(.secondary)
+                    Text("FoloVibe").font(.headline.weight(.semibold))
+                    Text("Bridge 控制台").font(.caption).foregroundStyle(.secondary)
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.top, 18)
-            .padding(.bottom, 16)
+            .padding(.top, 20)
+            .padding(.bottom, 18)
 
             List(selection: Binding<AppTab?>(
                 get: { model.tab },
@@ -36,6 +39,7 @@ struct RootView: View {
                 Section("工作区") {
                     ForEach(AppTab.allCases, id: \.self) { tab in
                         Label(tab.title, systemImage: tab.symbol)
+                            .font(.subheadline.weight(.medium))
                             .tag(tab)
                     }
                 }
@@ -48,11 +52,11 @@ struct RootView: View {
     }
 
     private var sidebarFooter: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Circle()
                     .fill(connectionColor)
-                    .frame(width: 8, height: 8)
+                    .frame(width: 9, height: 9)
                 Text(connectionTitle).font(.caption.weight(.semibold))
                 Spacer()
             }
@@ -60,6 +64,7 @@ struct RootView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
+                .truncationMode(.middle)
             HStack(spacing: 5) {
                 Image(systemName: "waveform")
                 Text(model.activeInputTitle == "—" ? "等待硬件操作" : model.activeInputTitle)
@@ -67,7 +72,8 @@ struct RootView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 17)
     }
 
     @ViewBuilder

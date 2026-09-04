@@ -7,13 +7,31 @@ enum AppIcon {
         defer { image.unlockFocus() }
 
         let rect = NSRect(x: 0, y: 0, width: size, height: size)
-        NSColor(calibratedRed: 0.08, green: 0.10, blue: 0.16, alpha: 1).setFill()
-        NSBezierPath(roundedRect: rect.insetBy(dx: size * 0.04, dy: size * 0.04), xRadius: size * 0.22, yRadius: size * 0.22).fill()
+        let iconRect = rect.insetBy(dx: size * 0.04, dy: size * 0.04)
+        let iconPath = NSBezierPath(
+            roundedRect: iconRect,
+            xRadius: size * 0.22,
+            yRadius: size * 0.22)
+        NSColor(calibratedRed: 0.06, green: 0.08, blue: 0.14, alpha: 1).setFill()
+        iconPath.fill()
 
         let glow = NSGradient(
-            starting: NSColor(calibratedRed: 0.20, green: 0.55, blue: 1, alpha: 0.9),
-            ending: NSColor(calibratedRed: 0.55, green: 0.24, blue: 0.95, alpha: 0.9))
-        glow?.draw(in: NSRect(x: size * 0.19, y: size * 0.19, width: size * 0.62, height: size * 0.62), relativeCenterPosition: NSPoint(x: 0.35, y: 0.25))
+            starting: NSColor(calibratedRed: 0.10, green: 0.45, blue: 0.98, alpha: 0.95),
+            ending: NSColor(calibratedRed: 0.42, green: 0.16, blue: 0.88, alpha: 0.95))
+        let innerRect = iconRect.insetBy(dx: size * 0.08, dy: size * 0.08)
+        NSGraphicsContext.saveGraphicsState()
+        iconPath.addClip()
+        glow?.draw(in: innerRect, relativeCenterPosition: NSPoint(x: 0.28, y: 0.22))
+        NSGraphicsContext.restoreGraphicsState()
+
+        NSColor.white.withAlphaComponent(0.18).setStroke()
+        iconPath.lineWidth = size * 0.012
+        iconPath.stroke()
+
+        let ring = NSBezierPath(ovalIn: NSRect(x: size * 0.19, y: size * 0.19, width: size * 0.62, height: size * 0.62))
+        NSColor.white.withAlphaComponent(0.10).setStroke()
+        ring.lineWidth = size * 0.018
+        ring.stroke()
 
         if let symbol = NSImage(systemSymbolName: "waveform.and.mic", accessibilityDescription: "FoloVibe") {
             let configured = symbol.withSymbolConfiguration(

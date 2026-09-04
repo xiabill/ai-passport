@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SetupGuideView: View {
     @ObservedObject var model: AppModel
+    var compactWhenReady = false
 
     private var steps: [SetupStep] {
         [
@@ -58,8 +59,21 @@ struct SetupGuideView: View {
     }
 
     var body: some View {
-        SurfaceCard("首次设置向导", subtitle: "按顺序完成授权和音频设置；从系统设置回来后点“再次检查”") {
-            VStack(alignment: .leading, spacing: 15) {
+        SurfaceCard(
+            compactWhenReady && steps.allSatisfy({ $0.ok }) ? "系统已准备好" : "首次设置向导",
+            subtitle: compactWhenReady && steps.allSatisfy({ $0.ok })
+                ? "关键权限、音频和设备连接均已通过检查"
+                : "按顺序完成授权和音频设置；从系统设置回来后点“再次检查”") {
+            if compactWhenReady && steps.allSatisfy({ $0.ok }) {
+                readySummary
+            } else {
+                fullGuide
+            }
+        }
+    }
+
+    private var fullGuide: some View {
+        VStack(alignment: .leading, spacing: 15) {
                 HStack(spacing: 12) {
                     ProgressView(value: Double(steps.filter { $0.ok }.count), total: Double(steps.count))
                         .tint(steps.allSatisfy { $0.ok } ? .green : .accentColor)
@@ -97,6 +111,27 @@ struct SetupGuideView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+    }
+
+    private var readySummary: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.green)
+                .frame(width: 42, height: 42)
+                .background(Color.green.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
+            VStack(alignment: .leading, spacing: 3) {
+                Text("全部准备完成")
+                    .font(.callout.weight(.semibold))
+                Text("硬件按键、蓝牙、音频和 Typeless 都可以使用")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 12)
+            Button { model.refreshChecks() } label: {
+                Label("再次检查", systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(.bordered)
         }
     }
 

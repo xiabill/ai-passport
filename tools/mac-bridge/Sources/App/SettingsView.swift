@@ -17,7 +17,12 @@ struct SettingsView: View {
                 PageHeader(
                     title: "设置",
                     subtitle: "把硬件按键和两个输入法配置成你的工作流",
-                    trailing: AnyView(Button("恢复默认") { store.reset() }))
+                    trailing: AnyView(
+                        Button { store.reset() } label: {
+                            Label("恢复默认", systemImage: "arrow.counterclockwise")
+                        }
+                        .buttonStyle(.bordered))
+                )
 
                 SetupGuideView(model: model)
 
@@ -165,7 +170,7 @@ struct SettingsView: View {
                     }
                 }
             }
-            .frame(maxWidth: 760, alignment: .leading)
+            .frame(maxWidth: 920, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(28)
         }

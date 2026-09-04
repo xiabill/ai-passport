@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+- Polished every macOS Bridge page with a shared console layout, clearer hierarchy,
+  compact setup status, consistent semantic colors, responsive tool grids, improved
+  log filtering, and a cleaner title bar and app icon.
 - Reduced standby power: after the display-off threshold, the firmware now stops the audio codec and BLE activity and enters GPIO-wakeable Light Sleep; a timer preserves the existing 15-minute Standard or 5-minute Eco Deep Sleep deadline.
 - Added multi-Mac handoff: each Bridge can wait for the same Passport with auto reconnect enabled; the active Mac can release the device from the menu bar, Status, or Settings, pause for 45 seconds while another Mac takes over, and resume manually. One Passport still accepts one Mac at a time.
 - Expanded diagnostics with a first-blocker auto-repair flow, real CoreAudio

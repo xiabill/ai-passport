@@ -19,9 +19,15 @@ struct LogView: View {
                 subtitle: "按时间查看蓝牙、音频、按键和 Typeless 事件",
                 trailing: AnyView(
                     HStack(spacing: 8) {
-                        Button("打开文件") { NSWorkspace.shared.open(Log.url) }
-                        Button("复制") { copyVisible() }
-                        Button("清空", role: .destructive) { store.clear() }
+                        Button { NSWorkspace.shared.open(Log.url) } label: {
+                            Label("打开文件", systemImage: "folder")
+                        }
+                        Button { copyVisible() } label: {
+                            Label("复制", systemImage: "doc.on.doc")
+                        }
+                        Button(role: .destructive) { store.clear() } label: {
+                            Label("清空", systemImage: "trash")
+                        }
                     }))
             HStack(spacing: 10) {
                 Label("\(visible.count) 条", systemImage: "line.3.horizontal.decrease.circle")
@@ -34,20 +40,17 @@ struct LogView: View {
                 Toggle("自动滚动", isOn: Binding(get: { filter.autoScroll }, set: { filter.autoScroll = $0 }))
                     .toggleStyle(.checkbox)
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 12))
             filterBar
             ScrollViewReader { proxy in
                 ScrollView {
                     if visible.isEmpty {
-                        VStack(spacing: 9) {
-                            Image(systemName: "doc.text.magnifyingglass")
-                                .font(.system(size: 28))
-                                .foregroundStyle(.secondary)
-                            Text("没有匹配的日志").font(.headline)
-                            Text("尝试清除搜索或打开更多分类")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                            .frame(maxWidth: .infinity, minHeight: 300)
+                        EmptyStateView(
+                            symbol: "doc.text.magnifyingglass",
+                            title: "没有匹配的日志",
+                            detail: "尝试清除搜索或打开更多分类")
                     } else {
                         LazyVStack(alignment: .leading, spacing: 8) {
                             ForEach(visible) { line in
@@ -83,28 +86,33 @@ struct LogView: View {
                 }
             }
         }
-        .frame(maxWidth: 1040, maxHeight: .infinity, alignment: .leading)
+        .frame(maxWidth: 1080, maxHeight: .infinity, alignment: .leading)
         .padding(28)
     }
 
     private var filterBar: some View {
-        HStack(spacing: 8) {
-            Text("分类").font(.caption).foregroundStyle(.secondary)
-            ForEach(LogCategory.all, id: \.self) { cat in
-                let enabled = !filter.hidden.contains(cat)
-                Button {
-                    if enabled { filter.hidden.insert(cat) } else { filter.hidden.remove(cat) }
-                } label: {
-                    Text(cat)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(enabled ? color(cat) : .secondary)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 5)
-                        .background((enabled ? color(cat) : Color.primary).opacity(0.1), in: Capsule())
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                Text("分类")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                ForEach(LogCategory.all, id: \.self) { cat in
+                    let enabled = !filter.hidden.contains(cat)
+                    Button {
+                        if enabled { filter.hidden.insert(cat) } else { filter.hidden.remove(cat) }
+                    } label: {
+                        Text(cat)
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(enabled ? color(cat) : .secondary)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 5)
+                            .background((enabled ? color(cat) : Color.primary).opacity(0.1), in: Capsule())
+                            .overlay { Capsule().strokeBorder((enabled ? color(cat) : Color.primary).opacity(0.12)) }
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+                Spacer(minLength: 0)
             }
-            Spacer()
         }
     }
 

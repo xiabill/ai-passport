@@ -22,10 +22,18 @@ enum MainWindow {
         window.contentView = hosting
         window.center()
         window.isReleasedWhenClosed = false
-        window.minSize = NSSize(width: 900, height: 620)
+        window.minSize = NSSize(width: 980, height: 660)
         window.titlebarAppearsTransparent = false
-        window.toolbarStyle = .unified
+        // This window has its own in-app navigation. Leaving the automatic
+        // split-view toolbar enabled adds a large, redundant sidebar button
+        // to the title bar and makes the content feel disconnected.
+        window.toolbar = nil
         window.makeKeyAndOrderFront(nil)
         Self.window = window
+        // NavigationSplitView can install its automatic sidebar toolbar item
+        // after the window is shown. Remove that late-added item as well.
+        DispatchQueue.main.async {
+            window.toolbar = nil
+        }
     }
 }
