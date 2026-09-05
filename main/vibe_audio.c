@@ -67,9 +67,12 @@ static bool take_pending_beep(vibe_beep_t *type)
         return false;
     }
 
-    // End is always the final state the user needs to hear. Edit is next so a
-    // double/long press gets feedback even if no recording was active.
+    // End is always the final state the user needs to hear. Keep connection
+    // ready and send cues ahead of edit/start cues when several transitions
+    // arrive in the same scheduling window.
     if (pending & VIBE_BEEP_END) *type = VIBE_BEEP_END;
+    else if (pending & VIBE_BEEP_READY) *type = VIBE_BEEP_READY;
+    else if (pending & VIBE_BEEP_SEND) *type = VIBE_BEEP_SEND;
     else if (pending & VIBE_BEEP_EDIT) *type = VIBE_BEEP_EDIT;
     else *type = VIBE_BEEP_START;
     s_beep_pending = (uint8_t)(pending & (uint8_t)~*type);
@@ -101,6 +104,16 @@ static void play_button_beep(vibe_beep_t type)
         {0U,   240U},  // 15 ms gap
         {554U, 960U},  // C#5, 60 ms
     };
+    static const beep_segment_t ready[] = {
+        {392U, 560U},  // G4, 35 ms
+        {0U,   240U},  // 15 ms gap
+        {523U, 800U},  // C5, 50 ms
+    };
+    static const beep_segment_t send[] = {
+        {784U, 480U},  // G5, 30 ms
+        {0U,   160U},  // 10 ms gap
+        {988U, 640U},  // B5, 40 ms
+    };
 
     const beep_segment_t *segments;
     unsigned segment_count;
@@ -113,10 +126,18 @@ static void play_button_beep(vibe_beep_t type)
         segments = end;
         segment_count = sizeof(end) / sizeof(end[0]);
         label = "end";
-    } else {
+    } else if (type == VIBE_BEEP_EDIT) {
         segments = edit;
         segment_count = sizeof(edit) / sizeof(edit[0]);
         label = "edit";
+    } else if (type == VIBE_BEEP_READY) {
+        segments = ready;
+        segment_count = sizeof(ready) / sizeof(ready[0]);
+        label = "ready";
+    } else {
+        segments = send;
+        segment_count = sizeof(send) / sizeof(send[0]);
+        label = "send";
     }
 
     unsigned total_samples = 0;
@@ -296,12 +317,16 @@ bool vibe_audio_recording(void)
 
 void vibe_audio_beep(vibe_beep_t type)
 {
-    if (type == VIBE_BEEP_START || type == VIBE_BEEP_END || type == VIBE_BEEP_EDIT) {
+    if (type == VIBE_BEEP_START || type == VIBE_BEEP_END ||
+        type == VIBE_BEEP_EDIT || type == VIBE_BEEP_READY ||
+        type == VIBE_BEEP_SEND) {
         portENTER_CRITICAL(&s_beep_mu);
         s_beep_pending |= (uint8_t)type;
         portEXIT_CRITICAL(&s_beep_mu);
         ESP_LOGI(TAG, "queued %s beep (volume %u)",
                  type == VIBE_BEEP_START ? "start" :
-                 type == VIBE_BEEP_END ? "end" : "edit", BEEP_VOLUME);
+                 type == VIBE_BEEP_END ? "end" :
+                 type == VIBE_BEEP_EDIT ? "edit" :
+                 type == VIBE_BEEP_READY ? "ready" : "send", BEEP_VOLUME);
     }
 }

@@ -39,7 +39,7 @@ Power modes: Standard keeps the display at 50%, dims to 15% three seconds after 
 
 Doubao upper key: single click toggles voice input, quick double-click selects all and deletes the current text field (Cmd+A then Delete), and long press performs the same clear action.
 
-Audio cues: recording start uses a longer three-note rise, recording end uses a lower, longer note, and Doubao clear shortcuts use a short edit cue.
+Audio cues: BLE-ready, recording start, recording end, Return/send, and Doubao edit actions each have distinct low-headroom sine chimes. The send cue is emitted with the actual Return event.
 
 ## Protocol
 

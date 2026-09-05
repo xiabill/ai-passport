@@ -84,6 +84,12 @@ static void apply(vibe_in_t in, uint8_t typeless_byte)
     }
     if (o.edit_action) vibe_audio_beep(VIBE_BEEP_EDIT);
     for (uint8_t i = 0; i < o.n_events; i++) {
+        // The send cue follows the actual event emission, so a queued Return
+        // is acknowledged when it is released after Typeless processing.
+        if (o.ble_events[i] == VIBE_BLE_ENTER ||
+            o.ble_events[i] == VIBE_BLE_DOUBAO_STOP_SEND) {
+            vibe_audio_beep(VIBE_BEEP_SEND);
+        }
         vibe_ble_event_send(o.ble_events[i]);
     }
     arm_proc_timer(processing);
@@ -153,6 +159,10 @@ void vibe_app_on_ble_link(bool up)
 void vibe_app_on_audio_sub(bool sub)
 {
     apply(sub ? VIBE_IN_AUDIO_SUB : VIBE_IN_AUDIO_UNSUB, 0);
+    // A BLE link alone is not enough: the Mac is ready only after it has
+    // subscribed to the audio characteristic. This also runs after a
+    // light-sleep wake and gives the user a reliable ready indication.
+    if (sub) vibe_audio_beep(VIBE_BEEP_READY);
 }
 
 void vibe_app_on_typeless(uint8_t state)

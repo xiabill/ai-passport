@@ -145,7 +145,7 @@ final class AppModel: ObservableObject {
             }) {
                 settings.current.outputDevice = installed
                 applyAudio()
-                repairNote = "已切换到已安装的 (installed)，正在重新检查音频链路。"
+                repairNote = "已切换到已安装的 \(installed)，正在重新检查音频链路。"
             } else {
                 Permissions.openBlackHoleDownload()
                 repairNote = "未检测到 BlackHole，已打开官方安装页；安装后点“再次检查”。"
