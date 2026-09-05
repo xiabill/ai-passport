@@ -22,6 +22,10 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     private var central: CBCentralManager!
     private var peripheral: CBPeripheral?
     private var control: CBCharacteristic?
+    private var audioCharacteristic: CBCharacteristic?
+    private var eventCharacteristic: CBCharacteristic?
+    private var audioNotifyReady = false
+    private var eventNotifyReady = false
     private var lastSeq: UInt16?
     private let queue = DispatchQueue(label: "folovibe.ble")
     private let audio: AudioOutput
@@ -77,6 +81,10 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             if let p = peripheral { central.cancelPeripheralConnection(p) }
             peripheral = nil
             control = nil
+            audioCharacteristic = nil
+            eventCharacteristic = nil
+            audioNotifyReady = false
+            eventNotifyReady = false
             lastSeq = nil
             update {
                 $0.connected = false
@@ -100,6 +108,10 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             if let p = peripheral { central.cancelPeripheralConnection(p) }
             peripheral = nil
             control = nil
+            audioCharacteristic = nil
+            eventCharacteristic = nil
+            audioNotifyReady = false
+            eventNotifyReady = false
             lastSeq = nil
             update {
                 $0.connected = false
@@ -184,6 +196,11 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             central.cancelPeripheralConnection(peripheral)
             return
         }
+        audioCharacteristic = nil
+        eventCharacteristic = nil
+        audioNotifyReady = false
+        eventNotifyReady = false
+        control = nil
         update { $0.connected = true; $0.phase = "发现服务"; $0.deviceName = peripheral.name ?? $0.deviceName }
         Log.ble("已连接 \(peripheral.name ?? "?")")
         peripheral.discoverServices([CBUUID(string: VibeProtocol.serviceUUID)])
@@ -207,6 +224,10 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             $0.phase = "已断开"
         }
         control = nil
+        audioCharacteristic = nil
+        eventCharacteristic = nil
+        audioNotifyReady = false
+        eventNotifyReady = false
         lastSeq = nil
         Log.ble("断开 \(error?.localizedDescription ?? "正常")")
         if autoReconnect && !isHandoffPaused { scan() }
@@ -234,20 +255,66 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     func peripheral(
         _ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?
     ) {
+        audioNotifyReady = false
+        eventNotifyReady = false
         for ch in service.characteristics ?? [] {
-            if ch.uuid == CBUUID(string: VibeProtocol.audioUUID)
-                || ch.uuid == CBUUID(string: VibeProtocol.eventUUID)
-            {
-                peripheral.setNotifyValue(true, for: ch)
+            if ch.uuid == CBUUID(string: VibeProtocol.audioUUID) {
+                audioCharacteristic = ch
+            } else if ch.uuid == CBUUID(string: VibeProtocol.eventUUID) {
+                eventCharacteristic = ch
             } else if ch.uuid == CBUUID(string: VibeProtocol.controlUUID) {
                 control = ch
             }
         }
         let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse) + 3
-        update { $0.subscribed = true; $0.phase = "已订阅"; $0.mtu = mtu }
-        Log.ble("已订阅音频/事件，约 MTU \(mtu)")
-        writePowerMode()
-        peripheral.readRSSI()
+        update { $0.subscribed = false; $0.phase = "开启通知"; $0.mtu = mtu }
+        Log.ble("发现音频/事件特征，按顺序开启通知，约 MTU \(mtu)")
+        enableNextNotify()
+    }
+
+    /// CoreBluetooth serializes CCCD writes less reliably when two notify
+    /// requests are issued back-to-back. Wait for the first state callback
+    /// before enabling the second one; otherwise the firmware may receive
+    /// audio notifications but never receive button-event notifications.
+    private func enableNextNotify() {
+        guard let p = peripheral else { return }
+        if !audioNotifyReady, let ch = audioCharacteristic {
+            Log.ble("开启音频通知")
+            p.setNotifyValue(true, for: ch)
+        } else if !eventNotifyReady, let ch = eventCharacteristic {
+            Log.ble("开启按键事件通知")
+            p.setNotifyValue(true, for: ch)
+        } else if audioNotifyReady && eventNotifyReady {
+            update { $0.subscribed = true; $0.phase = "已就绪" }
+            Log.ble("音频/按键事件通知均已开启")
+            writePowerMode()
+            p.readRSSI()
+        }
+    }
+
+    func peripheral(
+        _ peripheral: CBPeripheral,
+        didUpdateNotificationStateFor characteristic: CBCharacteristic,
+        error: Error?
+    ) {
+        if let error {
+            update { $0.subscribed = false; $0.phase = "通知失败" }
+            Log.ble("通知开启失败 \(characteristic.uuid): \(error.localizedDescription)")
+            return
+        }
+        guard characteristic.isNotifying else {
+            update { $0.subscribed = false; $0.phase = "通知未开启" }
+            Log.ble("通知未开启 \(characteristic.uuid)")
+            return
+        }
+        if characteristic.uuid == CBUUID(string: VibeProtocol.audioUUID) {
+            audioNotifyReady = true
+            Log.ble("音频通知已开启")
+        } else if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID) {
+            eventNotifyReady = true
+            Log.ble("按键事件通知已开启")
+        }
+        enableNextNotify()
     }
 
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {

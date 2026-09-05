@@ -199,8 +199,10 @@ static void play_button_beep(vibe_beep_t type)
                                 (float)BEEP_SAMPLE_RATE;
             pcm[i] = (int16_t)(sinf(phase) * (float)BEEP_AMPLITUDE * gain);
         }
-        if (bsp_audio_write(pcm, sizeof(pcm)) != ESP_OK) {
-            ESP_LOGW(TAG, "button %s beep write failed", label);
+        esp_err_t write_err = bsp_audio_write(pcm, sizeof(pcm));
+        if (write_err != ESP_OK) {
+            ESP_LOGW(TAG, "hardware speaker %s write failed: %s", label,
+                     esp_err_to_name(write_err));
             break;
         }
     }

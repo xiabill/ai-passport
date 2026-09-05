@@ -303,6 +303,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
             ESP_LOGI(TAG, "audio notify %d", s_audio_sub);
         } else if (event->subscribe.attr_handle == s_event_handle) {
             s_event_sub = event->subscribe.cur_notify;
+            ESP_LOGI(TAG, "event notify %d", s_event_sub);
         }
         return 0;
 
@@ -433,8 +434,17 @@ esp_err_t vibe_ble_audio_send(const uint8_t *pkt, size_t len)
 
 esp_err_t vibe_ble_event_send(uint8_t ev)
 {
-    if (!s_event_sub) return ESP_ERR_INVALID_STATE;
-    return notify_buf(s_event_handle, &ev, 1);
+    if (!s_event_sub) {
+        ESP_LOGW(TAG, "drop event %u: button-event notify is not subscribed", ev);
+        return ESP_ERR_INVALID_STATE;
+    }
+    esp_err_t err = notify_buf(s_event_handle, &ev, 1);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "event %u notify failed: %s", ev, esp_err_to_name(err));
+    } else {
+        ESP_LOGI(TAG, "event %u sent to Mac", ev);
+    }
+    return err;
 }
 
 void vibe_ble_stats(uint32_t *sent, uint32_t *dropped)

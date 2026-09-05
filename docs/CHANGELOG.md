@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- Fixed BLE button delivery by serializing audio and event notification setup and waiting for both subscriptions before marking the Bridge ready; hardware beep write failures now include diagnostics.
 - Polished every macOS Bridge page with a shared console layout, clearer hierarchy,
   compact setup status, consistent semantic colors, responsive tool grids, improved
   log filtering, and a cleaner title bar and app icon.

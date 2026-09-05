@@ -2,6 +2,7 @@
 #include "vibe_audio.h"
 #include "vibe_ble.h"
 #include "vibe_power.h"
+#include "vibe_protocol.h"
 #include "vibe_state.h"
 #include "vibe_ui.h"
 
