@@ -100,6 +100,13 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           name: "${{ github.ref_name }}"
+          body: |
+            Download the macOS Bridge and matching ESP32-C3 firmware below.
+
+            - `FoloVibeBridge-macos.zip`: unzip and move `FoloVibeBridge.app` to `/Applications`.
+            - `FoloToy-AI-Passport-full.bin`: flash from offset `0x0`; do not erase an existing device.
+
+            macOS 13 or newer is required. The Bridge package is not notarized; if macOS blocks the first launch, Control-click the app in Finder and choose Open. Grant Bluetooth, Accessibility, and Input Monitoring permissions, install BlackHole 2ch, and make the Typeless key match Bridge (`Fn` or `F19`). See the bilingual user guide in `docs/releases/` for complete setup, button mappings, hardware audio behavior, flashing, and troubleshooting.
           files: |
             release/FoloToy-AI-Passport-full.bin
             release/FoloVibeBridge-macos.zip
