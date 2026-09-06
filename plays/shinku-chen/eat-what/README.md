@@ -1,47 +1,39 @@
 <p align="right">
-  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="README.md">English</a>
 </p>
 
-# What to Eat Today
+# 今天吃啥 (What to Eat Today)
 
-A button-driven food roulette that turns the AI Passport into a "what should I
-eat?" spinner. Hold a key and watch a recommendation cycle through your options;
-let go to land on the one you want.
+按键驱动的食物轮盘，把 AI Passport 变成你的「今天吃什么」小转盘。按住一个键，
+看着推荐轮着转；松手就停在你想吃的那样上。
 
-## Publish information
+## 发布信息
 
-- **Title**: What to Eat Today
-- **Description**: Turn your AI Passport into a "what should I eat?" spinner.
-  Hold one button to cycle the lunch prompts, hold the other to spin through all
-  kinds of food, and let go to land on the one you want. Perfect for the daily
-  "what's for lunch" dilemma, or passing it around at a gathering for everyone to
-  pick in turn.
-## What it does
+- **标题**：今天吃啥 / What to Eat Today
+- **描述**：把 AI Passport 变成你的“今天吃什么”小转盘——按住一个键，看着午餐
+  推荐轮着转；按住另一个键，转到各式美食。松手就停在你想吃的那样上，纠结吃
+  什么的时候特别治愈，也适合聚会时让大家轮流决定。
+## 功能
 
-- **Boots straight into the app**: the firmware opens the roulette directly with
-  no main menu.
-- **Lunch-prompt animation** (hold the first button): loops a "what's for lunch?"
-  prompt at 10 fps.
-- **Food-picker animation** (hold the other button): spins through a set of food
-  options at 20 fps.
-- **Release to stop**: letting go stops the roulette on the current frame.
-- **Battery readout**: shows the live battery percentage in the top-right corner,
-  refreshed every couple of seconds; low battery (<20%) turns red.
-- **Auto-poweroff**: after 2 minutes with no key activity the device turns off
-  the backlight and enters deep sleep (woken by any key).
+- **开机直达应用**：固件启动后直接进入轮盘，无主菜单。
+- **午餐引导动画**（按住上键）：循环播放「今天午餐要吃什么呢？」提示（10 fps）。
+- **食物选择器动画**（按住下键）：在多种食物选择间循环（20 fps）。
+- **松手即停**：松开按键停在当前帧。
+- **电量显示**：右上角实时显示电池百分比，每 2 秒刷新；低电量（<20%）变红。
+- **自动关机**：2 分钟无按键活动即关闭背光并进入深睡（任意按键唤醒）。
 
-## Interaction
+## 交互
 
-Three keys drive the whole app; the top-right corner shows the battery level.
+三个按键驱动整个应用；右上角显示电量。
 
-- **UP (hold)**: cycle the lunch-prompt animation.
-- **DOWN (hold)**: cycle the food-picker animation.
-- **Release**: stop on the current frame.
-- **OK (single press)**: toggle between the LVGL partial-redraw renderer and a
-  fast local+interlaced renderer (for A/B comparing refresh speed vs. tearing).
+- **上键（按住）**：循环「午餐引导」动画。
+- **下键（按住）**：循环「食物选择器」动画。
+- **松开**：停在当前帧。
+- **OK（单击）**：在 LVGL 局部重绘渲染器与快速局部+隔行渲染器之间切换
+  （用于 A/B 对比刷新速度与撕裂）。
 
-## Source
+## 源码
 
-- Repository: `Shinku-Chen/ai-passport`, branch `feature/cheerful-goodall`
-  (<https://github.com/Shinku-Chen/ai-passport/tree/feature/cheerful-goodall>).
-- Released to the community as project `community-3299e0e9`.
+- 仓库：`Shinku-Chen/ai-passport`，分支 `feature/cheerful-goodall`
+  （<https://github.com/Shinku-Chen/ai-passport/tree/feature/cheerful-goodall>）。
+- 已发布到社区，项目号 `community-3299e0e9`。

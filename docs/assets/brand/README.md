@@ -1,38 +1,38 @@
 <p align="right">
-  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="README.md">English</a> · <strong>简体中文</strong>
 </p>
 
-# AI Passport Brand Visuals
+# AI Passport 品牌视觉素材
 
-This directory holds official product and brand visual references for the AI Passport. Use these images as the visual baselines when generating marketing or showcase renders with AI image tools.
+本目录存放 AI Passport 的官方产品与品牌视觉参考图。用 AI 图像工具生成市场宣传图或展示效果图时，请以这些图片作为视觉基线。
 
-## Overview
+## 概览
 
-The AI Passport is a wearable device (named **Folotoy** on the device and in the community). The references cover the physical product from the front and back, plus three brand-colored shell renders of the front. Each image keeps the product silhouette, port/button placement, and shell color important details. The screen content is not a fixed requirement — the AI Passport is a programmable wearable, so the screen may be fully replaced depending on the play or firmware. When generating a render, keep the outside hardware (shell, buttons, ports, key-ring hole) consistent and treat the on-screen content as flexible.
+AI Passport 是一款穿戴设备（设备上与社区中名为 **Folotoy**）。参考图覆盖产品正面与背面，以及三种品牌色的正面外壳渲染图。每张图保持产品轮廓、接口与按键位置、外壳配色等关键特征。**屏幕显示内容不作硬性要求**——AI Passport 是可编程穿戴设备，屏幕内容可能随玩法或固件整体替换；生成效果图时保持外壳硬件（外壳、按键、接口、挂绳孔）一致，屏显内容灵活处理。
 
-## Images
+## 图片清单
 
-### Product references
+### 产品参考图
 
-| File | View | Notes |
+| 文件 | 视角 | 说明 |
 | --- | --- | --- |
-| [`ai-passport-front.png`](ai-passport-front.png) | Front | Transparent shell; on-screen content is illustrative and may be replaced. Keep the shell, buttons, ports, and key-ring hole when generating a matching render. |
-| [`ai-passport-back.webp`](ai-passport-back.webp) | Back | Transparent shell over the PCB; `FOLOTOY` logo, `AI PASS WEARABLE DEVICE`, power/STA/BATT/USB/NFC LEDs, an `NFC` label, the `AI PASSport` title with `Wear it. Flash it. Make it anything.` and a QR code. |
-| [`ai-passport-views.jpg`](ai-passport-views.jpg) | All views | Six-view product diagram (top, bottom, front, back, and both sides) with a blank screen; useful as an overview/exploded-view reference for generating a full-device render. |
+| [`ai-passport-front.png`](ai-passport-front.png) | 正面 | 透明外壳；屏幕上内容仅为示意、可被替换。生成匹配效果图时保持外壳、按键、接口与挂绳孔一致。 |
+| [`ai-passport-back.webp`](ai-passport-back.webp) | 背面 | 透明外壳内可见 PCB；`FOLOTOY` logo、`AI PASS WEARABLE DEVICE`、电源/STA/BATT/USB/NFC 指示灯、`NFC` 标签、`AI PASSport` 标题与 `Wear it. Flash it. Make it anything.` 及二维码。 |
+| [`ai-passport-views.jpg`](ai-passport-views.jpg) | 多视图 | 六视图产品示意图（顶、底、正、背及两侧），屏幕留空；适合作为整机视图/爆炸视图参考，用于生成完整设备效果图。 |
 
-### Brand-color shell renders (front)
+### 品牌色外壳渲染图（正面）
 
-| File | Color | Model badge | Notes |
+| 文件 | 配色 | 型号徽标 | 说明 |
 | --- | --- | --- | --- |
-| [`ai-passport-front-eva-01.png`](ai-passport-front-eva-01.png) | Purple | `01` | Unit-01 (EVA) colorway; `TEST TYPE` badge. |
-| [`ai-passport-front-eva-00.png`](ai-passport-front-eva-00.png) | Orange | `00` | Unit-00 (EVA) colorway; `PROTOTYPE MODEL` badge. |
-| [`ai-passport-front-eva-02.png`](ai-passport-front-eva-02.png) | Red | `02` | Unit-02 (EVA) colorway; `PRODUCTION MODEL` badge. |
+| [`ai-passport-front-eva-01.png`](ai-passport-front-eva-01.png) | 紫色 | `01` | 初号机（Unit-01）配色；`TEST TYPE` 徽标。 |
+| [`ai-passport-front-eva-00.png`](ai-passport-front-eva-00.png) | 橙色 | `00` | 零号机（Unit-00）配色；`PROTOTYPE MODEL` 徽标。 |
+| [`ai-passport-front-eva-02.png`](ai-passport-front-eva-02.png) | 红色 | `02` | 二号机（Unit-02）配色；`PRODUCTION MODEL` 徽标。 |
 
-All three color renders are 1024 × 1536 PNG and share the same shell layout as the standard front (`ai-passport-front.png`). Their on-screen content is illustrative and may be replaced; the screen image itself is not a requirement for a generated render.
+三张配色渲染图均为 1024 × 1536 PNG，外壳版式与标准正面图（`ai-passport-front.png`）一致。屏显内容仅为示意、可被替换；屏幕图像本身不是生成效果图时的硬性要求。
 
-## Image dimensions
+## 图片尺寸
 
-| File | Format | Dimensions | Size |
+| 文件 | 格式 | 尺寸 | 大小 |
 | --- | --- | --- | --- |
 | `ai-passport-front.png` | PNG | 605 × 931 | 460 KB |
 | `ai-passport-back.webp` | WebP | — | 118 KB |
@@ -41,30 +41,31 @@ All three color renders are 1024 × 1536 PNG and share the same shell layout as 
 | `ai-passport-front-eva-00.png` | PNG | 1024 × 1536 | 2.0 MB |
 | `ai-passport-front-eva-02.png` | PNG | 1024 × 1536 | 2.0 MB |
 
-## How to generate new renders
+## 如何生成新的渲染图
 
-When generating a marketing or showcase render from these references, keep the following consistent:
+当基于这些参考图生成市场宣传或展示图时，请保持一致：
 
-- **Reference as the device base.** The reference image is the base for the whole render: keep its outer shell, top key-ring hole, side buttons, ports, and logo text as they are. The reference's on-screen area is only a placeholder — you do not keep it.
-- **Redraw the screen area to the request.** The core operation is to redraw the reference's screen region to the content the user asks for (for example the actual UI of a specific play), keeping the screen's size, aspect ratio, corners, and position inside the shell identical to the reference. Keep the placeholder screen inset inside the matched frame; do not reshape, move, or replace the screen frame itself.
-- **Logo and label text**: keep `Folotoy` / `FOLOTOY`, the model name, and any tagline as shown on the shell.
-- **Colorways**: use the shell reference as the base and change only the accent/shell palette for a new variant (for example a white, green, or black edition).
-- **Aspect**: renders at a 2:3 vertical ratio read best for the front view.
+- **外部硬件**：保持圆角外壳、顶部挂绳孔、侧键与接口与参考一致。
+- **参考图作为设备基底**：参考图就是整张效果图的基底——保留其外壳、顶部挂绳孔、侧键、接口与 Logo 文字原样。参考图里的屏幕区域只是**占位**，保留它没有意义。
+- **按用户要求重绘屏幕部分**：核心操作是把参考图的屏幕区域重绘成用户要求的内容（例如某玩法的真实界面），同时让屏幕的尺寸、比例、圆角与外壳内位置与参考完全一致。把这个占位屏幕嵌进匹配好的框内，而不要重新塑形、移动或替换屏幕框本身。
+- **Logo 与标签文字**：保留外壳上的 `Folotoy` / `FOLOTOY`、型号名与标语。
+- **配色**：以外壳参考图为基础，仅改变外壳/强调色以生成新变体（如白色、绿色或黑色版）。
+- **比例**：正面视角按 2:3 竖版比例渲染效果最佳。
 
-Unless the reference image is licensed for reuse, use these files as an internal visual baseline rather than recycling them verbatim into published assets.
+除非参考图本身允许复用，请把这些文件作为内部视觉基线，而不是原样搬运到公开发布的素材中。
 
-## Tooling notes
+## 技术要点
 
-When generating a render that must match a reference, the common failure mode is a model that "reimagines" the device because it never actually saw the reference image. Keep these points in mind regardless of the image tool you use:
+当生成一张必须匹配参考图的效果图时，最常见的失败原因是模型"重新想象"了一台设备——因为它压根没看到参考图。无论你用什么图像工具，都请记住以下几点：
 
-- **Always pass the reference image explicitly.** Generating a device render is a reference-based redraw, not a from-scratch text-to-image: you must supply a `docs/assets/brand` reference (typically `ai-passport-front.png` or a colorway shell render) as an input to the generation call, keep its outer hardware, and redraw only the screen region to the requested content. Relying only on a text description lets the model invent a look-alike device instead of reproducing this one.
-- **Local file paths are not accepted as image input.** Most generation services reject a bare filesystem path. Pass the image as a service-supported form: a hosted reference URL, a data URL, or whatever the tool documents for uploads/attachments.
-- **Very long data URLs are fragile when passed by hand.** A multi-KB base64 data URL is easy to corrupt during manual copying between tool calls; prefer a short hosted reference or let the tool resolve the image itself.
-- **Verify hardware fidelity after generating.** Compare the render against the reference for the shell silhouette, key-ring hole, side buttons, ports, and any model badge. If these drift, regenerate rather than accept the result.
+- **务必显式传入参考图。** 生成设备图是**基于参考图的重绘**，不是从零文生图：必须把 `docs/assets/brand` 的一张参考图（通常是 `ai-passport-front.png` 或某款配色外壳渲染图）作为输入传给生成调用，保留其外壳硬件，只把屏幕区域重绘成用户要求的内容。仅依赖文字描述会让模型虚构出一台"长得像"的设备，而不是还原这一台。
+- **本地文件路径不能作为图像输入。** 多数生成服务会拒绝裸文件系统路径。请改用服务支持的形态：托管引用 URL、data URL，或工具文档说明的上传/附件方式。
+- **超长 data URL 手工传递很脆弱。** 几 KB 的 base64 data URL 在工具调用间手动复制时极易损坏；优先用短托管引用，或让工具自行解析图像。
+- **生成后要核对硬件一致性。** 对照参考图核对外壳轮廓、挂绳孔、侧键、接口与型号徽标。若有偏差请重新生成，不要直接采用。
 
-## Usage
+## 使用方式
 
-- Reference the local files in this directory when generating images with an AI tool; the source files are under `docs/assets/brand/`.
-- Generated images are not brand assets by default. Unless the user explicitly requests a brand render, AI-generated images are project assets and belong in `assets/images/`, not here.
-- Only register a render in this directory when the user specifically requests a brand visual: add a row to the tables above and link the generated file here.
-- Keep product facts (labels, model names, hardware features) accurate; do not invent hardware that is not present in the references. On-screen status text is illustrative and not a fixed requirement.
+- 用 AI 工具生成图片时，请引用本目录下的文件；源文件位于 `docs/assets/brand/`。
+- AI 生成的图片默认不是品牌素材。除非用户明确要求生成品牌视觉图，否则这些图片属于项目所需素材，应保存到 `assets/images/`，而不是本目录。
+- 仅当用户明确要求生成品牌视觉图时，才把该渲染图登记到本目录：在上方表格中新增一行，并把生成文件链接进本目录。
+- 保持产品事实（标签、型号名、硬件特性）准确；不要虚构参考图中不存在的硬件。屏显状态文字仅为示意、不是硬性要求。

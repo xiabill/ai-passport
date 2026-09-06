@@ -1,63 +1,63 @@
 <p align="right">
-  <a href="voice-guide.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="voice-guide.md">English</a>
 </p>
 
-# Voice Keychain Guide
+# 音效钥匙扣指南
 
-This document explains how the **Voice Keychain** product uses voice assets: where the source audio lives, how it is compressed and packed, and how to build and flash the firmware plus its data partition.
+本文说明**音效钥匙扣**产品如何使用语音素材：原始音频放在哪、如何压缩打包、以及如何构建并烧录固件与其数据分区。
 
-## Source assets
+## 原始素材
 
-Raw audio lives in `assets/project/<directory>/*.mp3|ogg|wav`. Each directory becomes a top-level item in the keychain UI; each audio file becomes a selectable clip. The folder and file names are displayed in the UI, so keep them human-readable.
+原始音频位于 `assets/project/<目录>/*.mp3|ogg|wav`。每个目录对应钥匙扣 UI 里的一个顶层项目；每个音频文件对应一段可选择的音效。目录名与文件名会显示在 UI 中，请保持其可读。
 
-- Source media are the user's own assets; record their source and redistribution permission before committing raw files. The repository prefers to keep only the transcoded results (see below) to stay slim and avoid shipping original binaries.
-- Non-BMP characters (for example emoji such as `🐦`) are replaced with readable Chinese by the transcoder, because the embedded CJK subset font has no glyph for them.
+- 原始媒体是用户自有素材；提交原始文件前应记录来源与再分发许可。本仓库倾向只保留转码产物（见下文），以保持精简并避免打包原始二进制。
+- 文件名中的非 BMP 字符（如 emoji `🐦`）会被转码器替换成可读中文，因为嵌入的 CJK 子集字体没有对应字形。
 
-## Transcoding pipeline
+## 转码管线
 
-Run the transcoder after adding or changing source audio. It requires `ffmpeg` with the `libopus` encoder and a Python environment with `numpy` and `miniaudio`:
+新增或改动原始音频后运行转码器，需一个带 `libopus` 编码器的 `ffmpeg`、以及装有 `numpy` 与 `miniaudio` 的 Python 环境：
 
 ```bash
-pip install numpy miniaudio     # once
+pip install numpy miniaudio     # 首次
 python tools/encode_opus.py
 ```
 
-The script performs, for each clip:
+脚本对每段执行：
 
-1. Decode mp3/ogg/wav with `miniaudio` and resample to 16 kHz mono.
-2. Apply a low-pass filter (voice bandwidth, about 4 kHz) and trim leading/trailing silence.
-3. Encode Opus at 8 kbps with `ffmpeg` (libopus), writing a raw Opus packet stream (each packet is a 2-byte little-endian length plus one Opus frame).
-4. Write `assets/audio/dirNN/clipMM.opus`, update `assets/audio/voice_index.json`, regenerate `main/voice_index.h` (compile-time path/name/length table the firmware uses), and pack a `voicefs.img` using the ESP-IDF `spiffsgen.py` tool.
+1. 用 `miniaudio` 解码 mp3/ogg/wav 并重采样到 16 kHz 单声道。
+2. 低通滤波（语音带宽约 4 kHz）并剪除首尾静音。
+3. 用 `ffmpeg`（libopus）编码为 Opus 8 kbps，写成裸 Opus 包流（每个包 = 2 字节小端长度 + 一个 Opus 帧）。
+4. 写入 `assets/audio/dirNN/clipMM.opus`，更新 `assets/audio/voice_index.json`，重新生成 `main/voice_index.h`（固件使用的编译期路径/中文名/长度表），并用 ESP-IDF 的 `spiffsgen.py` 打包 `voicefs.img`。
 
-The firmware decodes the frames in a dedicated task and writes PCM to the audio output. The older IMA-ADPCM encoder (`encode_voice.py`) remains in the repository as recorded decision history; the shipped path is Opus.
+固件在独立任务中逐帧解码并写出 PCM 到音频输出。旧的 IMA-ADPCM 编码器（`encode_voice.py`）保留在仓库作为已记录的决策历史；实际交付路径是 Opus。
 
-## Storage layout
+## 存储布局
 
-`partitions.csv` adds a dedicated SPIFFS data partition:
+`partitions.csv` 新增一个独立的 SPIFFS 数据分区：
 
 ```csv
 voicefs, data, spiffs, 0x210000, 0x5F0000,
 ```
 
-The firmware mounts it via `esp_vfs_spiffs_register` under `/voices` and reads each clip with ordinary `fopen`/`fread`. SPIFFS is an ESP-IDF built-in component, so no external Managed Component is required. The `voicefs.img` is the content of that partition; it is small relative to the ~5.94 MB (0x5F0000) partition (the coded clips are a few hundred KB).
+固件通过 `esp_vfs_spiffs_register` 将其挂载到 `/voices`，并用普通的 `fopen`/`fread` 读取每段。SPIFFS 是 ESP-IDF 内置组件，因此无需外部 Managed Component。`voicefs.img` 即该分区的内容；相对约 5.94 MB（0x5F0000）分区它很小（编码后的音效仅数百 KB）。
 
-## Building and flashing
+## 构建与烧录
 
-Build the application firmware as usual. The data partition is flashed separately from the merged app image:
+按常规构建应用固件。数据分区与合并的应用镜像分开烧录：
 
 ```bash
-# app + bootloader + partition table
-idf.py -p <PORT> flash
-# data partition (voice assets) — flash the voicefs.img to the voicefs offset
-python -m esptool --chip esp32c3 -p <PORT> write_flash 0x210000 assets/audio/voicefs.img
+# 应用 + bootloader + 分区表
+idf.py -p <端口> flash
+# 数据分区（语音素材）— 把 voicefs.img 烧到 voicefs 偏移
+python -m esptool --chip esp32c3 -p <端口> write_flash 0x210000 assets/audio/voicefs.img
 ```
 
-On first boot the partition is mounted with `format_if_mount_failed = true`, so a blank data partition is formatted automatically before reading clips.
+首次启动时以 `format_if_mount_failed = true` 挂载，因此空白数据分区会在读取前自动格式化。
 
-## Updating assets
+## 更新素材
 
-When you add, rename, or remove source audio:
+当新增、重命名或删除原始音频时：
 
-1. Put the files in `assets/project/<directory>/`.
-2. Run `python tools/encode_opus.py` to regenerate the clips, `voice_index.h`, and `voicefs.img`.
-3. Rebuild the firmware (the `voice_index.h` table changed) and re-flash the data partition.
+1. 把文件放入 `assets/project/<目录>/`。
+2. 运行 `python tools/encode_opus.py` 重新生成各段、`voice_index.h` 与 `voicefs.img`。
+3. 重新构建固件（`voice_index.h` 表已改变）并重新烧录数据分区。

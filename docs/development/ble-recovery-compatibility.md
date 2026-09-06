@@ -1,70 +1,59 @@
 <p align="right">
-  <a href="ble-recovery-compatibility.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="ble-recovery-compatibility.md">English</a>
 </p>
 
-# Mini-Program BLE Firmware Compatibility
+# 小程序 BLE 固件兼容规范
 
-This repository is a derivative-firmware template. Every application built from
-it must remain installable by the AI Passport mini-program through the permanent
-Recovery already provisioned by the official factory firmware.
+本仓库是二创固件模板。任何基于它开发的应用，都必须保持可由 AI Passport
+小程序通过官方默认固件预装的永久 Recovery 安装。
 
-## How installation works
+## 安装原理
 
-The application does not implement the BLE flashing service. The user holds UP
-while powering on for five seconds; the custom bootloader then starts the
-factory-installed Recovery at `0x700000`. Recovery exposes the FFF0–FFF4 BLE
-service, verifies the device, receives the application and resource sections,
-protects device identity, commits a compatible partition table, and starts the
-new application.
+玩法应用本身不实现 BLE 刷机服务。用户关机后按住上键开机 5 秒，自定义
+bootloader 跳转到 `0x700000` 的工厂预装 Recovery。Recovery 提供 FFF0–FFF4
+BLE 服务，验证设备后接收应用与资源分区，保护设备身份，写入兼容分区表，
+最后启动新应用。
 
-The community artifact is therefore an input to Recovery, not a replacement for
-Recovery. A device whose permanent Recovery was erased must first be restored
-with the official USB recovery flow.
+因此，社区固件是 Recovery 的安装输入，不是 Recovery 的替代品。如果设备的永久
+Recovery 已被擦除，必须先走官网 USB 恢复流程。
 
-## Mandatory contract
+## 必须保持的契约
 
-Derivative projects must preserve all of the following:
+二创项目必须同时保留：
 
-- ESP32-C3, 8 MB Flash, ESP-IDF 5.5.3.
-- A merged ESP image starting at `0x0`, produced as
-  `build/FoloToy-AI-Passport-full.bin`.
-- One main application image at `0x10000`, no larger than `0x300000` bytes.
-- `cardid`: data/NVS at `0x356000`, size `0x4000`.
-- `recovery`: app/test at `0x700000`, size `0x100000`.
-- The bootloader hook under `bootloader_components/recovery_boot_hook/`, which
-  enters Recovery after the UP key is held for five seconds.
-- A valid partition-table MD5 marker and no partition overlap with either
-  protected region.
-- No device-specific `cardid` payload and no replacement Recovery payload in a
-  community artifact.
+- ESP32-C3、8 MB Flash、ESP-IDF 5.5.3。
+- 从 `0x0` 开始的合并 ESP 镜像，固定产物为
+  `build/FoloToy-AI-Passport-full.bin`。
+- 位于 `0x10000` 的主应用镜像，不得超过 `0x300000` 字节。
+- `cardid`：data/NVS，地址 `0x356000`，大小 `0x4000`。
+- `recovery`：app/test，地址 `0x700000`，大小 `0x100000`。
+- `bootloader_components/recovery_boot_hook/` 下的 bootloader hook，上键持续
+  5 秒后进入 Recovery。
+- 有效的分区表 MD5，且所有分区不得与两个保护区重叠。
+- 社区产物不得包含任何单台设备的 `cardid` 数据，也不得携带替换 Recovery
+  的数据。
 
-Applications may add resource partitions, but the partitions must not overlap
-the protected regions. Required resource partitions must be included in the
-merged artifact rather than declared empty.
+应用可以新增资源分区，但不得覆盖保护区。必需资源分区必须打入合并产物，
+不得只在分区表声明一个空分区。
 
-## Enforced validation
+## 强制验证
 
-Run:
+执行：
 
 ```bash
 ./tools/validate.sh --firmware
 ```
 
-The check builds in an isolated directory, creates the merged image, verifies
-the bootloader/table/application offsets, parses the partition table, checks its
-MD5 and protected ranges, enforces the 3 MB application limit, rejects protected
-payload bytes, and confirms the Recovery boot hook is linked. CI runs the same
-gate. Do not publish an artifact when this command fails.
+脚本会在隔离目录构建，生成合并镜像，验证 bootloader、分区表与应用的偏移，
+解析分区表并检查 MD5、保护范围和 3 MB 应用上限，拒绝保护分区数据，同时
+确认 Recovery boot hook 已链接。CI 执行同一门禁。该命令失败时不得发布。
 
-Upload only `build/FoloToy-AI-Passport-full.bin`; the similarly named app-only
-`build/FoloToy-AI-Passport.bin` cannot pass mini-program compatibility checks.
+只上传 `build/FoloToy-AI-Passport-full.bin`。名称相近的应用单镜像
+`build/FoloToy-AI-Passport.bin` 无法通过小程序兼容检测。
 
-## Flashing safety during development
+## 开发烧录安全
 
-Never run `idf.py erase-flash` on a provisioned device. It destroys both the
-per-device identity and permanent Recovery. Prefer mini-program installation or
-the segmented `idf.py flash` development command, which does not write an image
-for the protected partitions. A raw single-file write from `0x0` is safe only
-when its byte range ends before `cardid`; a merged artifact containing later
-resource partitions spans the gap and must not be raw-flashed to a provisioned
-device.
+已写入设备身份的机器严禁执行 `idf.py erase-flash`，否则会同时破坏单机身份与永久
+Recovery。优先使用小程序安装，或使用不会写保护分区镜像的分段 `idf.py flash`。
+只有单文件的字节范围在 `cardid` 之前结束时，从 `0x0` 直接写入才是安全的；
+若合并产物包含位于 `cardid` 之后的资源分区，就不得对已写身份的设备做单文件直刷。

@@ -1,45 +1,34 @@
 <p align="right">
-  <a href="archive-plays.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="archive-plays.md">English</a>
 </p>
 
-# Action D: Archive the Application to plays
+# 动作 D：归档应用到 plays
 
-This action archives a published application into the upstream `plays/`
-application archive so it is discoverable in-repository for later querying. It
-is one of the six optional closing actions listed in the
-[project completion](../project-completion.md).
+本动作把已发布的应用归档到上游 `plays/` 应用档案，这样它能在仓库内留存、便于后续查询。它是[项目开发完成流程](../project-completion.md)列出的六项可选动作之一。
 
-The workflow is driven by the `plays-archive` skill.
+工作流由 `plays-archive` skill 驱动。
 
-## Inputs
+## 输入
 
-- Application name (lowercase-kebab-case).
-- [Published profile](../project-completion.md#published-profile): bilingual title and
-  description, and the source address.
+- 应用名（lowercase-kebab-case）。
+- [共享发布属性](../project-completion.md#共享发布属性)：双语标题与简介、源码地址。
 
-## Steps
+## 步骤
 
-1. Confirm consent and a GitHub channel (GitHub MCP, a GitHub skill, or `gh`).
-2. Generate a bilingual AI-functional summary under
-   `plays/<username>/<app-name>/` (`README.md` / `.zh_CN.md`), merging the root
-   README when one exists.
-3. Record the publish metadata — the bilingual title and description and the
-   source address — which include the cover image by file name and format, but
-   do not commit the cover image itself. The archive is text-only.
-4. Handle each branch's root README independently (see
-   [readme-update.md](./readme-update.md) for the required README sync).
-5. Commit only the summary on a dedicated branch; do not store the firmware
-   `.bin` or the cover image.
-6. After review, open the archive PR against the upstream project.
+1. 确认同意与可用的 GitHub 通道（GitHub MCP、GitHub skill 或 `gh`）。
+2. 在 `plays/<username>/<app-name>/` 下生成双语 AI 功能总结（`README.md` / `.zh_CN.md`），有根 README 时合并它。
+3. 记录发布元数据——双语标题与简介、源码地址，其中包括封面按文件名与格式记录；但不提交封面图本身。档案为纯文本（text-only）。
+4. 各自处理每个分支的根 README（必需的 README 同步见 [readme-update.md](./readme-update.md)）。
+5. 只在专门分支上提交总结；不存固件 `.bin`，也不存封面图。
+6. 经审查后，向上游项目开归档 PR。
 
-## Safety
+## 安全
 
-- Never store the merged firmware `.bin` or the cover image in the archive; the
-  archive is text-only, and both are build/publish artifacts.
-- Do not submit before developer review and consent.
+- 绝不在档案中保存合并固件 `.bin`，也不保存封面图；档案为纯文本，两者都是构建/发布产物。
+- 未经开发者审查与同意，不提交。
 
-## Related documents
+## 相关文档
 
-- Application archive convention: [plays/README.md](../../../plays/README.md)
-- Skill: [plays-archive](../../../skills/plays-archive/SKILL.md)
-- README update (required): [readme-update.md](./readme-update.md)
+- 应用档案约定：[plays/README.md](../../../plays/README.md)
+- Skill：[plays-archive](../../../skills/plays-archive/SKILL.md)
+- README 更新（必须）：[readme-update.md](./readme-update.md)

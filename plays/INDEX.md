@@ -1,34 +1,28 @@
 <p align="right">
-  <a href="INDEX.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="INDEX.md">English</a>
 </p>
 
-# Play Archive Index
+# Plays 应用档案索引
 
-This page lists every archived play under [`plays/`](README.md), grouped by the
-contributor who published it. It is the discovery table for the application
-archive: read a per-application summary to decide whether to extend or reference
-an existing play, or to look up what a published application does.
+本页列出 [`plays/`](README.md) 下所有已归档的应用，按发布它们的贡献者分组。它是应用档案的
+发现表：读某个应用的功能说明，以决定是扩展它、参考它，还是查询某个已发布应用的功能。
 
-For the archive convention (naming, structure, and the cover image), see the
-[plays README](README.md).
+目录约定（命名、结构、封面图）见 [plays README](README.md)。
 
-## Index
+## 索引
 
-Each archive is stored under `plays/<username>/<app-name>/` and linked from this
-table.
+每个档案保存在 `plays/<username>/<app-name>/` 下，并从本表链接。
 
-| Contributor | Application | Summary | Source |
+| 贡献者 | 应用 | 功能说明 | 源码 |
 | --- | --- | --- | --- |
-| Shinku-Chen | [Voice Keychain](shinku-chen/voice-keychain/README.md) | A sound-effects keychain that turns the AI Passport into a pocket audio player; press OK to play one of hundreds of Chinese voice clips from dozens of character packs. | [feature/voice-keychain](https://github.com/Shinku-Chen/ai-passport/tree/feature/voice-keychain) |
-| Shinku-Chen | [What to Eat Today](shinku-chen/eat-what/README.md) | A button-driven food roulette that turns the AI Passport into a "what should I eat?" spinner; hold a key to cycle food options and let go to stop on the one you want. | [feature/cheerful-goodall](https://github.com/Shinku-Chen/ai-passport/tree/feature/cheerful-goodall) |
+| Shinku-Chen | [音效钥匙扣](shinku-chen/voice-keychain/README.zh_CN.md) | 把 AI Passport 变成口袋音频播放器的音效钥匙扣；按 OK 播放来自几十个角色包的数百条中文语音片段。 | [feature/voice-keychain](https://github.com/Shinku-Chen/ai-passport/tree/feature/voice-keychain) |
+| Shinku-Chen | [今天吃啥](shinku-chen/eat-what/README.zh_CN.md) | 按键驱动的食物轮盘，把 AI Passport 变成「今天吃什么」小转盘；按住按键循环食物选项，松手停在你想吃的那样上。 | [feature/cheerful-goodall](https://github.com/Shinku-Chen/ai-passport/tree/feature/cheerful-goodall) |
 
-The Voice Keychain archive also carries its manual:
+音效钥匙扣档案还携带配套手册：
 
-- [Voice Keychain guide](shinku-chen/voice-keychain/voice-guide.md) — where source audio lives, how it is compressed, and how to build/flash the firmware and data partition.
+- [音效钥匙扣指南](shinku-chen/voice-keychain/voice-guide.zh_CN.md) — 源音频存放位置、如何压缩，以及如何构建/烧录固件与数据分区。
 
-## Adding a record
+## 新增记录
 
-When a play is archived, add a row here for the new
-`plays/<username>/<app-name>/` entry and link the per-application README. Keep
-this index in sync with the archive in the same change (see the `plays-archive`
-skill).
+归档一个新应用时，为新的 `plays/<username>/<app-name>/` 条目添加一行，并链接该应用的
+README。保持本索引与档案在同一项变更中同步（见 `plays-archive` skill）。

@@ -1,34 +1,24 @@
 <p align="right">
-  <a href="environment-setup.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="environment-setup.md">English</a>
 </p>
 
-# Environment Bootstrap for AI Agents
+# AI Agent 环境引导
 
-This document lets an AI agent bootstrap a clean checkout without relying on a
-developer-specific shell function, absolute path, IDE, or preinstalled ESP-IDF.
-The required baseline is ESP-IDF 5.5.3 for ESP32-C3.
+本文用于让 AI agent 在全新 checkout 中完成环境搭建，不依赖特定开发者的 shell 函数、绝对路径、IDE 或预装 ESP-IDF。项目要求 ESP32-C3 对应的 ESP-IDF 5.5.3。
 
-## Agent contract
+## Agent 执行约束
 
-Before installing anything:
+安装任何内容前：
 
-1. Run `git status --short --branch` in an existing checkout and preserve all
-   user changes.
-2. Detect the operating system and architecture. Check for an already activated
-   ESP-IDF before downloading another copy.
-3. Reuse an existing installation only when `idf.py --version` reports
-   `ESP-IDF v5.5.3`. Install other versions side by side; do not replace them.
-4. Ask for approval before using `sudo`, installing system packages, writing
-   outside the repository, changing group membership, or downloading through a
-   restricted network.
-5. Do not edit shell startup files, global Git configuration, proxy settings,
-   certificate verification, or package-manager configuration without explicit
-   user authorization.
-6. Never use a machine-specific shell alias as a required command.
-7. Prefer official upstream and Espressif-operated download services. Do not
-   silently fall back to an unverified mirror.
+1. 已有 checkout 中先运行 `git status --short --branch`，保留全部用户修改。
+2. 检测操作系统和架构；下载新环境前先检查是否已有激活的 ESP-IDF。
+3. 仅当 `idf.py --version` 输出 `ESP-IDF v5.5.3` 时复用已有安装。其他版本应并行安装，不得覆盖。
+4. 使用 `sudo`、安装系统包、写仓库外目录、修改用户组或通过受限网络下载前，先请求用户授权。
+5. 未经用户明确授权，不得修改 shell 启动文件、全局 Git 配置、代理、证书校验或包管理器配置。
+6. 不得把机器专用的 shell alias 当作必要命令。
+7. 优先使用官方上游和乐鑫运营的下载服务，不得静默切换到未经验证的镜像。
 
-Start with read-only discovery:
+先执行只读探测：
 
 ```bash
 uname -s
@@ -39,30 +29,26 @@ printf 'IDF_PATH=%s\n' "${IDF_PATH:-}"
 git status --short --branch
 ```
 
-If the correct environment is already active, continue at
-[Initialize the checkout](#initialize-the-checkout).
+若正确环境已经激活，直接进入[初始化 checkout](#初始化-checkout)。
 
-## Choose a download route
+## 选择下载线路
 
-Use the international route by default. Use the mainland China route when the
-user requests it or direct GitHub/registry downloads are unavailable or too
-slow. Keep mirror variables scoped to the current terminal or command.
+默认使用国际线路。用户明确要求，或 GitHub/Registry 直连不可用、过慢时，使用中国大陆线路。镜像变量只作用于当前终端或单条命令。
 
-| Download | International default | Mainland China official route |
+| 下载内容 | 国际默认线路 | 中国大陆官方线路 |
 | --- | --- | --- |
-| ESP-IDF source | GitHub `espressif/esp-idf` | Espressif Gitee mirror plus `esp-gitee-tools` |
-| Compiler and tool archives | GitHub release assets | `dl.espressif.cn/github_assets` |
-| Managed Components | ESP Component Registry default storage | `components-file.espressif.cn` |
-| Project repository | URL supplied by the user | A user-supplied mirror of the same repository |
+| ESP-IDF 源码 | GitHub `espressif/esp-idf` | 乐鑫 Gitee 镜像及 `esp-gitee-tools` |
+| 编译器和工具归档 | GitHub Release Assets | `dl.espressif.cn/github_assets` |
+| Managed Components | ESP Component Registry 默认存储 | `components-file.espressif.cn` |
+| 当前项目仓库 | 用户提供的 URL | 用户提供的同仓库镜像 |
 
-Do not invent a mirror URL for this project. If the supplied repository URL is
-unreachable, ask the user for an authorized mirror or archive.
+不得为当前项目编造镜像地址。用户提供的仓库 URL 不可访问时，应询问已授权的镜像或归档地址。
 
-## Install host prerequisites
+## 安装主机依赖
 
-### Ubuntu and Debian
+### Ubuntu 和 Debian
 
-After approval for system changes:
+获得系统修改授权后：
 
 ```bash
 sudo apt-get update
@@ -71,7 +57,7 @@ sudo apt-get install -y git wget curl flex bison gperf python3 \
     libssl-dev dfu-util libusb-1.0-0 build-essential
 ```
 
-### Fedora and related distributions
+### Fedora 及相关发行版
 
 ```bash
 sudo dnf install -y git wget curl flex bison gperf python3 cmake \
@@ -88,37 +74,30 @@ sudo pacman -S --needed base-devel git wget curl flex bison gperf python \
 
 ### macOS
 
-Install Xcode Command Line Tools and Homebrew first, then:
+先安装 Xcode Command Line Tools 和 Homebrew，再执行：
 
 ```bash
 xcode-select --install
 brew install cmake ninja ccache dfu-util libusb python
 ```
 
-Do not launch `xcode-select --install` or install Homebrew without user approval;
-both are host-level changes and may require interaction.
+`xcode-select --install` 和 Homebrew 安装均属于主机级修改且可能需要交互，AI 不得未经用户授权直接执行。
 
-### Windows and WSL2
+### Windows 与 WSL2
 
-For native Windows, use Espressif's official ESP-IDF Tools Installer and select
-ESP-IDF v5.5.3. Run later commands in the installer-created ESP-IDF PowerShell or
-Command Prompt. Do not translate POSIX activation commands literally into
-PowerShell.
+原生 Windows 使用乐鑫官方 ESP-IDF Tools Installer，并选择 ESP-IDF v5.5.3。后续命令应在安装器生成的 ESP-IDF PowerShell 或 Command Prompt 中执行，不得把 POSIX 激活命令机械翻译为 PowerShell。
 
-WSL2 can run the Linux build flow. USB flashing and monitoring require a device
-forwarded into WSL; otherwise build in WSL and flash from an activated native
-Windows ESP-IDF terminal.
+WSL2 可以执行 Linux 编译流程。烧录和监视需要把 USB 设备转发进 WSL；否则在 WSL 编译，在已激活 ESP-IDF 的原生 Windows 终端烧录。
 
-## Install ESP-IDF 5.5.3
+## 安装 ESP-IDF 5.5.3
 
-Use a location outside this repository and without spaces. The variable below
-is task-specific and can be overridden by the user:
+安装位置应位于当前仓库之外，路径不得包含空格。以下变量只服务本任务，并允许用户覆盖：
 
 ```bash
 export AI_PASSPORT_IDF_ROOT="${AI_PASSPORT_IDF_ROOT:-${HOME}/esp/esp-idf-v5.5.3}"
 ```
 
-### International route
+### 国际线路
 
 ```bash
 mkdir -p "$(dirname "${AI_PASSPORT_IDF_ROOT}")"
@@ -128,17 +107,16 @@ git clone --branch v5.5.3 --recursive \
 "${AI_PASSPORT_IDF_ROOT}/install.sh" esp32c3
 ```
 
-If cloning was interrupted, repair the checkout instead of starting over:
+clone 中断时应修复原 checkout，不要从头重复下载：
 
 ```bash
 git -C "${AI_PASSPORT_IDF_ROOT}" submodule update --init --recursive
 "${AI_PASSPORT_IDF_ROOT}/install.sh" esp32c3
 ```
 
-### Mainland China route
+### 中国大陆线路
 
-The following route uses repositories and download endpoints operated by
-Espressif. It does not change global Git or pip configuration:
+以下线路使用乐鑫运营的仓库和下载端点，不修改全局 Git 或 pip 配置：
 
 ```bash
 export AI_PASSPORT_GITEE_TOOLS_ROOT="${AI_PASSPORT_GITEE_TOOLS_ROOT:-${HOME}/esp/esp-gitee-tools}"
@@ -154,14 +132,11 @@ IDF_GITHUB_ASSETS=dl.espressif.cn/github_assets \
     "${AI_PASSPORT_IDF_ROOT}/install.sh" esp32c3
 ```
 
-If the Gitee helper reports an interrupted download, rerun its submodule command
-for the same checkout. Do not mix partial submodules from unrelated ESP-IDF
-versions.
+Gitee 辅助工具报告下载中断时，对同一个 checkout 重新执行子模块命令。不得混用不同 ESP-IDF 版本的部分子模块。
 
-## Activate and verify ESP-IDF
+## 激活并核验 ESP-IDF
 
-Activation applies to the current shell only and is the portable replacement
-for machine-specific aliases:
+激活只影响当前 shell，是个人化 alias 的通用替代方案：
 
 ```bash
 source "${AI_PASSPORT_IDF_ROOT}/export.sh"
@@ -170,23 +145,19 @@ python --version
 printf 'IDF_PATH=%s\n' "${IDF_PATH}"
 ```
 
-Stop if the reported version is not exactly `ESP-IDF v5.5.3`. Do not generate
-project configuration with another version.
+版本不是严格的 `ESP-IDF v5.5.3` 时必须停止，不得用其他版本生成项目配置。
 
-For mainland China, optionally accelerate Managed Component archives in the
-current terminal:
+中国大陆环境可在当前终端临时加速 Managed Component 归档下载：
 
 ```bash
 export IDF_COMPONENT_STORAGE_URL="https://components-file.espressif.cn"
 ```
 
-This changes only the component file-storage endpoint. Version selection still
-comes from `components/bsp/idf_component.yml` and the tracked
-`dependencies.lock`.
+它只改变组件文件存储端点；版本选择仍由 `components/bsp/idf_component.yml` 和已提交的 `dependencies.lock` 决定。
 
-## Obtain the project
+## 获取项目
 
-If the agent was given a repository URL but has no checkout yet:
+若 agent 只拿到仓库地址、尚无 checkout：
 
 ```bash
 git clone <repository-url> ai-passport
@@ -194,41 +165,36 @@ cd ai-passport
 git status --short --branch
 ```
 
-Use the user-supplied URL verbatim. Do not embed credentials in it, print tokens,
-or persist authentication data in repository files.
+必须原样使用用户提供的 URL，不得把凭证嵌入 URL、打印 token，或把认证信息写入仓库文件。
 
-## Initialize the checkout
+## 初始化 checkout
 
-From the repository root, prefer the firmware gate for the first build. It
-creates and verifies the merged image intended for delivery and flashing:
+在仓库根目录首次编译时，优先运行固件门禁。它会生成并验证用于交付和烧录的
+合并固件：
 
 ```bash
 ./tools/validate.sh --firmware
 ```
 
-Use `idf.py set-target esp32c3` and `idf.py build` only when an incremental
-development build is useful. Before running `set-target` in an established
-workspace, inspect and preserve intentional local configuration because it may
-rename an existing ignored `sdkconfig` to `sdkconfig.old`.
+仅在需要增量开发编译时使用 `idf.py set-target esp32c3` 和 `idf.py build`。
+已有工作区运行 `set-target` 前，应检查并保留有意设置的本地配置，因为它可能把
+已有、被忽略的 `sdkconfig` 重命名为 `sdkconfig.old`。
 
-`idf.py fullclean` removes build output but does not fully synchronize an
-existing `sdkconfig` with changed defaults.
+`idf.py fullclean` 只删除构建输出，不能让已有 `sdkconfig` 完整同步新 defaults。
 
-The first build downloads the versions pinned by `dependencies.lock` into
-`managed_components/`. Never edit that generated directory. A normal build must
-not leave an unexplained `dependencies.lock` diff.
+首次构建会把 `dependencies.lock` 锁定的版本下载到 `managed_components/`。不得编辑这个生成目录；普通构建不应留下无法解释的 `dependencies.lock` diff。
 
-Confirm the baseline configuration:
+核对基线配置：
 
 ```bash
 grep -E 'CONFIG_IDF_TARGET|CONFIG_ESPTOOLPY_FLASHSIZE|CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG|CONFIG_SPIRAM' sdkconfig
 ```
 
-Expected: ESP32-C3, 8 MB Flash, USB Serial/JTAG console, and no PSRAM.
+预期为 ESP32-C3、8 MB Flash、USB Serial/JTAG 控制台且无 PSRAM。
 
-## Run the repository gate
+## 运行仓库门禁
 
-Run the static gate first, then the firmware gate:
+先运行静态门禁，再运行固件门禁：
 
 ```bash
 ./tools/validate.sh --static
@@ -236,17 +202,15 @@ Run the static gate first, then the firmware gate:
 ./tools/validate.sh
 ```
 
-The static gate requires Python 3, a C compiler, `curl`, `tar`, and a SHA-256
-tool. It downloads a checksum-pinned `actionlint` release into `/tmp` when one is
-not installed. The firmware gate is the preferred build path. It uses an
-isolated temporary build and produces the verified `0x0` image at:
+静态门禁需要 Python 3、C 编译器、`curl`、`tar` 和 SHA-256 工具；未安装
+`actionlint` 时，会把带固定校验和的版本下载到 `/tmp`。固件门禁是默认优先的
+编译方式，它使用隔离的临时构建，并生成经过验证的 `0x0` 镜像：
 
 ```text
 build/FoloToy-AI-Passport-full.bin
 ```
 
-For build-only agents with Docker already authorized, the official Espressif
-image is an alternative to a host installation:
+对于已经获得 Docker 使用授权、只需编译的 agent，乐鑫官方镜像可以替代主机安装：
 
 ```bash
 docker run --rm \
@@ -257,33 +221,25 @@ docker run --rm \
     ./tools/validate.sh --firmware
 ```
 
-Docker does not by itself provide safe USB access for flashing, and mounting the
-checkout allows the container to write generated files. Obtain approval before
-pulling the image or using Docker.
+Docker 本身不会提供安全的 USB 烧录访问，挂载 checkout 后容器也可以写生成文件。拉取镜像或使用 Docker 前必须获得授权。
 
-## Flash and monitor
+## 烧录与监视
 
-Device access is optional for compilation but required for hardware validation.
-Use a data-capable USB cable and discover the actual port; never hardcode it in
-the repository:
+编译不要求设备，硬件验证必须访问设备。使用支持数据传输的 USB 线，发现实际端口，不得在仓库中硬编码：
 
 ```bash
 ls /dev/ttyACM* /dev/ttyUSB* 2>/dev/null
 ```
 
-On Linux, serial access commonly requires membership in `dialout` (or `uucp` on
-some distributions). Changing group membership requires user approval and a new
-login session:
+Linux 串口访问通常要求用户属于 `dialout`（部分发行版为 `uucp`）。修改用户组前必须获得授权，且修改后需要重新登录：
 
 ```bash
 sudo usermod -aG dialout "${USER}"
 ```
 
-Close WebSerial pages and other serial monitors before flashing. Do not run the
-normal development flow permanently as root. Exit the ESP-IDF monitor with
-`Ctrl+]`.
+烧录前关闭 WebSerial 页面和其他串口监视器。不要长期以 root 身份运行日常开发流程。使用 `Ctrl+]` 退出 ESP-IDF monitor。
 
-Prefer flashing the verified merged image from offset `0x0`:
+优先从 `0x0` 烧录经过验证的合并镜像：
 
 ```bash
 python -m esptool --chip esp32c3 -p <port> -b 460800 \
@@ -291,43 +247,41 @@ python -m esptool --chip esp32c3 -p <port> -b 460800 \
 idf.py -p <port> monitor
 ```
 
-The ordinary `build/FoloToy-AI-Passport.bin` is application-only and belongs at
-`0x10000`; it must not be written to `0x0`. Use `idf.py flash` only for an
-intentional incremental development flash, not as the default delivery or
-acceptance path.
+普通的 `build/FoloToy-AI-Passport.bin` 只是 app，只能位于 `0x10000`，不得烧到
+`0x0`。`idf.py flash` 只用于明确需要的增量开发烧录，不作为默认交付或验收方式。
 
-## Failure handling
+## 故障处理
 
-| Symptom | Action |
+| 症状 | 处理 |
 | --- | --- |
-| `idf.py` not found | Activate the selected installation's `export.sh`; do not guess a private alias. |
-| Wrong ESP-IDF version | Stop and activate/install v5.5.3 side by side. |
-| GitHub source or asset download is slow | Switch to the documented Espressif mainland China route. |
-| Component download is slow in China | Set `IDF_COMPONENT_STORAGE_URL` for the current terminal. |
-| Component download fails | Check network, proxy, DNS, and certificates; never disable TLS verification as a shortcut. |
-| Configuration misses tracked defaults | Preserve intentional settings, then rerun `idf.py set-target esp32c3`. |
-| Build came from another ESP-IDF | Activate v5.5.3, run `idf.py fullclean`, then `idf.py set-target esp32c3`. |
-| Serial port is missing | Check cable, enumeration, host/VM USB forwarding, and power. |
-| Serial port is busy | Close WebSerial, VS Code monitor, `idf.py monitor`, and other serial clients. |
-| Permission denied on serial port | Add the user to the platform serial group and log in again. |
+| 找不到 `idf.py` | 激活所选安装的 `export.sh`，不得猜测个人 alias。 |
+| ESP-IDF 版本错误 | 停止并并行激活/安装 v5.5.3。 |
+| GitHub 源码或工具下载慢 | 切换到本文的乐鑫中国大陆线路。 |
+| 中国大陆组件下载慢 | 在当前终端设置 `IDF_COMPONENT_STORAGE_URL`。 |
+| 组件下载失败 | 检查网络、代理、DNS 和证书，不得通过关闭 TLS 校验绕过。 |
+| 配置缺少已跟踪 defaults | 保留有意配置，再执行 `idf.py set-target esp32c3`。 |
+| 构建来自其他 ESP-IDF | 激活 v5.5.3，执行 `idf.py fullclean`，再 set-target/build。 |
+| 串口不存在 | 检查线材、枚举、主机/虚拟机 USB 转发和供电。 |
+| 串口被占用 | 关闭 WebSerial、VS Code monitor、`idf.py monitor` 和其他串口客户端。 |
+| 串口 permission denied | 把用户加入平台串口组并重新登录。 |
 
-## Completion report
+## 完成报告
 
-An AI agent must report environment and hardware results separately:
+AI agent 必须分别报告环境、构建与硬件结果：
 
 ```text
-Environment: PASS / FAIL (OS, architecture, ESP-IDF version, download route)
+Environment: PASS / FAIL（OS、架构、ESP-IDF 版本、下载线路）
 Build: PASS / FAIL / NOT RUN
 Host tests: PASS / FAIL / NOT RUN
 Device tests: PASS / FAIL / NOT RUN
-Unverified: remaining USB, board, instrument, or user checks
+Unverified: 仍需 USB、板卡、仪器或用户确认的事项
 ```
 
-Official references:
+官方参考：
 
-- [ESP-IDF v5.5 toolchain setup](https://docs.espressif.com/projects/esp-idf/en/release-v5.5/esp32c3/get-started/linux-macos-setup.html)
-- [ESP-IDF v5.5 project setup](https://docs.espressif.com/projects/esp-idf/en/release-v5.5/esp32c3/get-started/linux-macos-start-project.html)
-- [Espressif download mirror configuration](https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32c3/api-guides/tools/idf-tools.html)
-- [IDF Component Manager configuration](https://docs.espressif.com/projects/idf-component-manager/en/latest/use/how_to_configuration.html)
-- [Espressif Gitee tools](https://gitee.com/EspressifSystems/esp-gitee-tools)
-- [ESP-IDF Windows setup](https://docs.espressif.com/projects/esp-idf/en/release-v5.5/esp32c3/get-started/windows-setup.html)
+- [ESP-IDF v5.5 工具链安装](https://docs.espressif.com/projects/esp-idf/en/release-v5.5/esp32c3/get-started/linux-macos-setup.html)
+- [ESP-IDF v5.5 项目初始化](https://docs.espressif.com/projects/esp-idf/en/release-v5.5/esp32c3/get-started/linux-macos-start-project.html)
+- [乐鑫下载镜像配置](https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32c3/api-guides/tools/idf-tools.html)
+- [IDF Component Manager 配置](https://docs.espressif.com/projects/idf-component-manager/en/latest/use/how_to_configuration.html)
+- [乐鑫 Gitee 工具](https://gitee.com/EspressifSystems/esp-gitee-tools)
+- [ESP-IDF Windows 安装](https://docs.espressif.com/projects/esp-idf/en/release-v5.5/esp32c3/get-started/windows-setup.html)

@@ -1,47 +1,41 @@
 <p align="right">
-  <a href="CONTRIBUTING.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="CONTRIBUTING.md">English</a>
 </p>
 
-# Contributing
+# 贡献指南
 
-Thank you for contributing to FoloToy AI Passport — code, documentation,
-firmware, and feedback. This repository is the development baseline for
-open-source wearable AI hardware designed for AI agents. It is often forked for
-second development; the fork conventions are in
-[`docs/fork-guide.md`](../docs/fork-guide.md).
+感谢你为 FoloToy AI Passport 贡献代码、文档、固件和反馈。本仓库是面向 AI agent 的
+开源可穿戴 AI 硬件的开发基线。它常被 fork 后二次开发，fork 用户约定见
+[`docs/fork-guide.zh_CN.md`](../docs/fork-guide.zh_CN.md)。
 
-## Before you start
+## 开始之前
 
-- Read [`AGENTS.md`](../AGENTS.md): it is the authoritative entry and index for the
-  rules an AI agent should follow. It is not a replacement for this guide.
-- Read [`README.md`](../docs/README.md) for the hardware capability contract,
-  and the [AI Hardware Development Guide](../docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)
-  for the complete hardware context.
-- Follow [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) when participating in the
-  community. For ordinary usage questions, see [`SUPPORT.md`](SUPPORT.md).
-- Do not commit credentials, tokens, authorization files, or personal data.
-- The repository's `main` branch stays in sync with the upstream baseline; fork
-  users develop feature work in `feature/*` branches (see `docs/fork-guide.md`).
+- 先读 [`AGENTS.zh_CN.md`](../AGENTS.zh_CN.md)：它是 AI agent 应遵循规则的权威入口与索引，不是本指南的替代品。
+- 先读 [`README.zh_CN.md`](../docs/README.zh_CN.md) 的硬件能力契约，以及
+  [AI 硬件开发指南](../docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md) 的完整硬件上下文。
+- 参与社区时请遵守 [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)；普通使用问题见 [`SUPPORT.md`](SUPPORT.md)。
+- 不要提交凭证、令牌、授权文件或个人数据。
+- 仓库的 `main` 分支始终与上游基线保持同步；fork 用户在 `feature/*` 分支开发功能（见 `docs/fork-guide.md`）。
 
-## Development and verification
+## 开发与验证
 
-Use ESP-IDF 5.5.3. For a clean-machine setup, follow the
-[environment bootstrap](../docs/development/environment-setup.md).
+使用 ESP-IDF 5.5.3。全新机器先按
+[环境引导](../docs/development/environment-setup.zh_CN.md)完成安装。
 
-Prefer the repository firmware gate for builds and flash its verified merged
-image at `0x0`. The direct IDF commands below are for incremental development.
+编译优先运行仓库固件门禁，烧录优先把验证过的合并镜像写入 `0x0`。以下直接
+IDF 命令只用于增量开发。
 
 ```bash
-source <path-to-esp-idf-v5.5.3>/export.sh
-idf.py --version             # must report ESP-IDF v5.5.3
-./tools/validate.sh --firmware # preferred merged-image build
-idf.py set-target esp32c3     # Configure the target chip (fresh checkout / after target change)
-idf.py build                  # Optional incremental application build
-idf.py flash monitor          # Optional incremental application flash
-idf.py fullclean              # Clear stale build state (never for user source changes)
+source <ESP-IDF-v5.5.3-路径>/export.sh
+idf.py --version             # 必须输出 ESP-IDF v5.5.3
+./tools/validate.sh --firmware # 优先生成合并固件
+idf.py set-target esp32c3     # 配置目标芯片（fresh checkout 后/换 target 后运行）
+idf.py build                  # 可选：增量 app 编译
+idf.py flash monitor          # 可选：增量 app 烧录
+idf.py fullclean              # 配置过期时清空生成状态（勿用于清理用户源码改动）
 ```
 
-The current baseline includes a pure-logic test that runs without hardware:
+当前基线含一个可脱离硬件运行的纯逻辑测试：
 
 ```bash
 cc -std=c11 -Wall -Wextra -Werror -Imain \
@@ -50,47 +44,37 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 /tmp/test_ui_pixel_math
 ```
 
-The repository provides one validation entry point for local development and CI:
+本仓库为本地开发和 CI 提供同一个验证入口：
 
 ```bash
 ./tools/validate.sh --static
-./tools/validate.sh --firmware  # requires an activated ESP-IDF 5.5.3 environment
-./tools/validate.sh             # complete gate
+./tools/validate.sh --firmware  # 需要先激活 ESP-IDF 5.5.3 环境
+./tools/validate.sh             # 完整门禁
 ```
 
-Follow the verification requirements in
-[`docs/development/build-and-test.md`](../docs/development/build-and-test.md):
-a clean `idf.py build` is the minimum automated check, not hardware validation.
-Record build results and on-device results separately; never present a successful
-build as successful hardware validation.
+遵守 [`docs/development/build-and-test.zh_CN.md`](../docs/development/build-and-test.zh_CN.md) 的
+验证要求：干净的 `idf.py build` 是最低自动检查，不是硬件验收；构建结果与真机结果
+分开记录，禁止把编译通过描述成硬件验证通过。
 
-## Opening a pull request
+## 提交 Pull Request
 
-1. Create a short-lived `feature/*` branch from `main` and keep each pull request
-   focused on one clear problem.
-2. Use `<type>(<scope>): <short description>` for the pull request title, for
-   example `feat(bsp): ...`, `docs: ...`. Available types are defined in
-   [`docs/contribution/commit-and-pr.md`](../docs/contribution/commit-and-pr.md).
-3. Review the complete diff and confirm that it contains no credentials,
-   unrelated generated files, or unintended changes.
-4. Follow the PR requirements in `docs/contribution/commit-and-pr.md`: state the
-   hardware/revision tested, summarize behavior changes, list build and on-device
-   results, link related issues, and record observed on-device results for pin,
-   display-rotation, codec-clock, ADC, or DMA changes.
-5. Wait for CI and review; do not push directly to `main` unless you are a
-   maintainer handling an explicit exception.
+1. 从 `main` 创建短生命周期 `feature/*` 分支，保持一个 PR 只解决一个清晰的问题。
+2. PR 标题使用 `<type>(<scope>): <简短描述>`，例如 `feat(bsp): ...`、`docs: ...`。
+   可用 type 见 [`docs/contribution/commit-and-pr.zh_CN.md`](../docs/contribution/commit-and-pr.zh_CN.md)。
+3. Review 完整 diff，确认没有凭证、无关生成文件或意外改动。
+4. 遵守 `docs/contribution/commit-and-pr.md` 的 PR 要求：说明测试的硬件/版本、
+   行为变更摘要、构建与真机结果，链接相关 issue，并对引脚、显示旋转、codec 时钟、
+   ADC、DMA 改动显式记录观察到的真机结果。
+5. 等待 CI 和 review；除维护者显式例外外，不要直接向 `main` 推送。
 
-Small documentation fixes are welcome as pull requests. For larger changes to
-hardware, architecture, or user data, please open an issue first to discuss
-scope and compatibility.
+小型文档修正也欢迎直接提交 PR。涉及硬件、架构或用户数据的较大改动，建议先开 issue
+讨论范围和兼容性。
 
-## Licensing of contributions
+## 贡献的许可
 
-This repository is licensed under [MIT](../LICENSE). By contributing, you agree that
-your contribution is submitted under the MIT license terms of the repository.
+本仓库使用 [MIT](../LICENSE) 许可证。提交贡献即表示你同意按本仓库的 MIT 条款并入你的贡献。
 
-## Security issues
+## 安全漏洞
 
-Do not disclose vulnerabilities, credentials, or exploitable details in public
-issues, pull requests, or discussions. Follow the private reporting process in
-[`SECURITY.md`](SECURITY.md).
+不要在公开 issue、Pull Request 或讨论中披露漏洞、凭证或可利用细节。请按
+[`SECURITY.md`](SECURITY.md) 的私密报告流程处理。

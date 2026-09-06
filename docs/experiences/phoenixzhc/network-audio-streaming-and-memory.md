@@ -1,119 +1,97 @@
 <p align="right">
-  <a href="network-audio-streaming-and-memory.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="network-audio-streaming-and-memory.md">English</a>
 </p>
 
-# Network Audio Streaming and Memory Budgeting on AI Passport
+# AI Passport 网络音频流与内存预算经验
 
-This note collects reusable lessons from adding HTTP audio streaming to AI
-Passport. It is intentionally application-neutral: the focus is the board's
-ESP32-C3, ES8311 audio path, display workload, and no-PSRAM memory limit.
+本文总结在 AI Passport 上实现 HTTP 音频流时可复用的经验。内容不绑定具体应用，重点是
+ESP32-C3、ES8311 音频链路、显示刷新和无 PSRAM 条件下的内存限制。
 
-## Start from the board boundary
+## 先确认硬件边界
 
-AI Passport has 8 MB flash and no PSRAM. The ST7789P3 display, Wi-Fi/TLS,
-decoder, HTTP client, JSON parser, and LVGL therefore compete for internal RAM.
-The ES8311 and CW2017 also share I2C0, so application code must reuse the BSP
-bus instead of creating another driver instance.
+AI Passport 使用 8 MB Flash，没有 PSRAM。ST7789P3 显示、Wi-Fi/TLS、解码器、
+HTTP 客户端、JSON 解析器和 LVGL 都会争用内部 RAM。ES8311 与 CW2017 还共用
+I2C0，因此应用必须复用 BSP 的总线，不能再创建一套同端口驱动。
 
-The authoritative pin and bus definitions are in
-[`bsp_pins.h`](../../../components/bsp/include/bsp_pins.h):
+引脚和总线定义以 [`bsp_pins.h`](../../../components/bsp/include/bsp_pins.h) 为准：
 
-| Signal | AI Passport connection |
+| 信号 | AI Passport 连接 |
 | --- | --- |
-| ES8311 control | I2C0, SDA GPIO10, SCL GPIO7, 7-bit address `0x18` |
-| I2S clocks | MCLK GPIO6, BCLK GPIO5, WS GPIO3 |
-| I2S data | DOUT GPIO2, DIN GPIO4 |
-| Display | ST7789P3, 240 × 320 |
+| ES8311 控制 | I2C0，SDA GPIO10，SCL GPIO7，7 位地址 `0x18` |
+| I2S 时钟 | MCLK GPIO6，BCLK GPIO5，WS GPIO3 |
+| I2S 数据 | DOUT GPIO2，DIN GPIO4 |
+| 显示屏 | ST7789P3，240 × 320 |
 
-Use [`bsp_audio`](../../../components/bsp/src/bsp_audio.c) as the owner of the
-codec and I2S channels. PCM reads and writes are blocking operations and belong
-in worker tasks, never in LVGL or button callbacks.
+让 [`bsp_audio`](../../../components/bsp/src/bsp_audio.c) 统一持有 codec 和 I2S
+通道。PCM 读写是阻塞操作，必须放到工作任务中，不能放进 LVGL 或按键回调。
 
-## Keep the streaming pipeline bounded
+## 把流式链路限制在明确边界内
 
-A stable playback pipeline has explicit ownership at every stage:
+稳定的播放链路需要让每一层的资源归属都清楚：
 
-1. A controller validates the request and starts one playback worker.
-2. The worker opens the HTTP stream and accepts both fixed and unknown content
-   lengths.
-3. A bounded input buffer feeds the decoder incrementally; the complete file is
-   never accumulated in RAM.
-4. Decoded PCM is converted to the format opened by the BSP and written to I2S.
-5. One cleanup path closes HTTP, decoder, audio, and UI state on success,
-   cancellation, timeout, and decode failure.
+1. 控制器校验请求，并只启动一个播放工作任务。
+2. 工作任务打开 HTTP 流，同时支持固定长度和未知长度响应。
+3. 有上限的输入缓冲增量喂给解码器，绝不把完整文件堆进 RAM。
+4. 解码后的 PCM 转成 BSP 已打开的格式，再写入 I2S。
+5. 成功、取消、超时和解码失败都走同一条清理路径，关闭 HTTP、解码器、音频和 UI 状态。
 
-For MP3 with a Helix-style decoder, one measured starting point was a 24 KiB
-compressed-input buffer, a 2304-sample PCM buffer, and an 8 KiB playback-task
-stack. These are measurements from one firmware, not board defaults. Record
-minimum free heap, largest free block, and task stack high-water marks, then
-shrink or grow the buffers from evidence.
+使用 Helix 类 MP3 解码器时，一份固件的实测起点是：24 KiB 压缩输入缓冲、
+2304 个采样的 PCM 缓冲和 8 KiB 播放任务栈。这些是实测参考，不是硬件默认值。
+应记录最小剩余堆、最大连续空闲块和任务栈高水位，再依据数据调整。
 
-Do not assume every decoded frame matches the target output format. Open the
-codec using the source sample rate, convert stereo to mono when the application
-needs mono, and calculate progress from decoded PCM samples. Byte-based progress
-is misleading for variable-bit-rate streams and unavailable for chunked HTTP.
+不要假设所有音频帧都等于目标输出格式。应按音源采样率打开 codec；应用需要单声道时，
+明确执行双声道转单声道；播放进度按已解码 PCM 采样数计算。对于可变码率或分块传输，
+按网络字节数算进度并不可靠。
 
-## Treat memory as one system budget
+## 把内存当成一份总预算
 
-The common failure is not simply “the audio buffer is too small.” A firmware may
-run out of one large contiguous block while total free heap still looks healthy.
-Before each expensive phase, log both free heap and largest free block.
+常见故障不只是“音频缓冲太小”。即使总空闲堆看起来不少，也可能已经没有足够大的连续内存块。
+每个高开销阶段前后，都应同时记录空闲堆和最大连续空闲块。
 
-Budget these consumers together:
+以下资源必须一起核算：
 
-- TLS and HTTP receive buffers;
-- decoder input, PCM output, and decoder state;
-- I2S DMA descriptors and DMA buffers;
-- LVGL draw buffers, image decoders, and screen objects;
-- JSON documents and temporary response strings;
-- worker-task stacks.
+- TLS 和 HTTP 接收缓冲；
+- 解码输入、PCM 输出和解码器状态；
+- I2S DMA 描述符和 DMA 缓冲；
+- LVGL 绘制缓冲、图片解码器和界面对象；
+- JSON 文档和临时响应字符串；
+- 工作任务栈。
 
-On the upstream BSP, LVGL uses a 20-row draw buffer, about 9.6 KiB at RGB565.
-That is a useful baseline because enlarging the display buffer or I2S DMA ring
-directly reduces headroom for networking and decoding. Change one buffer family
-at a time and repeat playback while the UI is actively refreshing.
+上游 BSP 的 LVGL 使用 20 行绘制缓冲，RGB565 下约 9.6 KiB。这是一个有用基线：
+放大显示缓冲或 I2S DMA 环都会直接压缩网络和解码空间。一次只改一类缓冲，并在界面持续刷新时
+重复播放测试。
 
-## Size JSON by the response, not the request
+## JSON 容量要按响应计算
 
-One real crash pattern came from parsing a response with a fixed 4096-byte JSON
-document while the actual payload required about 6971 bytes. The request itself
-was small, so request-size testing did not reveal the problem.
+一个真实死机问题是：固定 4096 字节的 JSON 文档去解析实际约需 6971 字节的响应。
+请求本身很小，因此只测试请求大小发现不了问题。
 
-Safer rules are:
+更稳妥的规则是：
 
-- reject an oversized HTTP response before parsing when its length is known;
-- when the length is unknown, accumulate only up to an explicit cap;
-- use a parser capacity derived from the accepted response limit;
-- check deserialization errors and stop before reading missing fields;
-- keep large metadata responses out of the playback worker when possible.
+- 已知响应长度时，解析前拒绝超限数据；
+- 长度未知时，只允许累计到明确上限；
+- JSON 解析容量按允许的最大响应推导；
+- 检查反序列化错误，失败后不能继续读取字段；
+- 大型元数据响应尽量不要放在播放工作任务中处理。
 
-An optional relay service can normalize large or unstable upstream APIs into a
-small device contract, but it should not hide firmware limits. Keep device-side
-caps, timeouts, and error handling even when a relay is used.
+可选的中转服务可以把庞大或不稳定的上游接口收敛成小型设备协议，但不能用它掩盖固件限制。
+即使使用中转，设备端仍要保留大小上限、超时和错误处理。
 
-## Concurrency and UI rules
+## 并发和界面规则
 
-Allow only one owner of the audio device. A new request should either be rejected
-or cancel and join the existing worker before another worker opens I2S. Button
-callbacks should post commands; they must not perform DNS, HTTP, decode, or PCM
-writes.
+音频设备只能有一个持有者。新请求要么被拒绝，要么先取消并等待旧任务退出，之后才能再次打开
+I2S。按键回调只负责投递命令，不能在回调中执行 DNS、HTTP、解码或 PCM 写入。
 
-Reuse the playback screen instead of recreating a full object tree on every
-track. Update progress at a modest rate and modify only the changed labels or
-bar. This reduces heap fragmentation and prevents display work from starving
-the decoder.
+播放界面应复用，不要每次切换都重建整棵对象树。降低进度刷新频率，只更新变化的文字和进度条，
+可以减少堆碎片，也能避免显示任务挤占解码时间。
 
-## Verification checklist
+## 验证清单
 
-- Play fixed-length and chunked streams, including a stream without
-  `Content-Length`.
-- Exercise mono/stereo, supported sample rates, malformed frames, slow network,
-  server disconnect, cancellation, and repeated track changes.
-- Refresh the display during playback and verify that audio does not underrun.
-- Log free heap, largest free block, and stack high-water marks before connect,
-  after TLS, after decoder creation, during steady playback, and after cleanup.
-- Repeat start/stop cycles and confirm memory returns to a stable baseline.
+- 测试固定长度、分块传输和没有 `Content-Length` 的音频流。
+- 覆盖单双声道、支持的采样率、损坏帧、慢网络、服务端断开、取消和连续切换。
+- 播放时持续刷新界面，确认音频不欠载。
+- 在连接前、TLS 建立后、解码器创建后、稳定播放时和清理后，记录空闲堆、最大连续块和栈高水位。
+- 重复启停，确认内存回到稳定基线。
 
-The reusable lesson is to make every buffer and owner explicit. On AI Passport,
-streaming is reliable when network, decoder, I2S, display, and JSON memory are
-designed as one bounded pipeline rather than tuned independently.
+最可复用的结论是：明确每个缓冲的上限和每项资源的唯一持有者。在 AI Passport 上，只有把
+网络、解码、I2S、显示和 JSON 当成一条受限流水线统一设计，流式播放才会稳定。

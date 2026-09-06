@@ -1,32 +1,26 @@
 <p align="right">
-  <a href="INDEX.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="INDEX.md">English</a>
 </p>
 
-# Development Experience Archive Index
+# 开发经验档案索引
 
-This page lists every recorded development experience entry under
-[`docs/experiences/`](../development/experience-notes.md), grouped by the
-contributing developer's GitHub username. Each entry is a reusable,
-post-release learning, and its records are written and indexed by the
-`experience-pr` skill.
+本页列出 [`docs/experiences/`](../development/experience-notes.md) 下所有已记录的开发经验条目，
+按贡献开发者的 GitHub 用户名分组。每条是发布后可复用的经验，由 `experience-pr` skill 写入并索引。
 
-For how to add an entry and what belongs here, see the
-[experience notes index](../development/experience-notes.md).
+如何新增条目、哪些内容归属这里，见[经验索引](../development/experience-notes.md)。
 
-## Index
+## 索引
 
-Each entry is stored under `docs/experiences/<username>/` and listed here grouped
-by the contributing developer's username. A developer may have **one or more
-entries**; each is its own record, and a new learning is added as a new entry
-rather than merged into an existing one.
+每条经验保存在 `docs/experiences/<username>/` 下，并在下面按贡献开发者的 GitHub 用户名分组列出。
+一位开发者可有**一条或多条**经验；每条都是独立记录，新经验**新增一条**，而不是并入已有条目。
 
 ### Shinku-Chen
 
-- [Audio Compression Trade-offs on ESP32-C3](shinku-chen/audio-compression-trade-offs.md) — how a voice-playback codec was chosen on limited flash (IMA-ADPCM vs Opus vs MP3), with measured capacity and decoder cost.
-- [Post-Release Follow-up for the AI Passport Publishing Flow](shinku-chen/post-release-follow-up.md) — confirm the publish destination, include the data partition in a release, and the consent gates for the post-release tracks.
-- [Display Refresh and Deep-sleep on ESP32-C3 (No PSRAM)](shinku-chen/display-refresh-and-deep-sleep.md) — direct panel refresh of a single image rect, RTC-GPIO deep-sleep wakeup, and the LVGL object-type misuse crash signature.
+- [ESP32-C3 上音频压缩方式的权衡](shinku-chen/audio-compression-trade-offs.zh_CN.md) — 在有限 Flash 上如何为语音播放应用选编解码（IMA-ADPCM vs Opus vs MP3），含实测容量与解码器成本。
+- [发布后收尾：AI Passport 发布流程的衔接](shinku-chen/post-release-follow-up.zh_CN.md) — 确认发布目的地、发布时包含数据分区、以及发布后收尾各轨道的同意门槛。
+- [ESP32-C3（无 PSRAM）上的显示刷新与深睡](shinku-chen/display-refresh-and-deep-sleep.zh_CN.md) — 直接刷新单个图片矩形、RTC GPIO 深睡唤醒，以及 LVGL 对象类型误用的崩溃特征。
 
 ### PhoenixZHC
 
-- [Network Audio Streaming and Memory Budgeting on AI Passport](phoenixzhc/network-audio-streaming-and-memory.md) — bounded HTTP audio streaming, ES8311/I2S ownership, and joint memory budgeting for decoding, JSON, DMA, and LVGL.
-- [SoftAP Provisioning and Resource Budgets on AI Passport](phoenixzhc/softap-provisioning-and-resource-budget.md) — DHCP state, captive-portal compatibility, bounded forms and uploads, and no-PSRAM resource planning.
+- [AI Passport 网络音频流与内存预算经验](phoenixzhc/network-audio-streaming-and-memory.zh_CN.md) — 有边界的 HTTP 音频流、ES8311/I2S 资源归属，以及解码、JSON、DMA 与 LVGL 的统一内存预算。
+- [AI Passport SoftAP 配网与资源预算经验](phoenixzhc/softap-provisioning-and-resource-budget.zh_CN.md) — DHCP 状态、弹窗认证兼容、表单与上传边界，以及无 PSRAM 条件下的资源规划。

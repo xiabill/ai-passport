@@ -1,17 +1,20 @@
 <p align="right">
-  <a href="coding-conventions.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="coding-conventions.md">English</a>
 </p>
 
-# Coding Conventions
+# 代码约定（Coding Conventions）
 
-- Write C with four-space indentation and K&R braces, following neighboring files. Use `snake_case`, `BSP_*` public constants, `s_` file-local state, `bsp_` public BSP APIs, and `demo_<feature>_<action>` demo entry points. Prefer `static` for internal symbols.
-- Keep UI text and default documentation in English. Explanatory source comments may use Chinese while retaining established English technical terms.
-- The baseline enables only LVGL Montserrat 14 and 20, which do not contain CJK glyphs. Chinese UTF-8 text therefore renders as missing-glyph boxes; changing source-file encoding does not fix it. Before adding Chinese UI text, compile and select a CJK font that covers every displayed character, prefer a glyph subset over a full font, configure a suitable fallback for mixed-language text, budget Flash and internal RAM, and verify the result on the device.
-- Put reusable hardware behavior in `components/bsp`; keep menus, animations, product interaction, and validation pages in `main`.
-- The `ui_pixel` theme (sky background, grass, title plate, mascot, ink-outlined panels) is part of the user interface, not a removable component. When trimming components or routing straight to a feature screen, keep the theme and build the screen through `ui_pixel_screen_create()` / `ui_pixel_panel_create()`.
-- Show the battery level in the top-right corner of a user interface by default, unless the developer specifies a different placement or explicitly does not want it. Read it from `bsp_battery_soc()` (and `bsp_battery_mv()` where useful); render it as a small battery indicator or percentage in the top-right area of the screen, and degrade gracefully when it reads `-1` (unavailable). Place it where it does not overlap the existing cloud decoration (`add_cloud`, around `x≈188, y≈8`): use the clear sky space beside or below the cloud, or the very top-right edge, rather than covering the cloud.
-- Document non-trivial functions, state, ownership, blocking behavior, task context, initialization order, failure values, register choices, timing, synchronization, and hardware-specific constants. Explain why, not merely what.
-- Add or update tests with code changes. If automation is not practical, record the test gap and exact manual validation path.
-- If adding a cache, define expiration and cleanup unless durable retention is explicitly justified.
-- The ESP32-C3 has no PSRAM. Review internal RAM and largest-contiguous-block impact before increasing LVGL buffers, audio allocations, network state, or task stacks.
-- **Watch power consumption.** This is a wearable powered by a small battery; keep it efficient. Avoid keeping the screen lit for long periods: dim or turn off the backlight, and return to a low-power state (light/deep sleep) whenever the screen is idle, so the device is not left displaying a bright screen while doing nothing. See the guidance on sleep in [`../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
+- **语言/风格**：C 用四空格缩进 + K&R 大括号，跟随相邻文件；函数/局部变量 `snake_case`，公开硬件常量 `BSP_*`，文件内状态 `s_` 前缀；BSP API 用 `bsp_` 前缀，demo 入口 `demo_<feature>_<action>`；内部符号优先 `static`。UI 文案用英文，解释性注释可用中文；保留记录硬件寄存器值与内存约束的注释。
+- **中文方框字陷阱**：当前基线只启用 LVGL Montserrat 14 和 20，这些字体不包含 CJK glyph。即使源码和字符串均为 UTF-8，中文也会显示为缺字方框，修改源文件编码不能解决。添加中文 UI 前，必须编译并选用覆盖全部实际字符的 CJK 字体，优先生成 glyph 子集而非引入完整字库；中英文混排时配置合适的 fallback，同时核对 Flash、内部 RAM 占用并在真机逐字验证。
+- **复用既有组件**：可复用硬件逻辑放 `components/bsp`；菜单/动画/业务交互/验证页面放 `main`。不要另造轮子，遵循既有 BSP API。
+- **主题不是可删组件**：`ui_pixel` 主题体系（天空底色、草地、标题牌、吉祥物、墨色描边面板）属于用户界面的一部分，不是可删除的"不必要组件"。精简组件或直接载入功能界面时，保留该主题，并通过 `ui_pixel_screen_create()` / `ui_pixel_panel_create()` 建屏。
+- **默认右上角电量**：用户界面在没有默认要求的情况下，默认在**右上角显示电量信息**；除非开发者明确指定其它位置或明确不需要。电量读取 `bsp_battery_soc()`（需要时用 `bsp_battery_mv()`），以小型电池图标或百分比呈现在屏幕右上区域；读值为 `-1`（不可用）时优雅降级，不要画一个数字。**位置不能和右上角已有的白云装饰冲突**（`add_cloud`，约 `x≈188, y≈8`）：放在白云旁边或下方的空闲蓝天区，或屏幕最右上边角，不要盖住白云。
+- **注释要求（尽可能详细）**：项目源码需要尽可能详细地编写函数说明、变量说明，增加完善的代码注释。
+  - **函数说明**：每个非平凡函数都要有注释，说明：用途/职责、参数含义、返回值、失败值、副作用、阻塞行为、线程/任务上下文、内存所有权、调用前提与初始化顺序。涉及硬件的函数额外注明寄存器操作、时序约束与已知陷阱。
+  - **变量说明**：模块级/文件级变量、宏、结构体字段都要有语义注释，说明其用途、取值范围、生命周期/所有权、跨任务共享时的同步要求。硬件常量注释注明来源（数据手册/实测/推导）。
+  - **逻辑注释**：复杂逻辑、状态机转移、边界条件、时序依赖、并发/同步点都要有注释解释"为什么这么做"，而不只是"做了什么"。寄存器配置、魔数、位操作、时序参数必须注明含义与依据。
+  - **覆盖范围**：宁可注释偏多，也不留难懂代码；新代码与修改代码同样适用；注释用中文，保留英文技术术语。
+- **测试同步**：写代码时同步新增测试用例，或修改受本次改动影响的既有测试；若暂无合适自动化测试落点，在项目规范里写清测试缺口和手工验证路径。
+- **缓存组件**：若引入缓存组件（如 NVS 缓存、内存缓存等），默认设置过期时间；长期缓存需说明保留原因、过期风险与清理机制。当前固件不含需要 TTL 约束的缓存，无需特别处理。
+- **资源约束**：ESP32-C3 无 PSRAM，不增加 LVGL buffer / 音频分配 / 任务栈前先核对内部 RAM；足够的总空闲堆不保证有足够大连续块。
+- **关注功耗**：本设备是小电池供电的可穿戴产品，编写固件时要留意功耗。避免让屏幕长时间点亮：屏幕空闲时调暗或关闭背光，并及时回到低功耗状态（light/deep sleep），不要让它无事可做地一直亮着。睡眠相关指引见 [`../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。

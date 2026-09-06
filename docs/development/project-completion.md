@@ -1,144 +1,106 @@
 <p align="right">
-  <a href="project-completion.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="project-completion.md">English</a>
 </p>
 
-# Project Completion
+# 项目开发完成流程
 
-When development on a project is finished, the completion flow offers a menu of
-six optional closing actions. This page is the single authoritative index: it
-describes the trigger, the six actions grouped by purpose, the shared safety and
-consent gates, and the shared publish profile.
+当一个项目的开发结束，项目完成流程提供了一个由六项可选动作组成的菜单。本页是唯一权威索引：说明触发时机、按用途分组的六项动作、共同的安全与同意门槛，以及共享的发布属性。
 
-The completion flow is not a fixed pipeline and is not tied to a release. The
-developer selects any one or a combination of the six actions, in any order. Each
-action runs only after the developer confirms it.
+完成流程不是固定流水线，也不与发布绑定。开发者选择其中任意一项或多项，顺序不限。每项动作只有在开发者确认后才会执行。
 
-All six actions are **optional** — none is mandatory. The README update (action
-E) is one of the six; it runs when selected, and it also accompanies archiving
-(action D) by default, so archiving a project also refreshes the README.
+六项动作**全部可选**——没有任何一项是强制的。README 更新（动作 E）是六项之一，选中时执行；它也默认伴随归档（动作 D）一起进行，因此归档项目时会顺带刷新 README。
 
-## When the completion flow is offered
+## 何时提供完成流程
 
-Offer the six-action menu when either signal occurs:
+出现以下任一信号时，就提供这片选项菜单：
 
-- The developer says the project is complete (development is done).
-- The developer asks to run any one of the six actions directly.
+- 开发者说项目已完成（开发结束）。
+- 开发者要求直接执行这六项动作中的任意一项。
 
-In both cases, remind the developer that the following six closing actions are
-available, each selectable on its own or with others.
+两种情况下都提醒开发者：下面六项收尾动作可用，每项都可单独选择或组合选择。
 
-## The six actions
+## 六项动作
 
-The actions are grouped by purpose. Delivery actions publish the result of the
-project; recording actions capture documentation and open collaboration.
+动作用途分组。交付类动作发布项目结果；沉淀类动作捕获文档与开放协作。
 
-### Delivery
+### 交付
 
-| ID | Action | Reference |
+| 编号 | 动作 | 参考 |
 | --- | --- | --- |
-| A | Publish to the community market | [publish-to-community.md](project-completion/publish-to-community.md) |
-| B | Publish to Git and update the release | [release-update.md](project-completion/release-update.md) |
+| A | 发布到社区市场 | [publish-to-community.md](project-completion/publish-to-community.md) |
+| B | 发布到 Git 并更新版本 | [release-update.md](project-completion/release-update.md) |
 
-### Recording
+### 沉淀
 
-| ID | Action | Reference |
+| 编号 | 动作 | 参考 |
 | --- | --- | --- |
-| C | Publish experience | [experience.md](project-completion/experience.md) |
-| D | Archive the application to plays | [archive-plays.md](project-completion/archive-plays.md) |
-| E | Update the root README | [readme-update.md](project-completion/readme-update.md) |
-| F | File an issue | [file-issue.md](project-completion/file-issue.md) |
+| C | 发布经验 | [experience.md](project-completion/experience.md) |
+| D | 归档应用到 plays | [archive-plays.md](project-completion/archive-plays.md) |
+| E | 更新根 README | [readme-update.md](project-completion/readme-update.md) |
+| F | 提交 issue | [file-issue.md](project-completion/file-issue.md) |
 
-Each action points to a dedicated document in
-[`project-completion/`](project-completion/) that names the repository skill or
-authoritative document that drives it. The skills are not rewritten here; the
-action documents reference them.
+每个动作都指向 [`project-completion/`](project-completion/) 下的一份专门文档，文档写明驱动它的仓库 skill 或权威文档。这里不重写 skill；动作文档引用它们。
 
-## Trigger flow
+## 触发流程
 
 ```mermaid
 flowchart TD
-    T1["Developer: the project is complete"]
-    T2["Developer: run one of the six actions"]
+    T1["开发者：项目已完成"]
+    T2["开发者：执行六项中任意一项"]
 
     T1 --> OFFER
     T2 --> OFFER
 
-    OFFER["Offer the six closing actions (single or multiple)"] --> CHOOSE{"Developer selects"}
+    OFFER["提供六项收尾动作（单选或多选）"] --> CHOOSE{"开发者选择"}
 
-    subgraph DELIVERY["Delivery"]
-        CHOOSE -- A --> A["Publish to community market"]
-        CHOOSE -- B --> B["Publish to Git / update release"]
+    subgraph DELIVERY["交付"]
+        CHOOSE -- A --> A["发布到社区市场"]
+        CHOOSE -- B --> B["发布到 Git / 更新版本"]
     end
 
-    subgraph RECORDING["Recording"]
-        CHOOSE -- C --> C["Publish experience"]
-        CHOOSE -- D --> D["Archive to plays"]
-        CHOOSE -- E --> E["Update root README"]
-        CHOOSE -- F --> F["File an issue"]
+    subgraph RECORDING["沉淀"]
+        CHOOSE -- C --> C["发布经验"]
+        CHOOSE -- D --> D["归档到 plays"]
+        CHOOSE -- E --> E["更新根 README"]
+        CHOOSE -- F --> F["提交 issue"]
     end
 
-    A --> CONFIRM["Developer confirms"] --> DONE(["Done"])
+    A --> CONFIRM["开发者确认"] --> DONE(["完成"])
     B --> CONFIRM
     C --> CONFIRM
     D --> CONFIRM
     E --> CONFIRM
     F --> CONFIRM
-
-    classDef trigger fill:#f3e8ff,stroke:#8a5bd0,color:#333;
-    classDef offer fill:#fff3cd,stroke:#e6a817,color:#333;
-    classDef action fill:#e7f0ff,stroke:#4a74b8,color:#333;
-    classDef done fill:#e6f7e6,stroke:#4a9e4a,color:#333;
-    class T1,T2 trigger;
-    class OFFER,CHOOSE offer;
-    class A,B,C,D,E,F action;
-    class DONE done;
 ```
 
-## Published profile
+## 共享发布属性
 
-Publishing to the community collects a set of project attributes. Keep these as
-a shared profile so actions C, D, E, and F can reuse the same values instead of
-collecting them again:
+发布到社区时会采集一组项目属性。把这些作为共享 profile，让 C、D、E、F 都能复用同一份值，而不是重复采集：
 
-- Application name (lowercase-kebab-case).
-- Bilingual publish title and description.
-- Cover image (`<app-name>-cover.<webp|png|jpg>`, up to 10 MiB).
-- Source address: the HTTPS Git page the developer submitted, resolved from
-  `git remote -v`.
-- Firmware path / merged `.bin`.
+- 应用名（lowercase-kebab-case）。
+- 双语发布标题与简介。
+- 封面图像（`<app-name>-cover.<webp|png|jpg>`，≤10 MiB）。
+- 源码地址：开发者提交的 HTTPS Git 页，从 `git remote -v` 解析。
+- 固件路径 / 合并 `.bin`。
 
-At execution, reuse the profile where it was already collected. If the profile
-was not collected, fetch the values through the relevant action skill.
+执行时若 profile 已采集则直接复用；若未采集，则通过对应动作 skill 获取这些值。
 
-## Post-release hardware verification
+## 发布后的真机验证
 
-When a delivery action (A or B) produced a merged full build, verify it on real
-hardware before treating the project as complete. Download the release's merged
-full firmware (`FoloToy-AI-Passport-full.bin`, the flashable complete build from
-`0x0`), flash it to a device, and confirm it runs normally. Do not treat a
-successful build or upload as hardware validation: this step proves the artifact
-the release actually points to boots and works on real hardware. The artifact
-comes from the release assets (the CI/CD `full.bin`) or, for a Git release with
-no CI artifact, the local `full.bin` the developer built. If it does not run,
-stop and fix before closing out. See
-[`CI-build-and-release.md`](CI-build-and-release.md) for the artifact and
-flashing.
+当交付动作（A 或 B）产出了合并完整构建时，在把项目视为完成前先到真机验证。下载该 release 的合并完整固件（`FoloToy-AI-Passport-full.bin`，从 `0x0` 烧录的完整构建），烧录到设备并确认正常运行。不要把一次成功的构建或上传当作硬件验证：这一步证明 release 实际指向的产物能在真实硬件上启动并工作。产物来自 release 资产（CI/CD 的 `full.bin`），或对无 CI 产物的 Git release，来自开发者本地构建的 `full.bin`。若不能运行，先停下修复，再继续收口。产物与烧录见 [`CI-build-and-release.md`](CI-build-and-release.md)。
 
-## Shared safety and consent gates
+## 共同的安全与同意门槛
 
-Every action follows the same non-negotiable rules:
+每项动作都遵守下面这些不可协商的规则：
 
-- Confirm consent before starting; this work touches project-private content.
-- Confirm a GitHub channel (GitHub MCP, a GitHub skill, or `gh`) before any
-  submission; if none is available, generate content for manual pasting and stop.
-- Do not submit (issue or PR) until the developer has reviewed and authorized it.
-- Do not commit on or modify the developer's current branch; carry the change on a
-  dedicated branch or worktree.
-- Never include credentials, device QR secrets, private device links, personal
-  data, or unsanitized logs.
+- 开始前确认同意；本工作涉及项目私有内容。
+- 任何提交前确认已有可用的 GitHub 通道（GitHub MCP、GitHub skill 或 `gh`）；若都不可用，则生成内容供手动粘贴并停止。
+- 在开发者审查并授权之前，不提交（issue 或 PR）。
+- 不在开发者当前分支上提交或修改；变更放在独立分支或 worktree 上承载。
+- 永远不包含凭证、设备 QR 密钥、私密设备链接、个人数据或未脱敏日志。
 
-## Related documents
+## 相关文档
 
-- Firmware publishing: [publish-to-community.md](publish-to-community.md)
-- Fork workflow and root README ownership: [fork-guide.md](../fork-guide.md)
-- Commit and pull-request rules: [commit-and-pr.md](../contribution/commit-and-pr.md)
+- 固件发布：[publish-to-community.md](publish-to-community.md)
+- Fork 工作流与根 README 归属：[fork-guide.md](../fork-guide.md)
+- 提交与 PR 规则：[commit-and-pr.md](../contribution/commit-and-pr.md)

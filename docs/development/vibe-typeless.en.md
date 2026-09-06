@@ -1,0 +1,254 @@
+<p align="right">
+  <a href="vibe-typeless.zh_CN.md">简体中文</a> · <strong>English</strong>
+</p>
+
+# Vibe Typeless companion
+
+This branch turns the FoloToy AI Passport into a wireless push-to-talk microphone for Typeless. The public implementation has two cooperating parts:
+
+- ESP32-C3 firmware in `main/`: captures the board microphone, encodes 16 kHz PCM as IMA-ADPCM, sends audio over BLE, draws the VIBE screen, and reports button events.
+- macOS companion in `tools/mac-bridge/`: connects to the board, decodes audio, writes PCM to `BlackHole 2ch`, watches Typeless, and posts Typeless mode, Doubao, and Return keys.
+
+The repository is public and the maintained branch is [`main`](https://github.com/xiabill/ai-passport/tree/main). Users can download the packaged Bridge and matching firmware from [GitHub Releases](https://github.com/xiabill/ai-passport/releases/latest); developers can build from this guide.
+
+## How the pieces fit together
+
+```text
+Passport microphone
+        │  16 kHz PCM → IMA-ADPCM
+        ▼
+ESP32-C3 BLE notify ───────────────┐
+        │ device events             │
+        ▼                           ▼
+  VIBE screen                 FoloVibe Bridge
+                                      │ decode PCM
+                                      ▼
+                               BlackHole 2ch
+                                      │
+                                      ▼
+                          ┌───────────────┐
+                          │ Typeless      │
+                          │ Doubao IME    │
+                          └───────────────┘
+
+Passport OK / DOWN / UP ──BLE event──> Bridge ──CGEvent──> Typeless
+Typeless state ───────────BLE write───> Passport
+```
+
+## Requirements
+
+### Hardware
+
+- FoloToy AI Passport with ESP32-C3, 240×320 portrait display, microphone, speaker, and the three-button ADC ladder.
+- USB connection that exposes the ESP32-C3 USB Serial/JTAG port.
+- A charged battery for wireless testing.
+
+### macOS
+
+- macOS 13 or newer for the Swift package.
+- A Swift 5.9+ toolchain and Apple Command Line Tools. Full Xcode is not required to build the macOS companion with `swift build`.
+- Bluetooth enabled.
+- Typeless and Doubao IME installed. Configure each to use the corresponding Bridge key; Doubao should use its toggle mode.
+- BlackHole 2ch installed as the virtual microphone input for Typeless.
+
+### Firmware toolchain
+
+- ESP-IDF 5.5.3 with the ESP32-C3 toolchain.
+- Python dependencies installed by ESP-IDF.
+
+Activate the exact ESP-IDF version before firmware commands:
+
+```bash
+source <ESP-IDF-v5.5.3-path>/export.sh
+idf.py --version
+```
+
+## Build the macOS Bridge
+
+From the repository root:
+
+```bash
+cd tools/mac-bridge
+./build.sh
+open /Applications/FoloVibeBridge.app
+```
+
+`build.sh` first runs the core tests, then builds a release executable, packages it, and installs it to `/Applications/FoloVibeBridge.app` by default; it also keeps the local bundle in the repository directory. The status and settings pages include a guided permission/audio setup flow with explicit checks and a re-check action. The repository does not commit a machine-specific `.app`; release builds are attached as GitHub Release assets.
+
+On first launch:
+
+1. Allow Bluetooth access if macOS asks.
+2. In System Settings → Privacy & Security → Accessibility, enable `FoloVibe Bridge`.
+3. In the Bridge Settings tab, select the device prefix `FoloVibe` and output device `BlackHole 2ch`.
+4. Configure the Typeless and Doubao keys separately. Typeless defaults to `Fn`; Doubao defaults to `Right Option`, matching its toggle-mode setup. The Bridge supports Fn, modifier keys, and F13–F20.
+5. Use `Return` for the device DOWN button. The old `Escape` cancel setting remains for compatibility but is no longer assigned to the device UP button.
+6. Choose `BlackHole 2ch` as the microphone input in Typeless and Doubao as required by each app.
+
+The Bridge stores settings in the macOS user defaults database. Logs are written to:
+
+```text
+~/Library/Logs/folovibe-bridge.log
+```
+
+The Settings tab can also enable launch at login, auto reconnect, closed-loop retapping, and Typeless state polling. The Debug tab provides key-tap, simulated event, tone, reconnect, UUID, and microphone checks.
+
+### Switching one Passport between multiple Macs
+
+Install the Bridge on each Mac, keep the same `FoloVibe` device prefix, and enable auto reconnect on each installation. The current firmware and Bridge intentionally use one BLE connection per Passport, so one device is owned by one Mac at a time. To change computers, choose “Release device to another Mac” from the Bridge menu bar item, Status page, or Settings page. The current Mac disconnects and pauses its reconnect loop for 45 seconds; another Mac running Bridge can then discover and connect automatically. If no handoff occurs, the original Mac resumes its reconnect loop after the pause, or the user can choose “Resume auto reconnect” immediately. Simultaneous audio delivery to multiple Macs is not part of this mode; that would require per-connection subscription and input-routing changes in the firmware and Bridge.
+
+## Build and flash the firmware
+
+Run the repository checks first:
+
+```bash
+./tools/validate.sh --static
+./tools/validate.sh --firmware
+```
+
+The firmware gate uses a clean temporary build, verifies the BLE-installable merged image, and writes the accepted artifact to:
+
+```text
+build/FoloToy-AI-Passport-full.bin
+```
+
+For iterative development, an incremental build is also available:
+
+```bash
+idf.py set-target esp32c3
+idf.py build
+idf.py merge-bin -o build/FoloToy-AI-Passport-full.bin
+```
+
+Before flashing, find the current USB port because macOS may change its suffix after a reset:
+
+```bash
+ls /dev/cu.usbmodem* 2>/dev/null
+```
+
+For an existing device, use only an image that passed `--firmware` and flash from offset `0x0`:
+
+```bash
+python -m esptool --chip esp32c3 \
+  -p /dev/cu.usbmodemXXXX -b 460800 \
+  write_flash 0x0 build/FoloToy-AI-Passport-full.bin
+```
+
+Do not run `erase-flash` on a device that already has its identity. The image must end before the protected `cardid` partition at `0x356000`; the permanent Recovery region is at `0x700000`. The repository verifier checks these boundaries and also checks the 3 MB application limit, partition-table MD5, and the five-second UP-key Recovery hook.
+
+## Device behavior
+
+The up, middle, and down keys each report a single click, double click, and
+long press: nine gestures, every one bindable under Settings -> Hardware keys.
+
+| Action | Behaviour |
+| --- | --- |
+| None | the gesture does nothing |
+| Typeless Dictate / Translation / Ask anything | starts that Typeless mode; any recording gesture stops it |
+| Doubao voice input | starts and stops Doubao |
+| Send Return | posts Return, queued behind a pending transcript so it lands after the text |
+| Select all / Select all and delete | fixes up what was just dictated |
+
+Defaults: middle click, double, and long press are Dictate, Translation, and
+Ask anything; up click is Doubao, double selects all, long press clears; down
+click sends Return.
+
+The device reports only which button was pressed and how, so rebinding never
+needs a reflash. Capture must start on the device itself, since waiting for a
+BLE round trip would clip the first syllable, so the bridge writes nine action
+codes to the device; it uses them purely to decide whether a gesture arms the
+microphone and what to print under each on-screen key hint.
+
+While recording, any gesture bound to a recording action ends the take.
+
+Silence below the peak threshold for about 30 seconds also stops recording. A short button feedback beep is generated by the audio worker so the button callback remains lightweight.
+
+Typeless Dictate, Translation, Ask anything, and Doubao share one microphone and BLE audio stream, so they never record concurrently. Translation and Ask anything start with `base+Shift` and `base+Space`, derived from the Typeless base key; the base Typeless key still finishes the session. After Doubao stops, the Bridge waits briefly before posting Return so the recognized text can land in the focused field. Typeless keeps its existing local-state wait before sending.
+
+The VIBE page shows BLE/Typeless state, battery, audio status, a green/yellow/red waveform, and three button hints. The waveform is an activity history rather than a calibrated sound-level meter.
+
+Power behavior (switchable from the macOS Bridge status page):
+
+- Standard mode keeps the backlight at 50%, dims to 15% three seconds after speech starts (and after 18 seconds of ordinary idle), briefly returns to 50% when confirming send, and enters real Light Sleep after 5 minutes. A timer wake reaches Deep Sleep at 15 minutes, while GPIO0 wakes Light Sleep immediately. Before Light Sleep, the display, audio codec, BLE connection, and advertising are stopped. When connected to a computer over USB, automatic dimming, screen-off, Light Sleep, and Deep Sleep are disabled.
+- Eco mode dims to 8% after 10 seconds and enters Light Sleep after 1 minute; a timer wake reaches Deep Sleep at 5 minutes. While disconnected, BLE advertising also pauses after 60 seconds of idle. The same USB-host exemption applies in Eco mode.
+- Both modes use the GPIO0 three-button ladder as the wake source. The first function-key press during Light Sleep only wakes the screen; Deep Sleep wake performs a full application restart. After a Light Sleep GPIO wake, BLE advertising resumes so the Mac Bridge can reconnect automatically.
+- Doubao upper key: single click toggles Doubao voice input, quick double-click selects all and deletes the current text (Cmd+A then Delete), and long press performs the same clear action. If editing is triggered during Doubao recording, recording stops before the edit action.
+- Audio cues: recording start uses a longer three-note rise; recording end uses a lower, longer note; Doubao clear shortcuts use a short edit cue so each action is clear without looking at the display.
+- Neither mode physically disconnects the battery; use the hardware power button for zero-power storage.
+- The current board can detect a USB computer host through USB Serial/JTAG, but it cannot detect charge-only power from a wall charger or power bank because no VBUS/charger-status signal is connected to the MCU.
+- BLE uses a slower 30–50 ms connection interval with slave latency while idle, and 7.5–15 ms with zero latency while talking.
+
+## BLE contract
+
+The board advertises as `FoloVibe-XXXX` and exposes this 128-bit service:
+
+```text
+Service: F0100001-0000-4A6B-9E10-464F4C4F5631
+Audio notify:   F0100002-0000-4A6B-9E10-464F4C4F5631
+Event notify:   F0100003-0000-4A6B-9E10-464F4C4F5631
+Control write:  F0100004-0000-4A6B-9E10-464F4C4F5631
+```
+
+| Characteristic | Direction | Payload |
+| --- | --- | --- |
+| Audio | device → Mac | 166-byte IMA-ADPCM frame, or a 6-byte EOS marker |
+| Event | device → Mac | Gesture events `0x20 \| (button << 2) \| gesture` (button: 0 up, 1 middle, 2 down; gesture: 0 click, 1 double, 2 long), i.e. `0x20`..`0x2A`. Codes 1..11 are the legacy semantic events; current firmware no longer emits them and the bridge still parses them for older devices |
+| Control | Mac → device | Typeless state: `0` idle, `1` recording, `2` processing, `3` not running; `0x80`/`0x81` select standard/eco power mode; `0x91` followed by nine action codes pushes the gesture bindings, indexed by button * 3 + gesture |
+
+The audio frame contains a sequence number, predictor, step index, and ADPCM payload. The Bridge inserts silence for small sequence gaps and records packet-loss statistics in the status view.
+
+## Validation matrix
+
+Keep automated and physical results separate:
+
+```text
+Build:        idf.py build / validate.sh --firmware
+Host tests:   validate.sh --static and FoloVibeCoreTests
+Device tests: real board, BLE, display, buttons, speaker, microphone, Typeless
+```
+
+Recommended real-device checklist:
+
+- [ ] Device advertises `FoloVibe-*` and the Mac Bridge connects.
+- [ ] Bridge reports audio subscribed and `BlackHole 2ch` is selected in Typeless.
+- [ ] Single-click OK starts/stops Typeless Dictate and the focused field receives text.
+- [ ] Double-click OK starts Typeless Translation; long-press OK starts Ask anything.
+- [ ] UP starts/stops Doubao input and the focused field receives text.
+- [ ] The two input methods are mutually exclusive; the other provider's key is ignored while recording.
+- [ ] DOWN stops the active input and sends Return.
+- [ ] Button beep is audible without breaking microphone capture.
+- [ ] Waveform shows green low activity, yellow medium activity, and red peaks, then decays after stop.
+- [ ] USB Serial/JTAG still enumerates after reset and the protected identity remains intact.
+
+## Troubleshooting
+
+### Bridge cannot find the board
+
+Confirm Bluetooth is on, the device is advertising `FoloVibe-*`, and the Settings prefix is `FoloVibe`. Press reset or reconnect USB if the firmware is not running. Use the Logs and Debug tabs before deleting saved settings.
+
+### Typeless does not receive audio
+
+Confirm Typeless uses `BlackHole 2ch` as its microphone, macOS has granted the required audio permission, and the Bridge Status tab says audio is subscribed. The Bridge must also have Accessibility permission to post keys.
+
+### Fn or F19 does not trigger Typeless
+
+The Bridge default is the macOS Fn/Globe modifier, not F19. Configure both Typeless and the Bridge to `Fn`, or choose `F19` in both places. The Bridge supports F13 through F20 and persists the selection.
+
+### Doubao does not start or stop
+
+In Doubao IME settings, enable its toggle mode and set the shortcut to match the Bridge's `Doubao` setting. The default is `Right Option`. If your version uses Fn instead, select `Fn` in both places. Grant Accessibility/Input Monitoring permissions if macOS blocks synthetic modifier-key events.
+
+### USB port disappeared
+
+Unplug and reconnect the board, then list `/dev/cu.usbmodem*` again. Do not assume the old suffix is still valid. If the board is in Recovery, release the UP key after the bootloader enters it and reconnect the USB port.
+
+### Build is rejected by the firmware verifier
+
+Do not bypass the verifier. Check that ESP-IDF is 5.5.3, `sdkconfig.defaults` is being used, the image is a merged full image, and no partition-table or protected-region files were changed unintentionally.
+
+## Contributing
+
+Create a feature branch from `main`, keep hardware constants in the BSP, keep UI/protocol logic in `main`, run `./tools/validate.sh`, and document physical acceptance separately. Never commit credentials, device QR secrets, private keys, real logs, or personal data. See [CONTRIBUTING](../../.github/CONTRIBUTING.md) and [AGENTS.md](../../AGENTS.md).
+
+## License
+
+This fork keeps the repository's MIT License. See [LICENSE](../../LICENSE).

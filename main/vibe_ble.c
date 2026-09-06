@@ -4,6 +4,8 @@
 #include "demo_radio.h"
 
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "esp_timer.h"
 #include "host/ble_att.h"
 #include "host/ble_gap.h"
@@ -38,7 +40,7 @@ static const ble_uuid128_t s_ctrl_uuid = BLE_UUID128_INIT(
 
 static uint16_t s_audio_handle;
 static uint16_t s_event_handle;
-static uint16_t s_conn = BLE_HS_CONN_HANDLE_NONE;
+static volatile uint16_t s_conn = BLE_HS_CONN_HANDLE_NONE;
 static uint8_t s_addr_type;
 static bool s_audio_sub;
 static bool s_event_sub;
@@ -239,12 +241,32 @@ void vibe_ble_prepare_light_sleep(void)
     s_light_sleeping = true;
     if (s_idle_timer) esp_timer_stop(s_idle_timer);
     if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
-    // A connected Mac is deliberately released before light sleep. This
-    // avoids keeping the radio link alive while the CPU and audio path sleep.
+    // A connected Mac is deliberately released before sleeping. ble_gap_terminate
+    // only *starts* the teardown: the packet still has to go out over the air and
+    // be acknowledged, which takes at least one connection interval. Cutting power
+    // immediately after left the Mac holding a connection to a device that was
+    // already gone, so it kept ignoring the new advertisements after wake-up until
+    // its own supervision timeout expired — the device looked stuck until it was
+    // power-cycled. Wait for the disconnect to actually land.
     if (s_conn != BLE_HS_CONN_HANDLE_NONE) {
+        // Speed the link up first so the teardown does not wait on the idle
+        // interval plus slave latency.
+        apply_gear(1);
         int rc = ble_gap_terminate(s_conn, BLE_ERR_REM_USER_CONN_TERM);
         if (rc != 0 && rc != BLE_HS_EALREADY) {
-            ESP_LOGW(TAG, "light sleep BLE disconnect rc=%d", rc);
+            ESP_LOGW(TAG, "sleep BLE disconnect rc=%d", rc);
+        } else {
+            const uint32_t step_ms = 10, limit_ms = 1200;
+            uint32_t waited = 0;
+            while (s_conn != BLE_HS_CONN_HANDLE_NONE && waited < limit_ms) {
+                vTaskDelay(pdMS_TO_TICKS(step_ms));
+                waited += step_ms;
+            }
+            if (s_conn != BLE_HS_CONN_HANDLE_NONE) {
+                ESP_LOGW(TAG, "disconnect not confirmed after %u ms", waited);
+            } else {
+                ESP_LOGI(TAG, "link released in %u ms", waited);
+            }
         }
     }
     // This is harmless when no advertising is active and prevents a pending

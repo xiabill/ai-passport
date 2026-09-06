@@ -1,36 +1,30 @@
 <p align="right">
-  <a href="file-issue.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="file-issue.md">English</a>
 </p>
 
-# Action F: File an Issue
+# 动作 F：提交 issue
 
-This action gathers the releasing developer's own improvement points and files
-them as feature request issues against the upstream project. It is one of the six
-optional closing actions listed in the [project completion](../project-completion.md).
+本动作收集发布固件的开发者本人的改进点，把有价值的整理成功能建议 issue，提交到上游项目。它是[项目开发完成流程](../project-completion.md)列出的六项可选动作之一。
 
-The workflow is driven by the `issue-suggestions` skill. Issues are filed against
-the upstream project, not the fork.
+工作流由 `issue-suggestions` skill 驱动。issue 提交到上游项目，而不是 fork。
 
-## Steps
+## 步骤
 
-1. Confirm consent and a GitHub channel (GitHub MCP, a GitHub skill, or `gh`).
-2. Collect the developer's own improvement points encountered while developing or
-   shipping the release.
-3. Deduplicate, drop invalid or resolved points, and categorize by affected area.
-4. Match against existing issues and PRs; do not create duplicates.
-5. Draft a feature request using the upstream issue template.
-6. Present the draft and wait for explicit approval before submitting.
-7. Submit through the first available GitHub channel and read the created issue
-   back to confirm.
+1. 确认同意与可用的 GitHub 通道（GitHub MCP、GitHub skill 或 `gh`）。
+2. 收集开发者在开发或发布该版本过程中遇到的自身改进点。
+3. 去重、剔除无效或已解决的点，并按影响区域分类。
+4. 与已有 issue 和 PR 匹配；不建重复项。
+5. 使用上游 issue 模板起草功能建议。
+6. 提交前把草案展示给开发者并取得明确批准。
+7. 通过第一个可用的 GitHub 通道提交，并读回创建的 issue 确认。
 
-## Safety
+## 安全
 
-- Never include credentials, device QR secrets, private device links, personal
-  data, or unsanitized logs.
-- Security vulnerabilities go through `.github/SECURITY.md`, not a public issue.
+- 绝不包含凭证、设备 QR 密钥、私密设备链接、个人数据或未脱敏日志。
+- 安全漏洞走 `.github/SECURITY.md`，不通过公开 issue。
 
-## Related documents
+## 相关文档
 
-- Filing issues reference: [file-issues.md](../file-issues.md)
-- Skill: [issue-suggestions](../../../skills/issue-suggestions/SKILL.md)
-- Issue template: [.github/ISSUE_TEMPLATE/feature_request.yml](../../../.github/ISSUE_TEMPLATE/feature_request.yml)
+- 提交 issue 参考：[file-issues.md](../file-issues.md)
+- Skill：[issue-suggestions](../../../skills/issue-suggestions/SKILL.md)
+- issue 模板：[.github/ISSUE_TEMPLATE/feature_request.yml](../../../.github/ISSUE_TEMPLATE/feature_request.yml)

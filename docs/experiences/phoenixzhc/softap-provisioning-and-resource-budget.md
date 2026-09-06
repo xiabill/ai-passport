@@ -1,139 +1,114 @@
 <p align="right">
-  <a href="softap-provisioning-and-resource-budget.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="softap-provisioning-and-resource-budget.md">English</a>
 </p>
 
-# SoftAP Provisioning and Resource Budgets on AI Passport
+# AI Passport SoftAP 配网与资源预算经验
 
-This note summarizes reusable experience from implementing SoftAP provisioning
-and a local configuration page on AI Passport. The difficult part is not making
-an access point appear; it is keeping DHCP, captive-portal traffic, HTTP forms,
-uploads, and the rest of the firmware inside the ESP32-C3's no-PSRAM budget.
+本文总结在 AI Passport 上实现 SoftAP 配网和本地配置页时可复用的经验。难点不是让热点出现，
+而是让 DHCP、弹窗认证流量、HTTP 表单、文件上传和其他固件功能共同适应 ESP32-C3 无
+PSRAM 的资源限制。
 
-## Choose the operating model first
+## 先确定工作模式
 
-Two products that both use SoftAP can need very different designs:
+同样使用 SoftAP，两类产品需要完全不同的设计：
 
-| Model | Recommended behavior |
+| 模式 | 推荐行为 |
 | --- | --- |
-| Short provisioning session | Use APSTA, collect credentials, verify the STA connection, persist only after success, then stop the AP and web service. |
-| Long-lived local management | Prefer AP-only unless upstream connectivity is required; expose a stable local URL and budget for repeated reconnects and browser probes. |
+| 短时配网 | 使用 APSTA，接收凭据，验证 STA 连接，成功后再保存，最后停止 AP 和网页服务。 |
+| 长期开启的本地管理 | 不需要上游网络时优先使用 AP-only；提供稳定的本地地址，并为反复重连和浏览器探测预留资源。 |
 
-Keeping APSTA active permanently costs more heap and sockets and creates more
-radio work. Do not keep it merely because it was convenient during development.
+长期保持 APSTA 会占用更多堆、socket 和无线调度时间。不能只因为开发阶段方便就一直保留。
 
-## Release optional subsystems before starting Wi-Fi
+## 启动 Wi-Fi 前释放可选子系统
 
-On one AI Passport-derived firmware, the largest free block before SoftAP was
-about 13 KiB. Deferring audio initialization and releasing unused codec/I2S
-resources raised the available contiguous block to about 31 KiB. The exact
-numbers are firmware-specific, but the lesson is general: lazy initialization is
-often more valuable than shaving a few bytes from every network buffer.
+一份基于 AI Passport 的固件中，启动 SoftAP 前最大连续空闲块约为 13 KiB。改为延迟初始化
+音频，并释放不用的 codec/I2S 资源后，最大连续块提高到约 31 KiB。具体数值只代表这份固件，
+但结论可复用：延迟初始化通常比从每个网络缓冲里零散节省几个字节更有效。
 
-Before provisioning, stop or defer resources that are not needed on that page:
-audio tasks, decoder state, large images, temporary JSON documents, and duplicate
-screens. Log free heap and largest free block before Wi-Fi start, after AP start,
-after HTTP start, and after a phone joins.
+进入配网页前，应停止或延迟不需要的资源：音频任务、解码状态、大图片、临时 JSON 文档和重复
+界面。分别在 Wi-Fi 启动前、AP 启动后、HTTP 启动后和手机接入后记录空闲堆与最大连续空闲块。
 
-## DHCP and connection state
+## DHCP 与连接状态
 
-Create the default SoftAP network interface and let ESP-IDF own its DHCP server
-unless the product needs a custom address plan. A conservative measured starting
-point for a one-user configuration page is `max_connection = 1`; increase it
-only after measuring heap and socket use.
+创建 ESP-IDF 默认 SoftAP 网络接口；除非产品需要自定义地址规划，否则让框架管理 DHCP 服务。
+只允许一个用户配网时，`max_connection = 1` 是一份保守的实测起点。提高连接数前，应重新测量
+堆和 socket 占用。
 
-Do not confuse Wi-Fi association with DHCP completion:
+不要把 Wi-Fi 关联成功误当成 DHCP 完成：
 
-- `WIFI_EVENT_AP_STACONNECTED` means the station joined the access point.
-- `IP_EVENT_AP_STAIPASSIGNED` means the DHCP server assigned an address.
+- `WIFI_EVENT_AP_STACONNECTED` 表示终端已加入热点。
+- `IP_EVENT_AP_STAIPASSIGNED` 表示 DHCP 已分配地址。
 
-Use the second event when the UI needs to report that the client is actually
-ready to open the page. Log both events, the assigned address, disconnect reason,
-and current heap. This separates authentication problems from DHCP and HTTP
-problems.
+如果界面要显示“客户端已经可以打开网页”，应以第二个事件为依据。同时记录这两个事件、分配的
+地址、断开原因和当前堆，才能区分认证、DHCP 和 HTTP 问题。
 
-## Captive portals are a compatibility feature
+## 弹窗认证是一项兼容性功能
 
-A captive portal usually combines wildcard DNS with HTTP redirects and optional
-DHCP captive-portal metadata. Different Android, iOS, and desktop versions send
-different probe URLs, so a portal that works on one phone is not yet verified.
+弹窗认证通常由通配 DNS、HTTP 重定向和可选的 DHCP 门户信息组合实现。不同 Android、iOS
+和桌面系统会访问不同探测地址，因此在一台手机上成功不等于功能已经验证完整。
 
-For a short provisioning flow:
+短时配网可采用以下流程：
 
-1. Answer DNS queries with the AP address.
-2. Serve known connectivity-check paths or redirect them to the local page.
-3. Consider DHCP Option 114 where supported, but verify its presence on packets
-   and real devices before documenting it as deployed.
-4. Stop DNS and HTTP cleanly when provisioning completes.
+1. DNS 查询统一返回 AP 地址。
+2. 对已知联网探测路径直接响应或重定向到本地页面。
+3. 平台支持时可考虑 DHCP Option 114，但必须通过抓包和真机确认后，才能宣称已经部署。
+4. 配网完成后完整停止 DNS 和 HTTP 服务。
 
-For a long-lived management AP, automatic pop-up behavior can become annoying.
-A printed local URL or QR code plus limited redirects may be a better product
-choice. Wildcard DNS also creates background traffic; parse bounds, rate limits,
-and socket cleanup still apply.
+对于长期管理热点，自动弹窗可能反而打扰用户。印在界面上的本地地址或二维码，加少量重定向，
+可能更合适。通配 DNS 也会产生后台流量，仍需限制解析长度、请求频率并正确释放 socket。
 
-## Bound every HTTP input
+## 限制每一份 HTTP 输入
 
-Small form handlers can overflow just as easily as file uploads. Before receiving
-a form:
+小表单和文件上传一样可能溢出。接收表单前应做到：
 
-- reject `Content-Length` above the endpoint limit;
-- reserve space for the terminating byte;
-- loop until the declared body is received or a timeout occurs;
-- treat zero, timeout, and disconnect as explicit failures;
-- URL-decode only after the complete bounded body is available;
-- validate decoded field lengths before storing them.
+- `Content-Length` 超过接口上限时立即拒绝；
+- 为字符串结尾的零字节预留空间；
+- 循环接收，直到达到声明长度或超时；
+- 把返回零、超时和断开都作为明确失败；
+- 完整收到受限长度的正文后再做 URL 解码；
+- 写入存储前再次校验解码后的字段长度。
 
-Never write Wi-Fi credentials to persistent storage until the station connection
-has been tested. Keep the old working credentials until the new pair succeeds,
-so a typo does not strand the device.
+在 STA 连接验证成功前，不要覆盖持久化的 Wi-Fi 凭据。保留上一组可用凭据，只有新凭据验证
+成功后才替换，避免一次输入错误让设备无法恢复。
 
-For larger files, receive fixed-size chunks instead of allocating the whole body.
-One measured implementation used 1024-byte chunks. Write to a temporary target,
-validate size and format, synchronize concurrent access, then replace the active
-asset only after success. Delete or invalidate the temporary target on every
-failure path.
+大文件应采用固定大小分块接收，不能按完整正文申请内存。一份实测实现使用 1024 字节分块。
+先写临时目标，校验大小和格式，处理并发访问，再在全部成功后替换正式资源；任何失败路径都要
+删除或标记临时目标无效。
 
-## Keep the web server deliberately small
+## 有意控制网页服务规模
 
-One measured single-client configuration service used three HTTP sockets, a
-backlog of two, two receive retries, ten send retries, LRU purge, a 6144-byte
-server task stack, and 2880-byte TCP send/receive windows. These values are a
-starting reference, not universal defaults.
+一份单客户端配置服务的实测参数是：3 个 HTTP socket、backlog 为 2、接收重试 2 次、发送
+重试 10 次、开启 LRU 清理、服务任务栈 6144 字节、TCP 收发窗口 2880 字节。这些是起点参考，
+不是通用默认值。
 
-Reduce web assets before enlarging transport buffers:
+增大传输缓冲之前，先缩减网页资源：
 
-- gzip static pages at build time;
-- send large JSON or file listings in chunks;
-- keep thumbnails small and limit how many are decoded at once;
-- close failed requests immediately and release their context;
-- avoid multiple simultaneous fetches from the page.
+- 构建时 gzip 压缩静态页面；
+- 大型 JSON 或文件列表分块发送；
+- 缩小缩略图，并限制同时解码的数量；
+- 请求失败后立即关闭并释放上下文；
+- 避免网页同时发起多个请求。
 
-A browser may open several connections even for one visible page. Count sockets
-used by DNS, HTTP, STA verification, telemetry, and any remaining audio service
-together.
+即使只打开一个页面，浏览器也可能建立多个连接。DNS、HTTP、STA 验证、遥测和仍在运行的音频
+服务所用 socket 必须合并计算。
 
-## Failure signatures
+## 常见故障特征
 
-| Symptom | Check first |
+| 现象 | 优先检查 |
 | --- | --- |
-| Phone joins but never opens the page | DHCP assignment event, DNS replies, probe URL handling, HTTP socket availability |
-| Random reset when a form is submitted | declared length, terminator space, receive loop, task stack, largest free block |
-| Upload stops partway | receive timeout, chunk write result, storage space, concurrent reader/writer |
-| Works once, then fails after retry | leaked socket, DNS task, event handler, netif, or temporary buffer |
-| AP start fails only after other features run | largest free block and optional subsystems still initialized |
+| 手机连上热点但不弹出页面 | DHCP 分配事件、DNS 响应、探测路径处理、HTTP socket 是否可用 |
+| 提交表单时随机重启 | 声明长度、结尾空间、接收循环、任务栈、最大连续空闲块 |
+| 上传中途停止 | 接收超时、分块写入结果、存储空间、并发读写 |
+| 第一次成功，重试后失败 | socket、DNS 任务、事件处理器、netif 或临时缓冲是否泄漏 |
+| 运行过其他功能后 AP 才启动失败 | 最大连续空闲块、可选子系统是否仍占用资源 |
 
-## Verification checklist
+## 验证清单
 
-- Test Android, iOS, Windows, and at least one client that does not show a portal
-  automatically.
-- Test wrong credentials, unavailable router, DHCP timeout, AP disconnect, HTTP
-  timeout, oversized form, interrupted upload, and repeated retries.
-- Verify DHCP Option 114 with packet capture or equivalent device evidence when
-  it is part of the claimed behavior.
-- Run repeated enter/exit cycles and confirm tasks, handlers, sockets, and netifs
-  return to a stable count.
-- Record free heap, largest free block, and stack high-water marks at each phase.
+- 测试 Android、iOS、Windows，以及至少一种不会自动弹窗的客户端。
+- 覆盖错误凭据、路由器不可达、DHCP 超时、AP 断开、HTTP 超时、超大表单、上传中断和反复重试。
+- 如果文档宣称支持 DHCP Option 114，必须用抓包或等价的真机证据验证。
+- 反复进入和退出配网，确认任务、事件处理器、socket 和 netif 数量回到稳定基线。
+- 在每个阶段记录空闲堆、最大连续空闲块和任务栈高水位。
 
-The main lesson is that provisioning is a temporary network product inside the
-firmware. Give it explicit start/stop ownership and strict input limits, and test
-DHCP and captive-portal behavior separately instead of treating “connected to
-Wi-Fi” as proof that the whole flow works.
+最重要的经验是：把配网当成固件内部一个临时运行的网络产品。它需要明确的启动和停止归属、严格
+的输入上限，并且要分别验证 DHCP 与弹窗认证，不能把“已经连上 Wi-Fi”当成整个流程成功。

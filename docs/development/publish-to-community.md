@@ -1,62 +1,61 @@
 <p align="right">
-  <a href="publish-to-community.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="publish-to-community.md">English</a>
 </p>
 
-# Publish to the AI Passport Community
+# 发布到 AI Passport 社区
 
-This document describes how to publish this project's firmware to the [AI Passport Community](https://ai-passport.folotoy.cn). This page is the human-facing entry point; it tells an AI assistant to install the publisher skill from the official bundle and run the workflow.
+本文说明如何把本项目的固件发布到 [AI Passport 社区](https://ai-passport.folotoy.cn)。本页是面向人的入口；它告诉 AI 助手从官方包安装发布 skill，并运行该工作流。
 
-## When to use this
+## 何时使用
 
-Use this when the project is being **released** — that is, when the code is finished, usable, and ready to ship. A release is not a commit: a commit saves progress during development, while a release happens only when development is complete and the firmware actually works. This page covers the publish decision; for development itself, see the development and commit rules.
+当项目进入**发布**时使用——也就是**代码开发完毕、能够使用、可以交付**的时候。发布不是提交：提交是开发过程中保存进度，而发布只在开发完成、固件真正可用时才发生。本页讲发布决策；开发本身遵循开发与提交规则。
 
-When the developer says "publish" or "release", the first thing to decide is **where** to publish. Do not assume a route.
+当开发者说"发布"或"发版"时，第一件事是决定**发到哪里**。不要默认其中一条。
 
-- **To the community** — release the firmware to the [AI Passport Community market](https://ai-passport.folotoy.cn). Use the publisher workflow below. See also the project completion flow (`docs/development/project-completion.md`) once it is published.
-- **To Git** — publish the finished code to a version-controlled repository. The flow is: commit the finished code, then open a release for it. The release artifact may be produced by the CI/CD pipeline (**recommended**, tag-triggered via `.github/workflows/build-firmware.yml`), or it may be a local `.bin` the developer already built. Follow the repository commit and PR rules (`docs/contribution/commit-and-pr.md`) and the fork workflow (`docs/fork-guide.md`); see [`CI-build-and-release.md`](CI-build-and-release.md) for the automated build and release artifacts.
-- **Neither yet** — the code is not finished and usable; keep developing, do not publish.
+- **发布到社区** —— 把固件发布到 [AI Passport 社区市场](https://ai-passport.folotoy.cn)。走下面的 publisher 工作流；发布后见项目开发完成流程（`docs/development/project-completion.md`）。
+- **发布到 Git** —— 把开发完成的代码发布到版本仓库。逻辑：先**提交**完成后的代码，再为它**开 release 流程**。release 产物可由 **CI/CD 流水线生成（推荐）**，tag 触发 `.github/workflows/build-firmware.yml` 自动构建；也**可用开发者本地已构建的 `.bin` 文件**。遵循仓库提交与 PR 规则（`docs/contribution/commit-and-pr.md`）与 fork 工作流（`docs/fork-guide.md`）；自动构建与产物见 [`CI-build-and-release.md`](CI-build-and-release.md)。
+- **还没到发布时机** —— 代码尚未开发完成、不能使用；继续开发，不发布。
 
-The workflow is driven by the official publisher skill. Running the prompt once makes the assistant install the skill from the official bundle; nothing is committed into the repository.
+该工作流由官方发布 skill 驱动。运行一次提示词，让助手从官方包安装 skill；仓库无需提交任何东西。
 
-## Reproduce the bundled prompt
+## 使用内置提示词
 
-To run the publishing workflow, copy the prompt to your AI assistant. The paste-ready prompt is reproduced verbatim in the Simplified Chinese peer [`publish-to-community.zh_CN.md`](publish-to-community.zh_CN.md); it requests installing the assistant at `https://ai-passport.folotoy.cn/skills/folotoy-ai-passport-publisher.zip`, then inspecting the project, preparing bilingual title and description, choosing a cover, resolving the HTTPS Git source, authorizing through the official site, and confirming every field before uploading.
+要运行发布工作流，把这段提示词交给你的 AI 助手：
 
-The skill's `SKILL.md` defines the exact workflow: inspect the project, prepare bilingual title and description, resolve the HTTPS Git source, prepare and validate a cover, authorize through the official site, then preview every field and obtain approval before uploading.
+```text
+请安装 FoloToy AI Passport 发布助手：https://ai-passport.folotoy.cn/skills/folotoy-ai-passport-publisher.zip
+然后分析当前项目并准备发布到 AI Passport 社区。请检查完整固件，从 README、文档和代码中整理中英文标题与简介，准备项目封面，并使用当前 GitHub、Gitee 或其他 HTTPS Git 仓库地址。如果尚未登录，请引导我在官网注册或登录并完成授权；正式上传前，先把全部内容展示给我确认。
+```
 
-## What the assistant will need from you
+skill 的 `SKILL.md` 定义了精确流程：检查项目、准备中英文标题与简介、解析 HTTPS Git 源码、准备并校验封面、经官方站点授权，然后在真正上传前展示每个字段并取得批准。
 
-- **Firmware**: the single merged ESP image
-  `build/FoloToy-AI-Passport-full.bin`. It must pass
-  `./tools/validate.sh --firmware`, including the
-  [mini-program BLE compatibility contract](ble-recovery-compatibility.md).
-  Never substitute the app-only `.bin` produced by `idf.py build`.
-- **Cover**: a representative JPEG / PNG / WebP image (<= 10 MiB).
-- **Source**: the public HTTPS Git page for the firmware repository — GitHub, Gitee, GitLab, Codeberg, or another publicly reachable HTTPS Git repository page. A fork owner publishes from their fork's source page, resolved from `git remote -v`.
+## 你需要提供给助手的东西
 
-## Safety and boundaries
+- **固件**：固定使用单个合并镜像 `build/FoloToy-AI-Passport-full.bin`，
+  且必须通过 `./tools/validate.sh --firmware` 与[小程序 BLE 兼容契约](ble-recovery-compatibility.zh_CN.md)。
+  不得用 `idf.py build` 生成的应用单镜像替代。
+- **封面**：一张代表产品的 JPEG / PNG / WebP 图（≤ 10 MiB）。
+- **源码**：固件仓库的公开 HTTPS Git 项目页——GitHub、Gitee、GitLab、Codeberg 或其它公开可达的 HTTPS Git 仓库页。fork 所有者从其 fork 的来源页发布，从 `git remote -v` 解析。
 
-- Upload only to `https://ai-passport.folotoy.cn`. Publishing and updating are external mutations.
-- Validation, drafting, and preview that is not confirmed by the author does **not** authorize upload.
-- Authorization credentials are never requested, received, or stored by the assistant. The creator registers or signs in on the official site and approves the displayed code; the assistant never handles their password.
-- Never retry a rejected upload automatically. Report the server response and resolve the cause with the creator first.
-- Do not weaken, bypass, or remove the BLE compatibility gate merely to make a
-  community submission pass. Fix the image layout or build packaging instead.
+## 安全与边界
 
-## How the assistant installs the skill
+- 只上传到 `https://ai-passport.folotoy.cn`。发布与更新是外部变更。
+- 未经作者确认的验证、起草与预览**不授权上传**。
+- 助手绝不索取、接收或存储授权凭证。由创作者在官方站点注册或登录并批准显示的代码；助手不接触其密码。
+- 不自动重试被拒的上传。先把服务端响应展示给创作者，查清原因再处理。
+- 不得为了让社区提交通过而弱化、绕过或删除 BLE 兼容门禁；应修复镜像布局或打包流程。
 
-The assistant fetches the official bundle from the URL in the prompt and follows the workflow described in its `SKILL.md`. No skill needs to be kept or committed in this repository; the prompt reproduces the official install source each time.
+## 助手如何安装该 skill
 
-## After publishing: archive to plays
+助手从提示词里的 URL 拉取官方包，并按其中 `SKILL.md` 描述的工作流执行。本仓库无需保留或提交该 skill；提示词每次都会复现官方安装源。
 
-Once the firmware is published, ask the developer whether to archive this application
-into the upstream repository's [`plays/`](../../plays/README.md) application
-archive. If they agree, generate an AI-generated functional summary for the application under
-`plays/<username>/<app-name>/` (bilingual `README.md` / `.zh_CN.md`). The archive is
-**text-only**: record the cover image only by its file name and format as publish
-metadata, and do **not** commit the cover image into `plays/` (see the convention in
-[`plays/README.md`](../../plays/README.md)). Do not store the firmware `.bin` here
-either. Use the `plays-archive` skill, which opens the archive PR against the
-upstream `FoloToy/ai-passport`.
+## 发布之后：归档到 plays
 
-This keeps the release's application discoverable in-repository for later querying.
+固件发布后，询问开发者是否把该应用归档到上游仓库的 [`plays/`](../../plays/README.md)
+应用档案。若同意，在 `plays/<username>/<app-name>/` 下生成该应用的 AI 功能总结（双语
+`README.md` / `.zh_CN.md`）。档案为**纯文本**：封面图只记录文件名与格式作为发布元数据，
+**不要**把封面图提交进 `plays/`（约定见 [`plays/README.md`](../../plays/README.md)）。
+也不要在这里存固件 `.bin`。用 `plays-archive` skill，它会向上游
+`FoloToy/ai-passport` 开归档 PR。
+
+这样发布后的应用能在上游仓库留存、便于后续查询。

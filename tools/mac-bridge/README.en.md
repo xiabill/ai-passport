@@ -1,0 +1,55 @@
+<p align="right">
+  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+</p>
+
+# FoloVibe Bridge
+
+macOS companion for the AI Passport vibe-typeless firmware. It is a full app: status dashboard, settings, live logs, and a debug/test panel, plus a menu-bar extra.
+
+It receives IMA-ADPCM frames over BLE, plays them into `BlackHole 2ch`, and taps the configured Typeless modes, Doubao, and Return keys so the input methods can dictate into the focused app.
+
+For the end-to-end firmware, BLE, Typeless, flashing, permissions, and troubleshooting tutorial, see [the Vibe guide](../../docs/development/vibe-typeless.md).
+
+For people who only want to use the app, download the latest `FoloVibeBridge-macos.zip` from [GitHub Releases](https://github.com/xiabill/ai-passport/releases/latest). Source-build instructions are below.
+
+## Windows
+
+| Tab | Contents |
+| --- | --- |
+| Status | Device, audio, Typeless, permissions, level meter, problem list |
+| Settings | Power mode, device prefix, output device, hotkeys, closed-loop retap, Typeless poll, login item |
+| Logs | Filter, search, copy, open file, clear |
+| Debug | Key taps, simulated device events, 440 Hz tone, mic capture test, reconnect, UUID copy, self-check |
+
+## Build
+
+```bash
+cd tools/mac-bridge
+./build.sh
+open /Applications/FoloVibeBridge.app
+```
+
+`./build.sh` runs `swift run FoloVibeCoreTests`, packages the app, and installs it to `/Applications/FoloVibeBridge.app` by default. Full Xcode is not required; a Swift 5.9+ toolchain and Apple Command Line Tools are enough. The status and settings pages include a guided setup flow with permission/setup checks and a “Check again” action after returning from System Settings. Grant Bluetooth and Accessibility/Input Monitoring. Set Typeless to the Typeless key (default Fn), Doubao to the Doubao key (default Right Option in toggle mode), and both microphones to `BlackHole 2ch`.
+
+The release package is unsigned and not notarized. If macOS blocks the first launch, Control-click the app in Finder, choose **Open**, and confirm. The app requires macOS 13 or newer.
+
+The status page includes audio-effect tests for the configured output, a Passport microphone record/playback round, and BLE packet/loss checks. Every mapping in Settings supports both a picker and direct key capture. If BlackHole is missing, the setup guide can open its official installation page and macOS Sound settings.
+
+Logs: `~/Library/Logs/folovibe-bridge.log`
+
+Multi-Mac handoff: install and run FoloVibe Bridge on each Mac with the same device-name prefix and “Auto reconnect” enabled. A Passport currently accepts one BLE central at a time. To switch computers, choose “Release device to another Mac” from the current Mac’s menu-bar menu, status page, or settings page. This disconnects the current Mac and pauses its reconnect loop for 45 seconds, giving another Mac time to connect automatically. If no other Mac takes over, the original Mac resumes auto reconnect after the pause; it can also be resumed manually. This supports quick switching between Macs, not simultaneous audio delivery to multiple Macs.
+
+Power modes: Standard keeps the display at 50%, dims to 15% three seconds after speech starts, briefly restores brightness when confirming send, enters real Light Sleep after 5 minutes, and reaches Deep Sleep at 15 minutes through a timer wake. Eco dims the display to 8% after 10 seconds, enters Light Sleep after 1 minute, pauses disconnected BLE advertising after 60 seconds, and reaches Deep Sleep at 5 minutes. Light Sleep stops the display, audio codec, BLE link, and advertising; a GPIO0 function-key press wakes it, and the first press restores the screen before the next press performs the action. USB-host power disables automatic power saving.
+
+Doubao upper key: single click toggles voice input, quick double-click selects all and deletes the current text field (Cmd+A then Delete), and long press performs the same clear action.
+
+Audio cues: BLE-ready, recording start, recording end, Return/send, and Doubao edit actions each have distinct low-headroom sine chimes. The send cue is emitted with the actual Return event.
+
+## Protocol
+
+- Center single/double/long presses start Typeless Dictate/Translation/Ask anything; UP controls Doubao and DOWN sends Return.
+- Device name: `FoloVibe-XXXX`
+- Service `F0100001-0000-4A6B-9E10-464F4C4F5631`
+- Audio notify `...0002`: 166-byte ADPCM frames or a 6-byte end-of-stream marker
+- Event notify `...0003`: `1` Typeless Dictate start, `2` Typeless stop, `3` Return, `4` legacy cancel, `5` Doubao start, `6` Doubao stop, `7` Doubao stop and Return, `8` Typeless Translation start, `9` Typeless Ask anything start
+- Control write `...0004`: Typeless state `0` idle, `1` recording, `2` processing, `3` not running

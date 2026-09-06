@@ -1,43 +1,45 @@
 <p align="right">
-  <a href="PULL_REQUEST_TEMPLATE.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="PULL_REQUEST_TEMPLATE.md">English</a>
 </p>
 
-## Summary
+> GitHub 默认使用英文 PR 模板。本文件仅作为中文填写参考，提交的 PR 标题与正文仍须使用英文。
 
-<!-- What problem does this PR solve, and what user-visible behavior changes? -->
+## 摘要
 
-## Scope and compatibility
+<!-- 这个 PR 解决了什么问题？用户可见行为有哪些变化？ -->
 
-- Affected board/revision:
-- Affected subsystem:
-- Wiring or pin-map impact: None
-- Flash, partition, or persistent-data impact: None
-- Backward-compatibility impact: None
+## 范围与兼容性
 
-## Verification
+- 受影响板卡/版本：
+- 受影响子系统：
+- 接线或引脚映射影响：无
+- Flash、分区或持久化数据影响：无
+- 向后兼容性影响：无
 
-| Check | Result | Evidence or notes |
+## 验证
+
+| 检查 | 结果 | 证据或备注 |
 | --- | --- | --- |
 | Build | PASS / FAIL / NOT RUN | |
 | Host tests | PASS / FAIL / NOT RUN | |
 | Device tests | PASS / FAIL / NOT RUN | |
-| Unverified | — | List every remaining board, instrument, or user check |
+| Unverified | — | 列出仍需板卡、仪器或用户完成的检查 |
 
-Commands run:
+执行的命令：
 
 ```text
 ./tools/validate.sh
 ```
 
-## Device evidence
+## 真机证据
 
-<!-- Record board revision, observed behavior, logs, measurements, and display photos/screenshots where applicable. Never include credentials or device QR secrets. -->
+<!-- 适用时记录板卡版本、观察行为、日志、测量结果及显示照片/截图。禁止包含凭证或设备二维码秘密。 -->
 
-## Checklist
+## 检查清单
 
-- [ ] I reviewed the complete diff and excluded unrelated/generated files.
-- [ ] I ran the relevant validation command or explained why it was not run.
-- [ ] I separated build, host-test, and device-test results.
-- [ ] I updated authoritative documentation for changed hardware facts or durable behavior.
-- [ ] I updated `docs/CHANGELOG.md` if this changes user-visible behavior, compatibility, or release workflow.
-- [ ] I removed credentials, private device links, personal data, and unsanitized logs.
+- [ ] 已审查完整 diff，并排除无关或生成文件。
+- [ ] 已运行相关验证命令，或说明未运行原因。
+- [ ] 已分别报告 build、host tests 与 device tests。
+- [ ] 已更新发生变化的硬件事实或长期行为对应的权威文档。
+- [ ] 若用户可见行为、兼容性或发布流程变化，已更新 `docs/CHANGELOG.zh_CN.md`。
+- [ ] 已移除凭证、私密设备链接、个人数据和未脱敏日志。

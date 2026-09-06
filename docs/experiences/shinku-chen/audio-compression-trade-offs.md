@@ -1,226 +1,133 @@
 <p align="right">
-  <a href="audio-compression-trade-offs.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="audio-compression-trade-offs.md">English</a>
 </p>
 
-# Audio Compression Trade-offs on ESP32-C3
+# ESP32-C3 上音频压缩方式的权衡
 
-Captured after the **Voice Keychain** release (commit `91466b0`). This entry records
-how the audio codec for a voice-playback application was chosen on ESP32-C3 (8 MB
-flash, no PSRAM), so the next developer who needs to fit a large voice library into
-a bounded flash partition can start from measured numbers instead of estimates.
+记录于 **Voice Keychain** 发布之后（commit `91466b0`）。本条目记录在 ESP32-C3（8 MB Flash、无 PSRAM）上一个语音播放应用的音频编解码方案是如何选定的，让下一位需要把大量语音库塞进有限 Flash 分区的开发者，从实测数据出发而不是靠估算。
 
-## Context and the hard limit
+## 背景与硬限制
 
-The application plays a library of Chinese voice clips stored in a dedicated SPIFFS
-data partition. The source asset set is large:
+该应用播放一批存储于独立 SPIFFS 数据分区的中文语音片段。源素材集合很大：
 
-- 38 directories / packs, 1557 clips, ~4598 s of audio.
-- Encoded at the original bit rate, the full set is ~35.1 MB.
+- 38 个目录 / 音源包，1557 条片段，约 4598 秒音频。
+- 按原始码率编码后，完整集合约 35.1 MB。
 
-The target is a data partition the firmware must also be able to decode. On this
-hardware the partition size and the codec together set how much of the library is
-actually playable. This is a physics ceiling: no amount of selection recovers the
-bulk of the content once a codec is fixed.
+目标是一个固件还必须能解码的数据分区。在这套硬件上，分区大小与编解码方式共同决定了语音库实际上有多少可播放。这是物理上限：一旦编解码方式确定，靠裁剪素材无法挽回超过分区容量的内容。
 
-## Methods compared
+## 对比的方案
 
-| Method | Bytes/second (effective) | Decoder cost on ESP32-C3 (no PSRAM) |
+| 方案 | 有效字节/秒 | ESP32-C3（无 PSRAM）上的解码成本 |
 | --- | --- | --- |
-| IMA-ADPCM 4-bit | ~7800 B/s (16 kHz mono) | Already present, negligible CPU/RAM |
-| MP3 | nominal 4000–8000 B/s | ~30–40 KB flash decoder, moderate CPU |
-| Opus | ~1000 B/s (6 kbps), ~1500 B/s (12 kbps) | ~60–80 KB flash + some RAM, moderate CPU |
+| IMA-ADPCM 4-bit | ~7800 B/s（16 kHz 单声道） | 已有，CPU/RAM 几乎可忽略 |
+| MP3 | 标称 4000–8000 B/s | ~30–40 KB Flash 解码器，CPU 中等 |
+| Opus | ~1000 B/s（6 kbps）、~1500 B/s（12 kbps） | ~60–80 KB Flash + 部分 RAM，CPU 中等 |
 
-Measured capacity of the current set (what actually fits in a 3 MB partition):
+当前素材集合的实测容量（3 MB 分区实际能装多少）：
 
-| Method / bit rate | Share of the full set that fits |
+| 方案 / 码率 | 占完整集合的比例 |
 | --- | --- |
-| IMA-ADPCM 4-bit | ~8.7% (~402 s) |
-| Opus 12 kbps | ~46.7% (~2146 s) |
-| Opus 6 kbps | ~66.8% (~3072 s) |
+| IMA-ADPCM 4-bit | ~8.7%（约 402 秒） |
+| Opus 12 kbps | ~46.7%（约 2146 秒） |
+| Opus 6 kbps | ~66.8%（约 3072 秒） |
 
-The decisive counterweight is the decoder: an Opus decoder costs ~60–80 KB of flash
-and some RAM on a chip with no PSRAM, which must be budgeted against the application
-and the LVGL UI. The right choice depends on whether raw capacity or firmware
-simplicity matters more.
+决定性反作用力在解码器：在无 PSRAM 的芯片上，一个 Opus 解码器要占 ~60–80 KB Flash 和部分 RAM，必须与应用和 LVGL UI 一起权衡预算。最终选什么，取决于更看重原始容量还是固件简洁性。
 
-## Decision and what was built
+## 决策与实际构建
 
-The published app **migrated to Opus 8 kbps** (the current high capacity at low bit
-rate) with a `libopus` component decoder, over a raw-packet stream where each packet
-is a 2-byte little-endian length plus one Opus frame. The encoder (`encode_opus.py`)
-resamples to 16 kHz mono, and the firmware decodes frames in a dedicated task and
-writes PCM to the audio output.
+发布的成品**迁移到 Opus 8 kbps**（低码率下高容量），使用 `libopus` 组件解码器，走裸包流：每个包 = 2 字节小端长度 + 一个 Opus 帧。编码器（`encode_opus.py`）重采样到 16 kHz 单声道，固件在独立任务里逐帧解码并写出 PCM 到音频输出。
 
-A full tool was not needed in the final build: the previous IMA-ADPCM encoder
-(`encode_voice.py`) and its legacy comparison document remain in the fork as the
-recorded decision history, and the Opus path is the shipped implementation.
+最终构建并不需要完整工具链：旧的 IMA-ADPCM 编码器（`encode_voice.py`）与之前的对比文档保留在 fork 作为已记录的决策历史，Opus 路径则是实际交付的实现。
 
-The analysis above is against the 3 MB (`0x300000`) partition that was in place
-at the time. The final shipped configuration keeps the Opus decoder and uses a
-`0x210000, 0x5F0000` (~5.94 MB) `voicefs` partition, so the playable capacity
-exceeds the 3 MB numbers used here.
+上面的分析针对的是当时使用的 3 MB（`0x300000`）分区。最终交付配置保留 Opus 解码器，并使用 `0x210000, 0x5F0000`（约 5.94 MB）的 `voicefs` 分区，因此实际可播放容量高于此处使用的 3 MB 数字。
 
-## Detailed measurement
+## 详细测量
 
-The full measurement that informed the choice, so the numbers above can be
-taken as data rather than claims.
+支撑选型的完整测量数据，让上面的数字可以作为数据看待而不是断言。
 
-### Scope and measurement basis
+### 范围与测量基准
 
-- Target: ESP32-C3, 8 MB flash, no PSRAM, ESP-IDF 5.5.3.
-- Data partition: `voicefs`, 3 MB (`0x300000`) at the time of this analysis,
-  SPIFFS, mounted at `/voices`. (The final shipped partition is `0x210000,
-  0x5F0000`, ~5.94 MB; see the decision below.)
-- Source set measured: the current `assets/project` (38 directories, 1557 clips,
-  ~4598 s of audio). All clips are mp3/ogg/wav; they are decoded, low-passed,
-  silence-trimmed, then encoded.
-- The firmware decodes IMA-ADPCM 4-bit in software (`main/voice_app.c`); any
-  other decoder must be added to the firmware.
+- 目标：ESP32-C3，8 MB flash，无 PSRAM，ESP-IDF 5.5.3。
+- 数据分区：`voicefs`，本次分析时的 3 MB（`0x300000`），SPIFFS，挂载于 `/voices`。（最终交付分区为 `0x210000, 0x5F0000`，约 5.94 MB，见下文决策。）
+- 实测素材集：当前 `assets/project`（38 个目录，1557 段，约 4598 秒音频）。全部为 mp3/ogg/wav，先解码、低通、剪静音，再编码。
+- 固件当前以**软件解码 IMA-ADPCM 4bit**（`main/voice_app.c`）。任何其他解码器都需加入固件。
 
-### Why the size is a hard limit
+### 为什么体积是硬上限
 
-IMA-ADPCM 4-bit at 16 kHz mono stores 4 bits per sample: `16000 × 4 / 8 = 8000
-bytes/s`. With silence trimming the measured rate over the current set is
-~7800–8000 B/s. So with the current codec, the 3 MB partition holds about 8.7%
-of the full current asset set. This is the baseline.
+IMA-ADPCM 4bit @16kHz 单声道存储每采样 4 bit：`16000 × 4 / 8 = 8000 bytes/s`。剪静音后对当前素材集实测约 7800–8000 B/s。因此按现有编解码器，3 MB 分区只能容纳当前全量素材的约 8.7%。这是基线。
 
-### Per-method detail
+### 分方法详解
 
-- **IMA-ADPCM 4-bit (current)**: fixed 8000 B/s (4 bits/sample × 16 kHz); decoder
-  already in `main/voice_app.c`, tiny, negligible CPU/RAM; intelligible, simple,
-  deterministic, no extra library.
-- **MP3 (potential)**: selectable 32–64 kbps (64 kbps = 8000 B/s, 32 kbps = 4000
-  B/s); no decoder in ESP-IDF by default, needs an MP3 library (Helix, minimp3,
-  or the ESP-ADF MP3 component), ~30–40 KB flash plus RAM and CPU; more
-  CPU-intensive than IMA-ADPCM.
-- **Opus (potential)**: selectable 6–24 kbps (12 kbps = 1500 B/s, 24 kbps = 3000
-  B/s); no built-in decoder, port libopus or a component; ~60–80 KB flash and
-  some RAM on no-PSRAM, moderate CPU; far more efficient than IMA-ADPCM at low
-  bit rates for speech.
-- **Raw PCM (baseline, not used)**: 16 kHz mono 16-bit = 32000 B/s, ~4× larger
-  than IMA-ADPCM; not used in this product.
+- **IMA-ADPCM 4bit（现状）**：码率固定 8000 B/s（4bit/采样 × 16kHz）；解码器已内置于 `main/voice_app.c`，体积可忽略，CPU/RAM 占用极低；语音仍可辨、简单、确定、无需额外库。
+- **MP3（潜在）**：码率可选 32–64 kbps（64 kbps = 8000 B/s，32 kbps = 4000 B/s）；ESP-IDF 默认无解码器，需引入 MP3 库（Helix、minimp3，或 ESP-ADF 的 MP3 组件），约 30–40 KB 闪存 + RAM 与 CPU；比 IMA-ADPCM 更耗 CPU。
+- **Opus（潜在）**：码率可选 6–24 kbps（12 kbps = 1500 B/s，24 kbps = 3000 B/s）；无内置解码器，需移植 libopus 或组件；无 PSRAM 上约需 60–80 KB 闪存、一定 RAM，CPU 中等；低码率语音远比 IMA-ADPCM 高效。
+- **原始 PCM（基线，未采用）**：16 kHz 单声道 16 bit = 32000 B/s。比 IMA-ADPCM 大约 4 倍。本产品未采用。
 
-### Measured results
+### 实测结果
 
-The OPUS numbers were measured by real encoding with ffmpeg 4.4 (libopus) over
-clips from the current set at three rate points. Effective bytes/second differ
-from the nominal kbps because per-segment container/frame overhead adds a little.
+下表 OPUS 数字来自用 ffmpeg 4.4（libopus）对当前素材集中片段的真实编码，三个码率点。实测 B/s 与标称 kbps 略有差异（每段容器/帧开销略增），实际码率才是决定容量的关键。
 
-| Sample | Duration | Opus 6 kbps | Opus 12 kbps | Opus 24 kbps |
+| 样本 | 时长 | Opus 6 kbps | Opus 12 kbps | Opus 24 kbps |
 | --- | --- | --- | --- | --- |
-| cxk (short) | 0.61 s | 867 B/s | 1593 B/s | 2871 B/s |
-| mama (mid) | 2.55 s | 1084 B/s | 1623 B/s | 4284 B/s |
-| ren sheng (long) | 14.02 s | 845 B/s | 1532 B/s | 3216 B/s |
+| cxk（短） | 0.61 秒 | 867 B/s | 1593 B/s | 2871 B/s |
+| 妈妈（中） | 2.55 秒 | 1084 B/s | 1623 B/s | 4284 B/s |
+| 人声（长） | 14.02 秒 | 845 B/s | 1532 B/s | 3216 B/s |
 
-Effective rates: **6 kbps ≈ 850–1000 B/s, 12 kbps ≈ 1500–1600 B/s, 24 kbps ≈
-2900–4300 B/s.**
+实际码率：**6 kbps ≈ 850–1000 B/s，12 kbps ≈ 1500–1600 B/s，24 kbps ≈ 2900–4300 B/s。**
 
-### Capacity at 3 MB
+### 3 MB 容量
 
-Percent of the full current set that fits in the 3 MB partition, by method and
-bit rate. Higher is better, but the firmware decoder cost is the counterweight.
-The IMA-ADPCM rows are measured over the current set; the OPUS rows use the
-measured rates; the MP3 rows are the nominal rate (no MP3 measurement run).
+按方法与码率，当前全量素材可装入 3 MB 分区的百分比。越高越好，但固件解码器成本是对冲项。IMA-ADPCM 行基于实测；OPUS 行使用实测码率；MP3 行为标称码率（此处未对 MP3 实测）。
 
-| Method / bit rate | B/s | Fits in 3 MB | Share of set |
+| 方法 / 码率 | B/s | 3 MB 可容纳 | 占全量 |
 | --- | --- | --- | --- |
-| IMA-ADPCM 4-bit | 7800 | ~402 s | ~8.7% |
-| MP3 64 kbps (nominal) | 8000 | ~402 s | ~8.7% |
-| MP3 32 kbps (nominal) | 4000 | ~805 s | ~17.5% |
-| Opus 24 kbps | 4300 | ~1048 s | ~22.8% |
-| Opus 12 kbps | 1500 | ~2146 s | ~46.7% |
-| Opus 6 kbps | 1000 | ~3072 s | ~66.8% |
+| IMA-ADPCM 4bit | 7800 | ~402 秒 | ~8.7% |
+| MP3 64 kbps（标称） | 8000 | ~402 秒 | ~8.7% |
+| MP3 32 kbps（标称） | 4000 | ~805 秒 | ~17.5% |
+| Opus 24 kbps | 4300 | ~1048 秒 | ~22.8% |
+| Opus 12 kbps | 1500 | ~2146 秒 | ~46.7% |
+| Opus 6 kbps | 1000 | ~3072 秒 | ~66.8% |
 
-Even by the most efficient packing, the 3 MB partition holds only 8 of 38
-directories under IMA-ADPCM, covering ~9.4% of total duration. The largest, most
-popular packs (each exceeding a third of the partition) are the first dropped:
-Jile (4385 KB, 570 s) alone exceeds the whole partition; Kenan (3172 KB, 413 s);
-Hajimi (3089 KB, 398 s); JoJo (2505 KB, 323 s).
+即使按最高效的打包方式，IMA-ADPCM 下 3 MB 分区也只能容纳 38 个目录里的 8 个，覆盖总时长约 9.4%。最大的、最热门的包（每个都超过分区的三分之一）最先被丢弃：鸡乐（4385 KB，570 秒）单独就超过整个分区；柯南（3172 KB，413 秒）；哈基米（3089 KB，398 秒）；jojo（2505 KB，323 秒）。
 
-### Firmware decoder cost
+### 固件解码器成本
 
-The decisive counterweight to raw compression ratio.
+这是与压缩率冲抵的决定性因素。
 
-| Method | Decoder needed | Flash (est.) | RAM (est.) | CPU |
+| 方法 | 需要的解码器 | 闪存（估算） | RAM（估算） | CPU |
 | --- | --- | --- | --- | --- |
-| IMA-ADPCM | already present | ~0 (already built) | negligible | very low |
-| MP3 | add component | ~30–40 KB | small | moderate |
-| Opus | add libopus | ~60–80 KB | moderate | moderate |
+| IMA-ADPCM | 已有 | ~0（已构建） | 可忽略 | 很低 |
+| MP3 | 增加组件 | ~30–40 KB | 小 | 中等 |
+| Opus | 增加 libopus | ~60–80 KB | 中等 | 中等 |
 
-### Recommendation summary
+### 建议摘要
 
-Two viable paths, in order of least risk:
+两条可行路径，按风险递增：
 
-1. **Keep IMA-ADPCM, enlarge the partition.** The 8 MB flash has ~1.94 MB
-   unallocated; growing `voicefs` from 3 MB to ~5 MB raises the IMA-ADPCM ceiling
-   to ~13.7%. No new decoder, minimal firmware change, but still only about a
-   seventh of the set.
-2. **Add a small Opus decoder and keep 3 MB.** At 12 kbps this recovers nearly half
-   the set for the same partition footprint, but requires porting a decoder and
-   re-validating decode CPU/RAM on the device.
+1. **保留 IMA-ADPCM，扩大分区。** 8 MB flash 尚有约 1.94 MB 未分配；把 `voicefs` 从 3 MB 扩到约 5 MB，可将 IMA-ADPCM 的容量上限提到约 13.7%。无需新解码器，固件改动最小，但仍只装得下约七分之一。
+2. **加入一个小型 Opus 解码器并保持 3 MB。** 12 kbps 下能在相同分区占用下恢复近一半素材，但需移植解码器并在设备上重新验证解码的 CPU/RAM。
 
-If the product goal is "make as much of the current set playable as possible,"
-path 2 (Opus) delivers the most content per flash; if the goal is "no new firmware
-risk," path 1 (enlarge the partition with the existing codec) is the safer
-increment. Either way, the current asset set cannot fully fit in 3 MB without a
-codec change.
+如果产品目标是"尽可能让当前素材可播放"，路径 2（Opus）在每字节 flash 上提供最多内容；如果目标是"不引入新的固件风险"，路径 1（用现有编解码器扩大分区）是更稳妥的增量。无论哪条，不换编解码器，当前素材集都无法完整装进 3 MB。
 
-## Reusable takeaways
+## 可复用的结论
 
-- **Measure, don't estimate.** The effective bytes/second per clip differs from the
-  nominal bit rate because of per-frame/container overhead. Real encoding of the
-  actual asset set (not a synthetic sample) is what determines whether the library
-  fits.
-- **Capacity is fixed by the codec, not by selection.** Once the codec and partition
-  size are set, the playable fraction is a ceiling; trimming the library cannot
-  recover content that exceeds the partition.
-- **Decoder cost is the real trade-off on no-PSRAM.** Raw compression ratio alone is
-  misleading; the extra flash and RAM for an Opus/MP3 decoder has to be budgeted
-  against the UI and the application.
-- **Keep the partition-mount footnote.** Using SPIFFS (an ESP-IDF built-in
-  component) avoids pulling an external Managed Component, and `format_if_mount_failed =
-  true` lets a blank data partition self-format on first boot, simplifying first-run
-  flashing.
+- **实测，不要估算。** 每条片段的实际字节/秒与标称码率不同，因为每帧/容器有额外开销。决定语音库能否装下的，是拿真实素材集合（而非合成样本）编码得到的实测值。
+- **容量由编解码方式决定，不由素材取舍决定。** 一旦编解码方式与分区大小定了，可播放比例就是上限；裁剪素材无法恢复超过分区的内容。
+- **无 PSRAM 场景下，解码器成本才是真正的取舍。** 只看原始压缩比会误导；Opus/MP3 解码器多占的 Flash 与 RAM 必须与 UI 和应用一起预算。
+- **记住分区挂载这个细节。** 用 SPIFFS（ESP-IDF 内置组件）可避免引入外部 Managed Component，且 `format_if_mount_failed = true` 让空白数据分区在首次启动时自动格式化，简化首次烧录。
 
-## Other reusable implementation notes
+## 其它可复用的实现要点
 
-These are concrete, useful details from the same release, worth recording for any
-developer building a Chinese-voice UI or debugging display/input on this board.
+以下取自同一次发布，对任何做中文语音 UI 或在这块板上调试显示/输入的人都值得记下。
 
-- **Bump the mic gain when recognition is weak.** If the microphone picks up speech
-  poorly, raise the input gain at the codec driver rather than adding a software
-  preamp — `esp_codec_dev_set_in_gain(s_dev, 30.0f)`.
-- **Match `BSP_LCD_H` with the UI height.** The screen is an ST7789P3 `240x320`
-  (`BSP_LCD_W=240`, `BSP_LCD_H=320`). When drawing a full-height canvas, the UI
-  height (`UI_H`) must equal `BSP_LCD_H`; if a white band appears at the edge,
-  re-check that the canvas height and the panel height agree.
-- **Capture the screen for remote debugging.** Enabling
-  `CONFIG_LV_USE_SNAPSHOT=y` gives a whole-frame snapshot without extra
-  dependencies. Alternatively the board can be driven through ADB so an agent can
-  screenshot and recognize the display.
-- **Tune input timing to responsiveness.** The short-press and long-press thresholds
-  are set in the button component (`config->long_press_time`, `config->
-  short_press_time`). A long-press duration around 500 ms and a short-press around
-  180 ms feel more responsive than the defaults; the long-press-repeat interval is
-  set by the component Kconfig. Note the code drives `long_press_time` directly,
-  bypassing the Kconfig 500 ms lower bound, so tune it in code.
-- **Embed a CJK subset font for Chinese UI.** Generate a Noto Sans CJK SC subset
-  with `lv_font_conv` and wire it via `LV_LVGL_H_INCLUDE_SIMPLE=1` so the font uses
-  a plain `<lvgl.h>` include instead of a `lvgl/`-prefixed path. Non-BMP characters
-  (for example the `🐦`) have no glyph in the subset, so the transcoder replaces
-  them with readable Chinese before building.
-- **Reuse the encoder pipeline.** The Opus encoder (`encode_opus.py`) imports the
-  IMA-ADPCM encoder (`encode_voice.py`) as `EV` and reuses its display-name
-  cleaning and C index generation, so the two parallel encode paths share one
-  index generator instead of drifting.
-- **Keep button-count ownership in one place.** The button component reads the
-  count from the pin table (`BSP_BTN_COUNT` in `bsp_pins.h`) rather than
-  re-declaring it, avoiding two near-identical `BSP_BTN_COUNT` symbols. The three
-  physical buttons share one ADC pin and are distinguished by a divider resistor;
-  after changing dividers, measure the three voltage windows with
-  `bsp_button_read_mv()` before updating `BSP_BTN_MV_TABLE`.
+- **识别不清时调麦克风增益。** 如果麦克风拾音不清晰，优先在 codec 驱动里提高输入增益而不是加软件前置放大——`esp_codec_dev_set_in_gain(s_dev, 30.0f)`。
+- **让 `BSP_LCD_H` 与 UI 高度对齐。** 屏幕是 ST7789P3 `240x320`（`BSP_LCD_W=240`、`BSP_LCD_H=320`）。画全屏画布时，UI 高度（`UI_H`）必须等于 `BSP_LCD_H`；若边缘出现白边，先核对画布高度与面板高度是否一致。
+- **为远程调试截屏。** 开启 `CONFIG_LV_USE_SNAPSHOT=y` 可拿整帧快照，无需额外依赖。也可用 ADB 驱动板子，让 AI 截屏并识别画面。
+- **把输入时延调到手感。** 短按与长按阈值在按钮组件里（`config->long_press_time`、`config->short_press_time`）。长按约 500 ms、短按约 180 ms 比默认值更跟手；长按后的连续触发间隔由组件 Kconfig 控制。注意代码是直接设 `long_press_time`、绕开 Kconfig 的 500 ms 下限，所以要在代码里调。
+- **中文 UI 内嵌 CJK 子集字库。** 用 `lv_font_conv` 生成 Noto Sans CJK SC 子集，并通过 `LV_LVGL_H_INCLUDE_SIMPLE=1` 接入，让字体用普通 `<lvgl.h>` include 而非 `lvgl/` 前缀路径。子集里没有非 BMP 字符（如 `🐦`）的字形，转码器在建文件前会把它替换成可读中文。
+- **复用编码器管线。** Opus 编码器（`encode_opus.py`）把 IMA-ADPCM 编码器（`encode_voice.py`）作为 `EV` 导入，复用其显示名清洗与 C 索引生成，让两条平行编码路径共用同一套索引生成，避免逻辑漂移。
+- **按键数量归属单一。** 按钮组件从引脚表（`bsp_pins.h` 里的 `BSP_BTN_COUNT`）取数量，而不是重复声明，避免出现两个近似的 `BSP_BTN_COUNT` 符号。三个物理按键共用一个 ADC 引脚、靠分压电阻区分；更换分压后，先用 `bsp_button_read_mv()` 测三档电压，再改 `BSP_BTN_MV_TABLE`。
 
-## Route
+## 分流
 
-This is general, upstream-benefiting hardware and design experience, so it is
-proposed back to the upstream `FoloToy/ai-passport` as a documentation PR.
+这是通用、上游也受益的硬件与设计经验，因此作为文档 PR 提交回上游 `FoloToy/ai-passport`。

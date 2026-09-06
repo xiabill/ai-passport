@@ -1,96 +1,76 @@
 ---
 name: issue-suggestions
-description: After a firmware release, gather the releasing developer's own improvement points and file them as issues against the upstream FoloToy ai-passport project.
+description: 固件发布之后，把发布固件的开发者本人遇到的改进点整理成 issue，提交到上游 FoloToy ai-passport 项目。
 ---
 
 <p align="right">
-  <a href="SKILL.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="SKILL.md">English</a>
 </p>
 
-# Collect Suggestions and File Issues
+# 收集建议并提交 issue
 
-This skill turns the releasing developer's own improvement points into
-actionable GitHub issues against the upstream `FoloToy/ai-passport` project. It
-runs only after a firmware release has been published (see
-`docs/development/publish-to-community.md` for publishing itself) and only when
-the developer explicitly asks to collect suggestions.
+本 skill 把发布固件的开发者本人的改进点，整理成提交到上游 `FoloToy/ai-passport` 项目的
+GitHub issue。它只在固件已发布（发布流程见 `docs/development/publish-to-community.md`）、
+且开发者明确要求收集建议时运行。
 
-## Safety and consent gate (run first)
+## 安全与同意门槛（必须先做）
 
-Do not proceed with any collection, drafting, or submission until every gate
-below is satisfied. These gates are the highest-priority constraints.
+在收集、起草或提交任何内容之前，必须先满足以下所有门槛。这些门槛是最高优先级约束。
 
-1. **Confirm consent up front.** This work touches project-private content.
-   Ask the developer to confirm they agree to start the post-release follow-up
-   before collecting anything. If they decline, stop immediately.
-2. **Check GitHub access.** Confirm a GitHub channel is available before
-   submitting. Try the configured channels in order and use the first one that
-   works: GitHub MCP (when present and authenticated), a GitHub skill (for
-   example the installed `cindy-github` capability), then the `gh` CLI
-   (`gh auth status`). If none is available, generate the complete issue content
-   for the developer to paste manually and stop; never submit on their behalf.
-3. **Never submit before review.** Draft everything first, show it to the
-   developer, and wait for explicit approval. Do not create, edit, or close any
-   issue until the developer has reviewed and authorized it.
-4. **No credentials or private data.** Never include credentials, device QR
-   secrets, private device links, personal data, or unsanitized logs.
+1. **先确认同意。** 本工作涉及项目私有内容。开始收集前先向开发者确认是否同意进行发布后的
+   收尾工作；开发者拒绝则立即停止。
+2. **检查 GitHub 访问通道。** 提交前确认已有可用的 GitHub 通道。按顺序尝试已配置的通道，
+   使用第一个可用的：GitHub MCP（已持久且已鉴权）、GitHub skill（如已安装的 `cindy-github`
+   能力）、再退到 `gh` CLI（`gh auth status`）。若都不可用，则生成完整 issue 内容供开发者
+   手动粘贴，然后停止；绝不替开发者提交。
+3. **审查前不得提交。** 先把一切起草好、展示给开发者，等待明确批准。在开发者审查并授权
+   之前，不创建、不编辑、不关闭任何 issue。
+4. **不写入凭证或私有数据。** 永远不包含凭证、设备 QR 密钥、私密设备链接、个人数据或未脱敏
+   日志。
 
-## Collect the developer's improvement points
+## 收集开发者本人的改进点
 
-Gather the improvement points the releasing developer encountered while
-developing or shipping this release that would benefit the upstream project:
+收集发布固件的开发者在开发或发布本次版本过程中，遇到的对上游项目有价值的改进点：
 
-- Pain points, awkward workarounds, or gaps in the BSP, build, or tooling.
-- Constraints or behaviors that should be documented or relaxed upstream.
-- Ideas for making the next release smoother.
+- BSP、构建或工具链中的痛点、绕行办法或空白。
+- 应在上游文档化或放宽的约束或行为。
+- 让下一次发布更顺畅的想法。
 
-Do **not** collect external requests from the upstream issue tracker as a source;
-this skill captures the developer's own improvement points. If an upstream issue
-already covers a point, see the matching step below.
+**不要**把上游 issue tracker 当作外部请求的来源去收集；本 skill 承接的是开发者自己的改进点。
+若某个点已有上游 issue 覆盖，按下方的匹配步骤处理。
 
-## Screen and categorize
+## 筛选与分类
 
-- **Deduplicate**: fold repeated or overlapping points into one.
-- **Drop** invalid, off-topic, or already-resolved points.
-- **Merge** related points into a single coherent suggestion.
-- **Categorize** by affected area, matching the issue template options:
-  - Firmware or demo
-  - BSP or hardware interface
-  - Documentation or tooling
-  - Hardware revision
-  - Not sure
+- **去重**：把重复或重叠的点合并为一条。
+- **剔除**无效、离题或已解决的点。
+- **合并**相关点为一条内聚的建议。
+- **按领域分类**，匹配 issue 模板选项：固件或示例、BSP 或硬件接口、文档或工具、硬件版本、不确定。
 
-## Check for an existing issue
+## 检查是否已有对应 issue
 
-For each surviving point, search issues and PRs in the upstream project for a
-matching entry:
+对每条保留下来的点，在上游项目的 issue 和 PR 中搜索匹配项：
 
-- If a matching issue already exists, do **not** create a duplicate. Append a
-  comment or note the relationship instead.
-- If no matching issue exists, draft a feature request issue using the fields
-  of the upstream `.github/ISSUE_TEMPLATE/feature_request.yml` (problem or use
-  case, proposed behavior, affected area, alternatives, additional context,
-  safety check).
+- 若已存在匹配 issue，**不要重复建**。追加一条评论或标注关联关系即可。
+- 若不存在匹配 issue，用上游 `.github/ISSUE_TEMPLATE/feature_request.yml` 的字段起草功能
+  建议 issue（问题或使用场景、期望行为、涉及范围、替代方案、补充信息、安全确认）。
 
-## Draft, review, and submit
+## 起草、审查、提交
 
-1. Draft the issue content (English title and body, keeping field labels as the
-   template defines), sanitized of credentials and private data.
-2. Present the draft to the developer and wait for explicit authorization.
-3. Only after approval, submit through the first available GitHub channel
-   (GitHub MCP, a GitHub skill, or `gh issue create --repo FoloToy/ai-passport`)
-   and then read the created issue back to confirm.
+1. 起草 issue 内容（标题与正文用英文，字段标签按模板定义），去除凭证和私有数据。
+2. 把草案交给开发者，等待明确授权。
+3. 仅在批准后，通过第一个可用的 GitHub 通道（GitHub MCP、GitHub skill、或
+   `gh issue create --repo FoloToy/ai-passport`）提交，并回读确认创建结果。
 
-## What this skill does not do
+## 本 skill 不做的事
 
-- It does not publish firmware or run the publisher workflow.
-- It does not open code pull requests or modify repository code.
-- It does not auto-submit anything without developer review and consent.
+- 不发布固件、不运行 publisher 流程。
+- 不提交代码 PR、不改仓库代码。
+- 未经开发者审查与同意，不自动提交任何内容。
 
-## Related documents
+## 相关文档
 
-- Project completion overview: `docs/development/project-completion.md`
-- Filing issues: `docs/development/file-issues.md`
-- Firmware publishing: `docs/development/publish-to-community.md`
-- Issue template: `.github/ISSUE_TEMPLATE/feature_request.yml`
-- Contribution and commit rules: `docs/contribution/commit-and-pr.md`
+- 项目开发完成流程总览：`docs/development/project-completion.md`
+- 提交 issue：`docs/development/file-issues.md`
+- 固件发布：`docs/development/publish-to-community.md`
+- issue 模板：`.github/ISSUE_TEMPLATE/feature_request.yml`
+- 贡献与提交规则：`docs/contribution/commit-and-pr.md`

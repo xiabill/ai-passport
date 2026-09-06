@@ -1,109 +1,80 @@
 <p align="right">
-  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="README.md">English</a>
 </p>
 
-# Plays
+# Plays（应用档案）
 
-This directory, in the upstream `FoloToy/ai-passport` repository, is the
-application archive of the plays built for the AI Passport. It is for
-**querying** what each application does and how it works, using an AI-generated
-functional summary per application. Use the
-[`INDEX.md`](INDEX.md) to discover the archived plays and jump to a
-per-application summary. It is linked to the community publishing flow: after
-publishing a firmware
-([`docs/development/publish-to-community.md`](../docs/development/publish-to-community.md)),
-the assistant asks whether to archive the application here, proposing it back to
-upstream.
+本目录位于上游 `FoloToy/ai-passport` 仓库，是 AI Passport 应用（plays）的档案库。它用于
+**查询**每个应用做什么、怎么用，靠的是每个应用一份由 AI 生成的功能说明。用
+[`INDEX.md`](INDEX.md) 发现已归档的应用并跳到某个应用的功能说明。它与社区发布流程关联：
+发布固件后（[`docs/development/publish-to-community.md`](../docs/development/publish-to-community.md)），
+助手会询问是否把这个应用归档到这里，并把它提案回上游。
 
-## Before developing a new play
+## 开发新应用之前
 
-Before starting a new application, check `plays/` for an existing or reference
-project to build on instead of from scratch:
+开发新应用前，先查 `plays/` 里有没有已存在或可参考的项目，站在现有基础上做，而不是从零开始：
 
-- List the archived applications under `plays/` (across contributor folders) and
-  read their functional summaries to see whether one already covers the idea.
-- Reuse applicable design ideas, interaction patterns, or state models from an
-  existing play rather than re-inventing them.
-- When none exists, note that a new `plays/<username>/<app-name>/` archive will be
-  created later, when the application is published.
+- 列出 `plays/` 下（跨贡献者文件夹）已归档的应用，读它们的功能说明，看是否已覆盖你的想法。
+- 复用已有应用里合适的设计思路、交互模式或状态模型，而不是重新发明。
+- 若没有合适的，记到将来该应用发布时再新建 `plays/<username>/<app-name>/` 档案。
 
-Each play subdirectory is an archive of a real, working application; its summary
-is the starting point for deciding whether to extend or reference it. Alongside
-the application archive, also check
+每个 plays 子目录都是一个真实、可运行应用的档案；它的功能说明是你决定"扩展它还是参考它"
+的起点。除应用档案外，也查一下
 [`docs/development/experience-notes.md`](../docs/development/experience-notes.md)
-for previously recorded, reusable experience from other developer runs.
+里其他开发者已经沉淀、可复用的经验。
 
-## Directory convention
+## 目录约定
 
-Archives are grouped by the contributor who published the application, then by
-the application itself, so the collection is organized by author rather than
-flattened. Each application gets its own subdirectory under its contributor's
-folder, both in lowercase-kebab-case. Add an application archive only when it is
-published or ready to be recorded; do not pre-create empty scaffolding.
+档案按贡献者（发布该应用的作者）分组，再按应用本身分组，这样整库按作者组织而不是平铺。
+每个应用在其贡献者文件夹下拥有独立子目录，两者都用英文小写连字符命名。仅在应用发布或准备记录时
+建档，不要预先创建空骨架。
 
 ```
 plays/<username>/<app-name>/
-  README.md / README.zh_CN.md   # AI-generated bilingual functional summary
-  <topic>-guide.md (+ .zh_CN.md)  # optional manual / how-to, not experience
+  README.md / README.zh_CN.md         # AI 生成的双语功能说明
+  <topic>-guide.md（+ .zh_CN.md）      # 可选的指南/手册，不是经验
 ```
 
-`<username>` is the contributor's GitHub username (lowercase-kebab-case, e.g.
-`shinku-chen`), and `<app-name>` is the application name (lowercase-kebab-case).
-A single contributor can have several applications under their own folder; the
-folder splits by author to keep related submissions together instead of spreading
-them flat across `plays/`.
+`<username>` 是贡献者的 GitHub 用户名（英文小写连字符，如 `shinku-chen`）。
+`<app-name>` 是应用名（英文小写连字符）。一个贡献者可以在自己的文件夹下有多个应用；文件夹按作者
+拆分，把相关提交聚在一起，而不是在 `plays/` 下平铺散开。
 
-A play archive is **text-only**: it stores the application's **introduction and
-manual** — the README functional summary and optionally a how-to guide for that
-app. It does **not** store the cover image (recorded only by file name and format
-as publish metadata) or reusable development experience; post-release experience
-entries belong under [`docs/experiences/<username>/`](../docs/experiences/).
+play 档案是**纯文本**：只存放该应用的**介绍与手册**——README 功能说明，以及可选的应用指南。
+它**不**存放封面图（仅以文件名与格式作为发布元数据记录），也不存放可复用的开发经验；发布后的经验
+条目归属 [`docs/experiences/<username>/`](../docs/experiences/)。
 
-## What the per-application README contains
+## 每个应用 README 包含什么
 
-The per-application `README.md` (and its Simplified Chinese peer) is an
-AI-generated functional summary written for later querying, not a publishing
-artifact. It records:
+每个应用目录下的 `README.md`（及其简体中文配对）是**为后续查询**而生成的 AI 功能说明，不是
+发布产物。它记录：
 
-- The **publish title and description** the developer submitted when publishing
-  to the community (bilingual).
-- Application name and one-line positioning.
-- What the app does and its feature list.
-- Interaction and gameplay (buttons, screens, flow).
-- Source of the application, given as the **source address the developer
-  submitted when publishing** (the HTTPS Git source page), so it can be located
-  precisely.
-- The cover image file name and format, recorded as publish metadata only — the
-  cover image itself is **not** committed (the archive is text-only).
+- **发布标题与描述**：发布到社区时开发者提交的双语标题、双语描述。
+- 应用名与一句话定位。
+- 应用做什么、功能清单。
+- 交互与玩法（按键、屏幕、流程）。
+- 应用来源，用**开发者发布时提交的源码地址**（HTTPS Git 源码页）精确定位。
+- 封面图文件名与格式，仅作为发布元数据记录——封面图本身**不**提交（档案为纯文本）。
 
-Write it by summarizing the application's implementation and behavior, in
-English at the default `.md` path and Simplified Chinese at the paired
-`.zh_CN.md`, aligned in the same change.
+通过总结应用实现与行为来写，默认 `.md` 用英文、配对 `.zh_CN.md` 用简体中文，并在同一次变更
+中对齐。
 
-## Cover image
+## 封面图
 
-The cover image is a publish artifact, not repository content. Do **not** commit
-the cover image into `plays/`; record only its file name and format in the
-summary as publish metadata. The image itself lives with the community
-publication.
+封面图是发布产物，不是仓库内容。**不要**把封面图提交进 `plays/`；只在功能说明里记录其文件名与
+格式作为发布元数据。图片本身随社区发布留存。
 
-When generating a cover for the community publication (not for the archive), use
-the official product references under
-[`docs/assets/brand/`](../docs/assets/brand/README.md). Always pass a reference
-(e.g. `ai-passport-front.png` or a colorway shell render) as input to the
-generation call, keep its shell, buttons, ports, and key-ring hole as they are,
-and redraw only the reference's screen region into the play's actual on-screen
-content. Keep the screen's size, aspect ratio, corners, and position inside the
-shell identical to the reference so the play content appears inside the real
-AI Passport device rather than as a bare or free-floating image.
+当为**社区发布**（而非归档）生成封面时，参考
+[`docs/assets/brand/`](../docs/assets/brand/README.md) 下的官方产品图。生成时必须传一张参考图
+（如 `ai-passport-front.png` 或某款配色外壳渲染图）作为生成调用输入，保留其外壳、按键、接口与
+钥匙扣孔原样，只把参考图的屏幕区域**重绘**成该玩法的真实屏显内容。屏幕的尺寸、比例、圆角与外壳内
+位置与参考保持一致，使玩法内容出现在真实 AI Passport 设备屏幕内，而不是一块裸屏幕或自由漂浮的画面。
 
-## Firmware
+## 固件
 
-Do **not** store the merged firmware binary here. The `.bin` is a build/publish
-artifact produced by the build flow, not an in-repository asset.
+**不要**在这里保存合并固件二进制。`.bin` 是构建/发布流程产生的产物，不是仓库内资源。
 
-## Related
+## 相关
 
-- Archive index: [`INDEX.md`](INDEX.md)
-- Repository overview and demo branches: [`../docs/README.md`](../docs/README.md)
-- Software design index: [`../docs/software-design/README.md`](../docs/software-design/README.md)
+- 档案索引：[`INDEX.md`](INDEX.md)
+- 仓库总览与 demo 分支：[`../docs/README.md`](../docs/README.md)
+- 软件设计索引：[`../docs/software-design/README.md`](../docs/software-design/README.md)

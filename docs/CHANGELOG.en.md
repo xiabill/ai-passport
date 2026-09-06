@@ -1,0 +1,75 @@
+<p align="right">
+  <a href="CHANGELOG.zh_CN.md">简体中文</a> · <strong>English</strong>
+</p>
+
+# Changelog
+
+## Unreleased
+
+- Fixed BLE button delivery by serializing audio and event notification setup and waiting for both subscriptions before marking the Bridge ready; hardware beep write failures now include diagnostics.
+- Polished every macOS Bridge page with a shared console layout, clearer hierarchy,
+  compact setup status, consistent semantic colors, responsive tool grids, improved
+  log filtering, and a cleaner title bar and app icon.
+- Added distinct hardware cues for BLE-ready, recording start, recording end,
+  send, and edit actions; send feedback now follows the actual Return event.
+- Reduced standby power: after the display-off threshold, the firmware now stops the audio codec and BLE activity and enters GPIO-wakeable Light Sleep; a timer preserves the existing 15-minute Standard or 5-minute Eco Deep Sleep deadline.
+- Added multi-Mac handoff: each Bridge can wait for the same Passport with auto reconnect enabled; the active Mac can release the device from the menu bar, Status, or Settings, pause for 45 seconds while another Mac takes over, and resume manually. One Passport still accepts one Mac at a time.
+- Expanded diagnostics with a first-blocker auto-repair flow, real CoreAudio
+  output-device discovery, guided BlackHole installation, audio test controls,
+  and per-action hotkey capture for the macOS Bridge.
+- Added a guided macOS setup flow with Accessibility, Bluetooth, Passport,
+  BlackHole, Typeless, and microphone checks, direct setup actions, and an
+  explicit re-check after returning from System Settings.
+- macOS Bridge builds now install the generated app to `/Applications/FoloVibeBridge.app`
+  by default; `FOLO_VIBE_INSTALL_APP` can override the destination.
+- Refined the VIBE hardware screen without changing its pixel-art identity:
+  clearer listening/processing states, compact green-yellow-red waveform
+  scaling, readable action labels for Typeless/Translation/Ask/Doubao, and a
+  grounded mascot with phase-change motion.
+- Added badge power policy: dim backlight after 18 s idle, off after 60 s
+  (first key only wakes); BLE idle 30–50 ms + latency 20, fast 7.5–15 ms while
+  talking.
+- Expanded the macOS companion into a full app with status, settings, live logs,
+  and a debug/test panel (`tools/mac-bridge/`).
+- Added a dedicated vibe-typeless companion: boot opens a VIBE page, streams
+  16 kHz IMA-ADPCM over BLE, and pairs with `tools/mac-bridge/` so Typeless can
+  dictate through `BlackHole 2ch` (`feature/vibe-typeless`).
+- Made mini-program BLE install compatibility a template-level invariant: fixed
+  protected `cardid`/Recovery partitions, retained the five-second UP-key
+  Recovery boot hook, and added CI validation for merged-image structure,
+  partition MD5/ranges, the 3 MB app limit, and protected payload exclusion.
+- Documented a release-title convention for multi-app releases: name tags as `v<version>-<app-name>` (e.g. `v0.1.0-voice-keychain`) so the release title carries the version and the app, and confirm the title after the release is published so a release list is scannable by app.
+- Added a post-release follow-up workflow: an `issue-suggestions` skill for filing user feedback as issues against the upstream project, an `experience-pr` skill for submitting reusable development experience as a documentation PR, a `docs/experiences/` directory for per-entry experience files, and supporting `project-completion`, `file-issues`, and experience-index documents.
+- Simplified the tracked repository root: moved GitHub-recognized community documents into `.github/`, moved the changelog into `docs/`, updated every reference, and added a root-document allowlist to repository checks.
+- Repository-wide language policy: every maintained Markdown default `.md` file is English, Simplified Chinese uses a paired `.zh_CN.md`, and both provide language switches. Static checks reject missing peers, missing switches, and Chinese prose in English defaults.
+- Phase one of the AI development workflow: streamlined task-based context routing, unified local/CI validation, added PR checks and a template, and committed the dependency lock for reproducible builds.
+- PR review fixes: pinned GitHub Actions to full commit SHAs, split build/release jobs by least privilege, disabled persisted sync checkout credentials, added Feature Request and Usage Question forms, clarified private security-report fallback, and corrected stale README, CI-trigger, and branch descriptions.
+- Changed commit titles, PR titles, and PR bodies from Chinese-default to English; updated the Chinese punctuation rule so it no longer applies to PR descriptions.
+- Reworked `build-firmware.yml` to pass `SDKCONFIG_DEFAULTS=sdkconfig.defaults`, enable `partitions.csv`, preserve the 8 MB image header, merge a flashable `FoloToy-AI-Passport-full.bin`, publish only that artifact, and use Actions cache v5.
+- Integrated upstream PR #6 to resolve PR #4 conflicts: Wi-Fi, Bluetooth LE, radio lifecycle, and low-power demos; a 3 MB factory partition; build/menu/configuration updates; hardware-guide coverage; and bilingual capability tables.
+- Defined English imperative Conventional Commit formatting for both commits and PR titles.
+- Removed stale sync-workflow template comments and generalized an irrelevant Redis TTL rule to cache components.
+- Added Chinese punctuation, credential safety, and recoverable file-deletion conventions.
+- Expanded source-comment requirements for functions, state, ownership, concurrency, timing, registers, and magic values.
+- Removed AI execution instructions from product READMEs so they remain human-facing product and repository overviews.
+- Added `docs/development/agent-guide.md` as the focused AI workflow guide.
+- Updated `AGENTS.md`, `docs/INDEX.md`, and the development index for the agent guide.
+- Documented why the root README path is reserved for fork owners and how GitHub README precedence supports it.
+- Created `main-update` from the upstream-aligned baseline and combined the repository-structure, firmware-CI, and upstream-sync work.
+- Corrected the merged documentation index, workflow path, project tree, and CI references.
+- Moved CI documentation from software design to `docs/development/`.
+- Moved fork-only documentation assets from `assets/docs/` to `docs/assets/`.
+- Moved the upstream English/Chinese project READMEs under `docs/` and renamed the documentation catalog to `docs/INDEX.md`.
+- Initialized `AGENTS.md`, `CLAUDE.md`, and `CHANGELOG.md`.
+- Standardized the initial project README language filenames.
+- Added the `docs/`, `assets/`, and `skills/` directory structure.
+- Moved the upstream hardware guide into `docs/hardware-design/`.
+- Standardized subdirectory README capitalization and introduced fork conventions.
+- Allowed fork-owned root README and supplemental documentation content on fork `main`.
+- Added and documented the fork-only supplemental-document directory.
+- Moved the build CI document to its dedicated CI branch before consolidation.
+- Documented clean-`main` reasons, the direct-development exception, and Actions enablement for forks.
+- Split the original agent rules into contribution, development, and fork documents with a compact root index.
+- Updated software-design and project README references for the new documentation structure.
+- Added the documentation catalog and task-triggered routing based on the earlier repository model.
+- Added bilingual contribution, code-of-conduct, security, and support documents tailored to this ESP-IDF and fork workflow.

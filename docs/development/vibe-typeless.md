@@ -1,117 +1,113 @@
 <p align="right">
-  <a href="vibe-typeless.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="vibe-typeless.md">English</a>
 </p>
 
-# Vibe Typeless companion
+# Vibe Typeless 伴侣
 
-This branch turns the FoloToy AI Passport into a wireless push-to-talk microphone for Typeless. The public implementation has two cooperating parts:
+这个分支把 FoloToy AI Passport 做成 Typeless 的无线一键说话麦克风。公开实现由两部分组成：
 
-- ESP32-C3 firmware in `main/`: captures the board microphone, encodes 16 kHz PCM as IMA-ADPCM, sends audio over BLE, draws the VIBE screen, and reports button events.
-- macOS companion in `tools/mac-bridge/`: connects to the board, decodes audio, writes PCM to `BlackHole 2ch`, watches Typeless, and posts Typeless mode, Doubao, and Return keys.
+- ESP32-C3 固件（`main/`）：采集设备麦克风，把 16 kHz PCM 编成 IMA-ADPCM，通过 BLE 发送音频，绘制 VIBE 屏幕并上报按键事件。
+- macOS 伴侣（`tools/mac-bridge/`）：连接设备、解码音频、把 PCM 写入 `BlackHole 2ch`，监控 Typeless，并发送 Typeless 三种模式、豆包和回车按键。
 
-The repository is public and the maintained branch is [`main`](https://github.com/xiabill/ai-passport/tree/main). Users can download the packaged Bridge and matching firmware from [GitHub Releases](https://github.com/xiabill/ai-passport/releases/latest); developers can build from this guide.
+仓库是公开的，维护版本位于 [`main`](https://github.com/xiabill/ai-passport/tree/main)。普通用户可以从 [GitHub Releases](https://github.com/xiabill/ai-passport/releases/latest) 下载配套的 Bridge 和固件，开发者则可以按本教程从源码构建。
 
-## How the pieces fit together
+## 工作链路
 
 ```text
-Passport microphone
+Passport 麦克风
         │  16 kHz PCM → IMA-ADPCM
         ▼
 ESP32-C3 BLE notify ───────────────┐
-        │ device events             │
+        │ 设备事件                  │
         ▼                           ▼
-  VIBE screen                 FoloVibe Bridge
-                                      │ decode PCM
+  VIBE 屏幕                    FoloVibe Bridge
+                                      │ 解码 PCM
                                       ▼
                                BlackHole 2ch
                                       │
                                       ▼
                           ┌───────────────┐
                           │ Typeless      │
-                          │ Doubao IME    │
+                          │ 豆包输入法     │
                           └───────────────┘
 
-Passport OK / DOWN / UP ──BLE event──> Bridge ──CGEvent──> Typeless
-Typeless state ───────────BLE write───> Passport
+Passport 确定/下/上 ──BLE event──> Bridge ──CGEvent──> Typeless
+Typeless 状态 ───────BLE write───> Passport
 ```
 
-## Requirements
+## 准备工作
 
-### Hardware
+### 硬件
 
-- FoloToy AI Passport with ESP32-C3, 240×320 portrait display, microphone, speaker, and the three-button ADC ladder.
-- USB connection that exposes the ESP32-C3 USB Serial/JTAG port.
-- A charged battery for wireless testing.
+- FoloToy AI Passport：ESP32-C3、240×320 竖屏、麦克风、扬声器、三键 ADC 电阻梯。
+- 能枚举 ESP32-C3 USB Serial/JTAG 的 USB 连接。
+- 进行无线测试时请保证电池有电。
 
 ### macOS
 
-- macOS 13 or newer for the Swift package.
-- A Swift 5.9+ toolchain and Apple Command Line Tools. Full Xcode is not required to build the macOS companion with `swift build`.
-- Bluetooth enabled.
-- Typeless and Doubao IME installed. Configure each to use the corresponding Bridge key; Doubao should use its toggle mode.
-- BlackHole 2ch installed as the virtual microphone input for Typeless.
+- macOS 13 或更新版本，用于 Swift Package。
+- Swift 5.9+ 工具链和 Apple Command Line Tools。构建 macOS 伴侣只需要 `swift build`，不要求安装完整 Xcode。
+- 打开蓝牙。
+- 安装 Typeless 和豆包输入法。Typeless 使用自己的说话键；豆包建议打开“免按模式”，并把快捷键设为右⌥。
+- 安装 BlackHole 2ch，并把它作为 Typeless 的麦克风输入。
 
-### Firmware toolchain
+### 固件工具链
 
-- ESP-IDF 5.5.3 with the ESP32-C3 toolchain.
-- Python dependencies installed by ESP-IDF.
+- ESP-IDF 5.5.3 和 ESP32-C3 工具链。
+- ESP-IDF 安装的 Python 依赖。
 
-Activate the exact ESP-IDF version before firmware commands:
+固件命令前先激活准确版本：
 
 ```bash
-source <ESP-IDF-v5.5.3-path>/export.sh
+source <ESP-IDF-v5.5.3-路径>/export.sh
 idf.py --version
 ```
 
-## Build the macOS Bridge
+## 构建 macOS Bridge
 
-From the repository root:
+在仓库根目录运行：
 
 ```bash
 cd tools/mac-bridge
 ./build.sh
-open /Applications/FoloVibeBridge.app
+open FoloVibeBridge.app
 ```
 
-`build.sh` first runs the core tests, then builds a release executable, packages it, and installs it to `/Applications/FoloVibeBridge.app` by default; it also keeps the local bundle in the repository directory. The status and settings pages include a guided permission/audio setup flow with explicit checks and a re-check action. The repository does not commit a machine-specific `.app`; release builds are attached as GitHub Release assets.
+`build.sh` 会先运行核心测试，再构建 release 可执行文件，并默认安装到 `/Applications/FoloVibeBridge.app`；同时保留仓库目录下的本地 bundle。仓库不提交依赖机器环境的 `.app`；正式构建会作为 GitHub Release 资产提供下载。状态页和设置页包含授权/音频设置向导，用户从系统设置返回后可点击“再次检查”确认状态。
 
-On first launch:
+首次打开后：
 
-1. Allow Bluetooth access if macOS asks.
-2. In System Settings → Privacy & Security → Accessibility, enable `FoloVibe Bridge`.
-3. In the Bridge Settings tab, select the device prefix `FoloVibe` and output device `BlackHole 2ch`.
-4. Configure the Typeless and Doubao keys separately. Typeless defaults to `Fn`; Doubao defaults to `Right Option`, matching its toggle-mode setup. The Bridge supports Fn, modifier keys, and F13–F20.
-5. Use `Return` for the device DOWN button. The old `Escape` cancel setting remains for compatibility but is no longer assigned to the device UP button.
-6. Choose `BlackHole 2ch` as the microphone input in Typeless and Doubao as required by each app.
+1. macOS 询问时允许蓝牙权限。
+2. 打开“系统设置 → 隐私与安全性 → 辅助功能”，启用 `FoloVibe Bridge`。
+3. 在 Bridge 的“设置”页选择设备名前缀 `FoloVibe` 和输出设备 `BlackHole 2ch`。
+4. 在 Bridge 设置中选择 Typeless 基础键和豆包按键。Typeless 默认 `Fn`：中键单击是听写，双击自动发送 `Fn+Shift` 翻译，长按自动发送 `Fn+Space` 随便问；豆包默认 `Right Option`（右⌥）。如果你把 Typeless 的基础听写键改成 `F19`，Bridge 中也选择 `F19`，翻译/随便问会自动跟随为 `F19+Shift` / `F19+Space`。
+5. 回车键默认 `Return`，它对应设备的下键；旧的 `Escape` 取消键仍保留在配置里用于兼容，但不再占用设备上键。
+6. 在 Typeless 和豆包输入法中选择 `BlackHole 2ch` 作为麦克风输入（按当前输入法的设置要求启用）。
 
-The Bridge stores settings in the macOS user defaults database. Logs are written to:
+Bridge 会把设置保存到 macOS 用户默认值。日志位置：
 
 ```text
 ~/Library/Logs/folovibe-bridge.log
 ```
 
-The Settings tab can also enable launch at login, auto reconnect, closed-loop retapping, and Typeless state polling. The Debug tab provides key-tap, simulated event, tone, reconnect, UUID, and microphone checks.
+“设置”页还可以打开开机启动、自动重连、闭环补按和 Typeless 状态轮询。“调试”页提供按键发送、模拟设备事件、测试音、重连、复制 UUID 和麦克风测试。
 
-### Switching one Passport between multiple Macs
+## 构建并刷写固件
 
-Install the Bridge on each Mac, keep the same `FoloVibe` device prefix, and enable auto reconnect on each installation. The current firmware and Bridge intentionally use one BLE connection per Passport, so one device is owned by one Mac at a time. To change computers, choose “Release device to another Mac” from the Bridge menu bar item, Status page, or Settings page. The current Mac disconnects and pauses its reconnect loop for 45 seconds; another Mac running Bridge can then discover and connect automatically. If no handoff occurs, the original Mac resumes its reconnect loop after the pause, or the user can choose “Resume auto reconnect” immediately. Simultaneous audio delivery to multiple Macs is not part of this mode; that would require per-connection subscription and input-routing changes in the firmware and Bridge.
-
-## Build and flash the firmware
-
-Run the repository checks first:
+先运行仓库检查：
 
 ```bash
 ./tools/validate.sh --static
 ./tools/validate.sh --firmware
 ```
 
-The firmware gate uses a clean temporary build, verifies the BLE-installable merged image, and writes the accepted artifact to:
+固件门禁会用全新的临时目录编译，验证适合小程序安装的合并镜像，并把通过的文件写到：
 
 ```text
 build/FoloToy-AI-Passport-full.bin
 ```
 
-For iterative development, an incremental build is also available:
+开发迭代也可以使用增量命令：
 
 ```bash
 idf.py set-target esp32c3
@@ -119,13 +115,13 @@ idf.py build
 idf.py merge-bin -o build/FoloToy-AI-Passport-full.bin
 ```
 
-Before flashing, find the current USB port because macOS may change its suffix after a reset:
+刷机前先找当前 USB 端口。设备重启后，macOS 可能会改变端口末尾编号：
 
 ```bash
 ls /dev/cu.usbmodem* 2>/dev/null
 ```
 
-For an existing device, use only an image that passed `--firmware` and flash from offset `0x0`:
+已有身份的设备只能使用通过 `--firmware` 校验的镜像，并从 `0x0` 写入：
 
 ```bash
 python -m esptool --chip esp32c3 \
@@ -133,122 +129,114 @@ python -m esptool --chip esp32c3 \
   write_flash 0x0 build/FoloToy-AI-Passport-full.bin
 ```
 
-Do not run `erase-flash` on a device that already has its identity. The image must end before the protected `cardid` partition at `0x356000`; the permanent Recovery region is at `0x700000`. The repository verifier checks these boundaries and also checks the 3 MB application limit, partition-table MD5, and the five-second UP-key Recovery hook.
+不要对已有设备执行 `erase-flash`。镜像必须在受保护的 `cardid` 分区 `0x356000` 之前结束；永久 Recovery 分区位于 `0x700000`。仓库校验器会检查这些边界、3 MB 应用上限、分区表 MD5，以及按住上键 5 秒进入 Recovery 的 bootloader hook。
 
-## Device behavior
+## 设备行为
 
-The up, middle, and down keys each report a single click, double click, and
-long press: nine gestures, every one bindable under Settings -> Hardware keys.
+上、中、下三个键各有单击、双击、长按，共 9 个手势，每个都能在 Bridge 的“设置 → 硬件按键”里绑定动作：
 
-| Action | Behaviour |
+| 动作 | 说明 |
 | --- | --- |
-| None | the gesture does nothing |
-| Typeless Dictate / Translation / Ask anything | starts that Typeless mode; any recording gesture stops it |
-| Doubao voice input | starts and stops Doubao |
-| Send Return | posts Return, queued behind a pending transcript so it lands after the text |
-| Select all / Select all and delete | fixes up what was just dictated |
+| 无 | 该手势不做任何事 |
+| Typeless 语音输入 / 翻译 / 随便问 | 启动对应的 Typeless 模式；再按一次任意录音手势即停止 |
+| 豆包语音输入 | 启动/停止豆包 |
+| 发送回车 | 发送 Return；若此时仍在等待转写，回车会排队到文字落地之后 |
+| 全选 / 全选并删除 | 用于修正刚输入的内容 |
 
-Defaults: middle click, double, and long press are Dictate, Translation, and
-Ask anything; up click is Doubao, double selects all, long press clears; down
-click sends Return.
+默认绑定：中键单击/双击/长按分别是听写、翻译、随便问；上键单击是豆包，双击全选，长按全选并删除；下键单击发送回车。
 
-The device reports only which button was pressed and how, so rebinding never
-needs a reflash. Capture must start on the device itself, since waiting for a
-BLE round trip would clip the first syllable, so the bridge writes nine action
-codes to the device; it uses them purely to decide whether a gesture arms the
-microphone and what to print under each on-screen key hint.
+设备只上报“哪个键、什么手势”，动作由 Bridge 决定，因此改绑定不需要重刷固件。录音必须在设备端立刻开始（等 BLE 往返会吃掉开头的字），所以 Bridge 会把 9 个动作码写给设备，设备仅用它判断该手势要不要开麦，以及屏幕上那个键该显示什么。
 
-While recording, any gesture bound to a recording action ends the take.
+录音中按任意一个绑定了录音动作的手势都会结束当前这段。
 
-Silence below the peak threshold for about 30 seconds also stops recording. A short button feedback beep is generated by the audio worker so the button callback remains lightweight.
+峰值低于阈值约 30 秒也会自动停止。短提示音由音频 worker 生成，因此按键回调本身不会执行阻塞的播放工作。
 
-Typeless Dictate, Translation, Ask anything, and Doubao share one microphone and BLE audio stream, so they never record concurrently. Translation and Ask anything start with `base+Shift` and `base+Space`, derived from the Typeless base key; the base Typeless key still finishes the session. After Doubao stops, the Bridge waits briefly before posting Return so the recognized text can land in the focused field. Typeless keeps its existing local-state wait before sending.
+Typeless 的听写、翻译、随便问和豆包共享同一个设备麦克风和 BLE 音频流，但不会并行录音。翻译和随便问使用 Typeless 基础键派生的 `基础键+Shift` / `基础键+Space` 快捷键启动；结束时仍使用基础 Typeless 键。豆包停止后 Bridge 会短暂等待再发送 Return，给识别结果落到当前输入框留出时间；Typeless 则继续读取本地状态，在转写完成后再发送。
 
-The VIBE page shows BLE/Typeless state, battery, audio status, a green/yellow/red waveform, and three button hints. The waveform is an activity history rather than a calibrated sound-level meter.
+VIBE 页面显示 BLE/Typeless 状态、电量、音频状态、绿/黄/红声波和三个按键提示。声波是活动历史，不是经过校准的声压计。
 
-Power behavior (switchable from the macOS Bridge status page):
+省电行为（可在 macOS Bridge 状态页切换）：
 
-- Standard mode keeps the backlight at 50%, dims to 15% three seconds after speech starts (and after 18 seconds of ordinary idle), briefly returns to 50% when confirming send, and enters real Light Sleep after 5 minutes. A timer wake reaches Deep Sleep at 15 minutes, while GPIO0 wakes Light Sleep immediately. Before Light Sleep, the display, audio codec, BLE connection, and advertising are stopped. When connected to a computer over USB, automatic dimming, screen-off, Light Sleep, and Deep Sleep are disabled.
-- Eco mode dims to 8% after 10 seconds and enters Light Sleep after 1 minute; a timer wake reaches Deep Sleep at 5 minutes. While disconnected, BLE advertising also pauses after 60 seconds of idle. The same USB-host exemption applies in Eco mode.
-- Both modes use the GPIO0 three-button ladder as the wake source. The first function-key press during Light Sleep only wakes the screen; Deep Sleep wake performs a full application restart. After a Light Sleep GPIO wake, BLE advertising resumes so the Mac Bridge can reconnect automatically.
-- Doubao upper key: single click toggles Doubao voice input, quick double-click selects all and deletes the current text (Cmd+A then Delete), and long press performs the same clear action. If editing is triggered during Doubao recording, recording stops before the edit action.
-- Audio cues: recording start uses a longer three-note rise; recording end uses a lower, longer note; Doubao clear shortcuts use a short edit cue so each action is clear without looking at the display.
-- Neither mode physically disconnects the battery; use the hardware power button for zero-power storage.
-- The current board can detect a USB computer host through USB Serial/JTAG, but it cannot detect charge-only power from a wall charger or power bank because no VBUS/charger-status signal is connected to the MCU.
-- BLE uses a slower 30–50 ms connection interval with slave latency while idle, and 7.5–15 ms with zero latency while talking.
+- 标准模式：默认背光 50%，开始讲话 3 秒后降到 15%，空闲 18 秒也降到 15%，5 分钟后进入真正的 Light Sleep；定时唤醒后在连续空闲 15 分钟时进入 Deep Sleep，GPIO0 按键可以立即唤醒 Light Sleep。进入 Light Sleep 前会停止屏幕、音频 codec、BLE 连接和广播。连接电脑 USB 后，自动降亮度、关屏、Light Sleep 和 Deep Sleep 都会暂停。
+- 省电模式：空闲 10 秒降到 8%，1 分钟后进入 Light Sleep；定时唤醒后在连续空闲 5 分钟时进入 Deep Sleep；设备断开时 BLE 广播闲置 60 秒后也会暂停。省电模式同样适用“连接电脑后保持唤醒”的规则。
+- 两种模式都使用 GPIO0 三键分压作为唤醒源。Light Sleep 阶段第一次按键只唤醒屏幕；Deep Sleep 唤醒会完整重新启动应用。Light Sleep 由按键唤醒后会恢复 BLE 广播，便于 Mac 自动重连。
+- 豆包上键：单击启动/停止豆包，快速双击执行 macOS 全选并删除（Cmd+A 后 Delete），长按也执行全选并删除，清空当前输入框内容。若在豆包录音中触发编辑操作，会先停止录音再执行。
+- 音效：开始录音播放较长的三段上扬音，结束录音播放低沉长音；豆包双击/长按清空播放短促编辑提示音，便于不看屏幕时确认状态。
+- 两种模式都不是电池物理断电；如需零功耗，仍需使用硬件电源键。当前硬件可以通过 USB Serial/JTAG 检测电脑主机，但没有连接到 MCU 的 VBUS/充电状态信号，因此无法检测墙充或充电宝的纯供电状态。
+- BLE 空闲使用 30–50 ms 连接间隔和 slave latency，说话时切到 7.5–15 ms、latency 0。
 
-## BLE contract
+## BLE 协议契约
 
-The board advertises as `FoloVibe-XXXX` and exposes this 128-bit service:
+设备广播名为 `FoloVibe-XXXX`，提供以下 128 位服务：
 
 ```text
-Service: F0100001-0000-4A6B-9E10-464F4C4F5631
-Audio notify:   F0100002-0000-4A6B-9E10-464F4C4F5631
-Event notify:   F0100003-0000-4A6B-9E10-464F4C4F5631
-Control write:  F0100004-0000-4A6B-9E10-464F4C4F5631
+Service:       F0100001-0000-4A6B-9E10-464F4C4F5631
+Audio notify:  F0100002-0000-4A6B-9E10-464F4C4F5631
+Event notify:  F0100003-0000-4A6B-9E10-464F4C4F5631
+Control write: F0100004-0000-4A6B-9E10-464F4C4F5631
 ```
 
-| Characteristic | Direction | Payload |
+| 特征 | 方向 | 数据 |
 | --- | --- | --- |
-| Audio | device → Mac | 166-byte IMA-ADPCM frame, or a 6-byte EOS marker |
-| Event | device → Mac | Gesture events `0x20 \| (button << 2) \| gesture` (button: 0 up, 1 middle, 2 down; gesture: 0 click, 1 double, 2 long), i.e. `0x20`..`0x2A`. Codes 1..11 are the legacy semantic events; current firmware no longer emits them and the bridge still parses them for older devices |
-| Control | Mac → device | Typeless state: `0` idle, `1` recording, `2` processing, `3` not running; `0x80`/`0x81` select standard/eco power mode; `0x91` followed by nine action codes pushes the gesture bindings, indexed by button * 3 + gesture |
+| Audio | 设备 → Mac | 166 字节 IMA-ADPCM 帧，或 6 字节 EOS 结束标记 |
+| Event | 设备 → Mac | 手势事件 `0x20 \| (键 << 2) \| 手势`（键：0 上、1 中、2 下；手势：0 单击、1 双击、2 长按），即 `0x20`~`0x2A`。编号 1~11 是旧的语义事件，新固件不再发送，Bridge 仍能解析以兼容旧设备 |
+| Control | Mac → 设备 | Typeless 状态：`0` 空闲，`1` 录音，`2` 转写，`3` 未运行；`0x80`/`0x81` 切换标准/省电模式；`0x91` 后跟 9 个动作码，按手势序号（键×3+手势）下发按键绑定 |
 
-The audio frame contains a sequence number, predictor, step index, and ADPCM payload. The Bridge inserts silence for small sequence gaps and records packet-loss statistics in the status view.
+音频帧包含序号、预测值、step index 和 ADPCM 数据。Bridge 会对小范围丢帧插入静音，并在状态页显示丢包统计。
 
-## Validation matrix
+## 验证矩阵
 
-Keep automated and physical results separate:
+自动化结果和实体设备结果必须分开记录：
 
 ```text
 Build:        idf.py build / validate.sh --firmware
-Host tests:   validate.sh --static and FoloVibeCoreTests
-Device tests: real board, BLE, display, buttons, speaker, microphone, Typeless
+Host tests:   validate.sh --static 和 FoloVibeCoreTests
+Device tests: 实体板、BLE、屏幕、按键、扬声器、麦克风、Typeless
 ```
 
-Recommended real-device checklist:
+推荐真机清单：
 
-- [ ] Device advertises `FoloVibe-*` and the Mac Bridge connects.
-- [ ] Bridge reports audio subscribed and `BlackHole 2ch` is selected in Typeless.
-- [ ] Single-click OK starts/stops Typeless Dictate and the focused field receives text.
-- [ ] Double-click OK starts Typeless Translation; long-press OK starts Ask anything.
-- [ ] UP starts/stops Doubao input and the focused field receives text.
-- [ ] The two input methods are mutually exclusive; the other provider's key is ignored while recording.
-- [ ] DOWN stops the active input and sends Return.
-- [ ] Button beep is audible without breaking microphone capture.
-- [ ] Waveform shows green low activity, yellow medium activity, and red peaks, then decays after stop.
-- [ ] USB Serial/JTAG still enumerates after reset and the protected identity remains intact.
+- [ ] 设备广播 `FoloVibe-*`，Bridge 能连接。
+- [ ] Bridge 显示已订阅音频，Typeless 选择 `BlackHole 2ch`。
+- [ ] 按确定单击开始/停止 Typeless 听写，文字进入当前焦点输入框。
+- [ ] 按确定双击进入 Typeless 翻译，长按进入 Typeless 随便问。
+- [ ] 按上键开始/停止豆包输入法，文字进入当前焦点输入框。
+- [ ] 两个输入法录音互斥，录音中按另一个输入法键不会抢占音频。
+- [ ] 说话时按下键：停止当前输入法并发送 Return。
+- [ ] 按键提示音可听见，且不影响麦克风采集。
+- [ ] 声波低音量显示绿色，中等显示黄色，高峰显示红色，停止后渐隐。
+- [ ] USB Serial/JTAG 重启后可以重新枚举，设备身份仍然保留。
 
-## Troubleshooting
+## 故障排查
 
-### Bridge cannot find the board
+### Bridge 找不到设备
 
-Confirm Bluetooth is on, the device is advertising `FoloVibe-*`, and the Settings prefix is `FoloVibe`. Press reset or reconnect USB if the firmware is not running. Use the Logs and Debug tabs before deleting saved settings.
+确认蓝牙已打开、设备正在广播 `FoloVibe-*`，并且设置里的前缀是 `FoloVibe`。如果固件没有运行，按一下复位或重新插拔 USB。优先查看“日志”和“调试”页，不要一开始就删除设置。
 
-### Typeless does not receive audio
+### Typeless 没有收到声音
 
-Confirm Typeless uses `BlackHole 2ch` as its microphone, macOS has granted the required audio permission, and the Bridge Status tab says audio is subscribed. The Bridge must also have Accessibility permission to post keys.
+确认 Typeless 的麦克风是 `BlackHole 2ch`，macOS 已授予音频权限，Bridge 状态页显示已订阅音频；同时 Bridge 必须拥有辅助功能权限才能发送按键。
 
-### Fn or F19 does not trigger Typeless
+### Fn 或 F19 没有触发 Typeless
 
-The Bridge default is the macOS Fn/Globe modifier, not F19. Configure both Typeless and the Bridge to `Fn`, or choose `F19` in both places. The Bridge supports F13 through F20 and persists the selection.
+Bridge 默认是 macOS 的 Fn/Globe 修饰键，不是 F19。请让 Typeless 和 Bridge 都选 `Fn`，或者两边都选 `F19`。Bridge 支持 F13 到 F20，并会保存选择。
 
-### Doubao does not start or stop
+### 豆包无法启动或停止
 
-In Doubao IME settings, enable its toggle mode and set the shortcut to match the Bridge's `Doubao` setting. The default is `Right Option`. If your version uses Fn instead, select `Fn` in both places. Grant Accessibility/Input Monitoring permissions if macOS blocks synthetic modifier-key events.
+在豆包输入法设置中打开“免按模式”，并把快捷键设置为和 Bridge 的“豆包”选项一致。默认是 `Right Option`（右⌥）；如果你的版本使用 Fn，就两边都选择 `Fn`。如果 macOS 拦截修饰键事件，请给 Bridge 打开辅助功能和输入监控权限。
 
-### USB port disappeared
+### USB 端口消失
 
-Unplug and reconnect the board, then list `/dev/cu.usbmodem*` again. Do not assume the old suffix is still valid. If the board is in Recovery, release the UP key after the bootloader enters it and reconnect the USB port.
+拔掉并重新插入设备，再次查看 `/dev/cu.usbmodem*`。不要假设重启前的编号仍然有效。如果设备进入 Recovery，松开上键后再重新连接 USB 端口。
 
-### Build is rejected by the firmware verifier
+### 固件校验器拒绝镜像
 
-Do not bypass the verifier. Check that ESP-IDF is 5.5.3, `sdkconfig.defaults` is being used, the image is a merged full image, and no partition-table or protected-region files were changed unintentionally.
+不要绕过校验器。确认 ESP-IDF 是 5.5.3、构建使用了 `sdkconfig.defaults`、刷的是合并完整镜像，并检查是否意外修改了分区表或受保护区域。
 
-## Contributing
+## 贡献代码
 
-Create a feature branch from `main`, keep hardware constants in the BSP, keep UI/protocol logic in `main`, run `./tools/validate.sh`, and document physical acceptance separately. Never commit credentials, device QR secrets, private keys, real logs, or personal data. See [CONTRIBUTING](../../.github/CONTRIBUTING.md) and [AGENTS.md](../../AGENTS.md).
+从 `main` 创建 feature 分支；硬件常量放在 BSP，UI/协议逻辑放在 `main`；提交前运行 `./tools/validate.sh`；实体验收单独记录。不要提交凭证、设备二维码密钥、私钥、真实日志或个人数据。详见 [CONTRIBUTING](../../.github/CONTRIBUTING.zh_CN.md) 和 [AGENTS.zh_CN.md](../../AGENTS.zh_CN.md)。
 
-## License
+## 许可证
 
-This fork keeps the repository's MIT License. See [LICENSE](../../LICENSE).
+本 fork 保留仓库的 MIT License，见 [LICENSE](../../LICENSE)。

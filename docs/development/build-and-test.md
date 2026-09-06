@@ -1,40 +1,37 @@
 <p align="right">
-  <a href="build-and-test.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <strong>简体中文</strong> · <a href="build-and-test.md">English</a>
 </p>
 
-# Build and Test
+# 构建与验证（Build & Test）
 
-Use ESP-IDF 5.5.3. On a clean machine or when the toolchain is missing, follow
-the [environment bootstrap](environment-setup.md) first.
+使用 ESP-IDF 5.5.3。全新机器或缺少工具链时，先按
+[环境引导](environment-setup.zh_CN.md)完成安装。
 
-> Prefer `./tools/validate.sh --firmware` for firmware builds and flash its
-> verified `build/FoloToy-AI-Passport-full.bin` at offset `0x0` only when the
-> target is blank or the merged byte range ends before protected `cardid`.
-> On a provisioned device, prefer mini-program install or segmented
-> `idf.py flash`. Treat
-> `idf.py build` and `idf.py flash` as incremental development commands, not the
-> default delivery path.
+> 固件编译优先运行 `./tools/validate.sh --firmware`，烧录优先把验证通过的
+> `build/FoloToy-AI-Passport-full.bin` 写入空白设备；对已有身份的设备，只有合并文件
+> 在保护区 `cardid` 之前结束时才可从 `0x0` 直刷，其余情况优先用小程序或分段
+> `idf.py flash`。`idf.py build` 和
+> `idf.py flash` 只作为增量开发命令，不作为默认交付方式。
 
 ```bash
-source <path-to-esp-idf-v5.5.3>/export.sh
-idf.py --version             # must report ESP-IDF v5.5.3
-./tools/validate.sh --firmware # preferred: build and verify merged 0x0 image
-idf.py set-target esp32c3     # fresh checkout or changed target
-idf.py build                  # optional incremental application build
-idf.py flash monitor          # optional incremental application flash
-idf.py fullclean              # remove stale generated build state only
+source <ESP-IDF-v5.5.3-路径>/export.sh
+idf.py --version             # 必须输出 ESP-IDF v5.5.3
+./tools/validate.sh --firmware # 优先：编译并验证 0x0 合并固件
+idf.py set-target esp32c3     # 配置目标芯片（fresh checkout 后/换 target 后运行）
+idf.py build                  # 可选：增量 app 编译
+idf.py flash monitor          # 可选：增量 app 烧录
+idf.py fullclean              # 只清空过期生成状态（勿用于清理用户源码改动）
 ```
 
-`idf.py fullclean` does not fully synchronize an existing `sdkconfig` with
-changed defaults. Preserve intentional local settings, then run
-`idf.py set-target esp32c3` when the target or tracked defaults must be
-regenerated.
+`idf.py fullclean` 不能让已有 `sdkconfig` 完整同步变更后的 defaults。需要重建
+target 或已跟踪 defaults 时，先保留有意的本地设置，再运行
+`idf.py set-target esp32c3`。
 
-The tracked `dependencies.lock` pins Managed Component resolution. After changing an `idf_component.yml`, regenerate the lock with ESP-IDF 5.5.3, review version changes, and commit it with the manifest. An ordinary build must not leave an unexplained lock-file diff.
+仓库提交 `dependencies.lock` 以固定 ESP-IDF Managed Components 的解析结果。修改 `idf_component.yml` 后必须使用 ESP-IDF 5.5.3 重新生成锁文件、review 版本变化并与 manifest 一起提交；普通构建不应产生未提交的锁文件差异。
 
-Firmware validation uses a fresh temporary build directory and an isolated `sdkconfig` generated from the tracked defaults. It does not consume or overwrite a developer's root `sdkconfig`, and it copies only the verified merged image to `build/FoloToy-AI-Passport-full.bin`. The gate also enforces the [mini-program BLE compatibility contract](ble-recovery-compatibility.md): protected partition addresses, application size, partition-table MD5, absence of protected payload data, and the Recovery bootloader hook.
+固件门禁使用全新的临时构建目录，并从仓库 `sdkconfig.defaults` 生成隔离的 `sdkconfig`。它不会读取或覆盖开发者根目录的 `sdkconfig`，只把验证通过的合并镜像复制到 `build/FoloToy-AI-Passport-full.bin`。门禁同时强制检查[小程序 BLE 兼容契约](ble-recovery-compatibility.zh_CN.md)：保护分区地址、应用大小、分区表 MD5、保护区数据不入包，以及 Recovery bootloader hook。
 
-The baseline also has a hardware-independent logic test:
+当前基线含一个可独立运行的纯逻辑测试：
 
 ```bash
 cc -std=c11 -Wall -Wextra -Werror -Imain \
@@ -43,18 +40,17 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 /tmp/test_ui_pixel_math
 ```
 
-Use the unified validation entry point:
+统一验证入口：
 
 ```bash
-./tools/validate.sh --static    # repository checks, workflows, links, secrets, host tests
-./tools/validate.sh --firmware  # build, merge-bin, offsets, and BLE compatibility
-./tools/validate.sh             # complete gate; requires an activated ESP-IDF environment
+./tools/validate.sh --static    # 仓库一致性、workflow、文档链接、敏感信息、host tests
+./tools/validate.sh --firmware  # ESP-IDF build、merge-bin、偏移与 BLE 兼容校验
+./tools/validate.sh             # 完整验证
 ```
 
-CI calls the same script. Fix the shared script or environment if local and CI behavior differs; do not duplicate command sequences in workflows.
+完整验证要求预先激活 ESP-IDF 5.5.3。CI 与本地使用同一脚本；若 CI 和本地行为不同，应先修复脚本或环境，而不是维护两份命令。
 
-Hardware-affecting changes must also run the applicable on-device checklist in the hardware guide. Report compilation separately from physical-device validation.
+涉及物理外设的改动必须在真机运行硬件指南验收清单，并把“编译通过”与“硬件验证通过”分开记录。
 
-Never upload the app-only `build/FoloToy-AI-Passport.bin` to the community. Only
-the validated `build/FoloToy-AI-Passport-full.bin` contains the structure the
-mini-program can inspect and transform safely.
+社区只能上传验证通过的 `build/FoloToy-AI-Passport-full.bin`，不得上传应用单镜像
+`build/FoloToy-AI-Passport.bin`，后者没有小程序可安全解析与转换的完整结构。
