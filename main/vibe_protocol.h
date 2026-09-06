@@ -72,7 +72,8 @@ extern "C" {
 #define VIBE_ACT_ENTER      5U
 #define VIBE_ACT_SELECT_ALL 6U
 #define VIBE_ACT_CLEAR      7U
-#define VIBE_ACT_COUNT      8U
+#define VIBE_ACT_NEWLINE    8U
+#define VIBE_ACT_COUNT      9U
 
 // Actions that must arm the microphone on the device itself.
 #define VIBE_ACT_RECORDS(a) \

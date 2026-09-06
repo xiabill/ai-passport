@@ -25,6 +25,9 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 FONT_PATH = Path("/System/Library/Fonts/STHeiti Medium.ttc")
 OUTPUT = ROOT / "main" / "ui_font_cjk.c"
+# Only CJK ideographs are rendered into the subset. Any other non-ASCII
+# character used in a *displayed* string (CJK punctuation, U+00B7, dashes)
+# will be missing from the font and show up as a box on the device.
 CJK_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff]")
 GLYPH_RE = re.compile(r'/\* U\+([0-9A-F]+) "([^"].*?)" \*/')
 

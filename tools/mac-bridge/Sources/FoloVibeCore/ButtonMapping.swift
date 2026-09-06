@@ -41,6 +41,7 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
     case enter
     case doubaoSelectAll
     case doubaoClear
+    case newline
 
     public var title: String {
         switch self {
@@ -52,6 +53,7 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
         case .enter: return "发送回车"
         case .doubaoSelectAll: return "全选"
         case .doubaoClear: return "全选并删除"
+        case .newline: return "换行（不发送）"
         }
     }
 
@@ -61,7 +63,7 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
     public var isRecording: Bool {
         switch self {
         case .typelessDictate, .typelessTranslate, .typelessAsk, .doubao: return true
-        case .none, .enter, .doubaoSelectAll, .doubaoClear: return false
+        case .none, .enter, .doubaoSelectAll, .doubaoClear, .newline: return false
         }
     }
 
@@ -77,6 +79,7 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
         case .enter: return 5
         case .doubaoSelectAll: return 6
         case .doubaoClear: return 7
+        case .newline: return 8
         }
     }
 
@@ -135,6 +138,9 @@ public struct ButtonMap: Codable, Equatable {
         map.set(.up, .double, .doubaoSelectAll)
         map.set(.up, .long, .doubaoClear)
         map.set(.mid, .click, .enter)
+        // 换行放在中键的另外两个手势上:确认和换行是同一类操作,手指不用挪。
+        map.set(.mid, .double, .newline)
+        map.set(.mid, .long, .newline)
         map.set(.down, .click, .typelessDictate)
         map.set(.down, .double, .typelessTranslate)
         map.set(.down, .long, .typelessAsk)

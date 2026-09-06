@@ -12,7 +12,7 @@ struct SettingsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 12) {
                 PageHeader(
                     title: "设置",
                     subtitle: "把硬件按键和两个输入法配置成你的工作流",
@@ -101,16 +101,39 @@ struct SettingsView: View {
                     }
                 }
 
-                SurfaceCard("硬件按键", subtitle: "三个键各有单击、双击、长按，随意绑定；改完立刻同步到设备") {
-                    VStack(alignment: .leading, spacing: 14) {
-                        LazyVGrid(
-                            columns: [GridItem(.adaptive(minimum: 250), spacing: 16, alignment: .top)],
-                            alignment: .leading, spacing: 16
-                        ) {
-                            ForEach(ButtonKey.allCases, id: \.self) { gestureGroup($0) }
+                SurfaceCard("硬件按键", subtitle: "三个键 × 三个手势，改完立刻同步到设备") {
+                    VStack(alignment: .leading, spacing: 9) {
+                        // 一行一个键、一列一个手势:9 个绑定一屏看全，比按键分组
+                        // 少占三分之二的高度。
+                        Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 6) {
+                            GridRow {
+                                Text("").gridCellUnsizedAxes(.horizontal)
+                                ForEach(ButtonGesture.allCases, id: \.self) { gesture in
+                                    Text(gesture.title)
+                                        .font(.caption2.weight(.medium))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            ForEach(ButtonKey.allCases, id: \.self) { key in
+                                GridRow {
+                                    Text(key.title)
+                                        .font(.callout.weight(.medium))
+                                        .gridCellUnsizedAxes(.horizontal)
+                                    ForEach(ButtonGesture.allCases, id: \.self) { gesture in
+                                        Picker("", selection: actionBinding(key, gesture)) {
+                                            ForEach(ButtonAction.allCases, id: \.self) { action in
+                                                Text(action.title).tag(action)
+                                            }
+                                        }
+                                        .labelsHidden()
+                                        .pickerStyle(.menu)
+                                        .frame(minWidth: 128)
+                                    }
+                                }
+                            }
                         }
-                        Text("设备屏幕会显示每个键当前的单击动作，所以不用记。绑定保存在 Bridge 里，换绑不需要重刷固件。")
-                            .font(.caption)
+                        Text("设备屏幕显示每个键的单击动作。绑定存在 Bridge 里，换绑不用重刷固件。")
+                            .font(.caption2)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -182,36 +205,13 @@ struct SettingsView: View {
             }
             .frame(maxWidth: 920, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(28)
+            .padding(16)
         }
         .sheet(item: $model.captureTarget) { target in
             KeyCaptureSheet(title: target.title, keys: target.keys) { key in
                 setKey(target, key)
             }
         }
-    }
-
-    private func gestureGroup(_ key: ButtonKey) -> some View {
-        VStack(alignment: .leading, spacing: 9) {
-            Text(key.title).font(.callout.weight(.semibold))
-            ForEach(ButtonGesture.allCases, id: \.self) { gesture in
-                HStack(spacing: 8) {
-                    Text(gesture.title)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 32, alignment: .leading)
-                    Picker("", selection: actionBinding(key, gesture)) {
-                        ForEach(ButtonAction.allCases, id: \.self) { action in
-                            Text(action.title).tag(action)
-                        }
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                }
-            }
-        }
-        .padding(12)
-        .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 10))
     }
 
     private func actionBinding(_ key: ButtonKey, _ gesture: ButtonGesture) -> Binding<ButtonAction> {

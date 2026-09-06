@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#define VIBE_UI_BARS 28
+#define VIBE_UI_BARS 36
 
 typedef struct {
     vibe_phase_t phase;

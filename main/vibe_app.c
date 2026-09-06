@@ -4,10 +4,15 @@
 #include "vibe_power.h"
 #include "vibe_protocol.h"
 #include "vibe_state.h"
+#include "vibe_shot.h"
 #include "vibe_ui.h"
 
 #include "esp_log.h"
 #include "esp_timer.h"
+#include "nvs.h"
+#include "nvs_flash.h"
+
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
@@ -31,6 +36,7 @@ static bool s_swallow_click;
 static esp_timer_handle_t s_proc_timer;
 
 static void apply(vibe_in_t in, uint32_t arg);
+static void actions_load(void);
 
 static void publish_locked(void)
 {
@@ -113,12 +119,16 @@ esp_err_t vibe_app_start(void)
     esp_err_t err = esp_timer_create(&args, &s_proc_timer);
     if (err != ESP_OK) return err;
 
+    actions_load();
     vibe_power_init();
     vibe_ui_start();
     err = vibe_audio_start();
     if (err != ESP_OK) return err;
     err = vibe_ble_start();
     if (err != ESP_OK) return err;
+    // Serves screen captures for the community publisher; a failure here must
+    // not stop the device from working.
+    if (vibe_shot_start() != ESP_OK) ESP_LOGW(TAG, "screen capture unavailable");
     ESP_LOGI(TAG, "vibe app ready");
     return ESP_OK;
 }
@@ -167,11 +177,48 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
     report_gesture(btn, VIBE_GES_CLICK);
 }
 
+#define VIBE_NVS_NS   "vibe"
+#define VIBE_NVS_KEY  "actions"
+
+// Bindings live in NVS so the keys still describe themselves after a power
+// cycle, instead of showing "--" until the bridge reconnects.
+static void actions_load(void)
+{
+    nvs_handle_t h;
+    if (nvs_open(VIBE_NVS_NS, NVS_READONLY, &h) != ESP_OK) return;
+    uint8_t stored[VIBE_GESTURE_COUNT] = {0};
+    size_t len = sizeof(stored);
+    if (nvs_get_blob(h, VIBE_NVS_KEY, stored, &len) == ESP_OK && len == sizeof(stored)) {
+        for (size_t i = 0; i < VIBE_GESTURE_COUNT; i++) {
+            apply(VIBE_IN_ACTIONS, (uint32_t)i | ((uint32_t)stored[i] << 8));
+        }
+    }
+    nvs_close(h);
+}
+
+static void actions_save(const uint8_t *actions, size_t len)
+{
+    if (len != VIBE_GESTURE_COUNT) return;
+    nvs_handle_t h;
+    if (nvs_open(VIBE_NVS_NS, NVS_READWRITE, &h) != ESP_OK) return;
+    uint8_t prev[VIBE_GESTURE_COUNT] = {0};
+    size_t prev_len = sizeof(prev);
+    // Only write on a real change: NVS has a limited erase budget.
+    bool same = nvs_get_blob(h, VIBE_NVS_KEY, prev, &prev_len) == ESP_OK &&
+                prev_len == len && memcmp(prev, actions, len) == 0;
+    if (!same) {
+        nvs_set_blob(h, VIBE_NVS_KEY, actions, len);
+        nvs_commit(h);
+    }
+    nvs_close(h);
+}
+
 void vibe_app_on_actions(const uint8_t *actions, size_t len)
 {
     for (size_t i = 0; i < len && i < VIBE_GESTURE_COUNT; i++) {
         apply(VIBE_IN_ACTIONS, (uint32_t)i | ((uint32_t)actions[i] << 8));
     }
+    actions_save(actions, len);
 }
 
 void vibe_app_on_ble_link(bool up)

@@ -9,6 +9,7 @@ idf_component_register(
          "vibe_ble.c"
          "vibe_audio.c"
          "vibe_ui.c"
+         "vibe_shot.c"
          "vibe_power.c"
          "ui_font_cjk.c"
          "vibe_app.c"

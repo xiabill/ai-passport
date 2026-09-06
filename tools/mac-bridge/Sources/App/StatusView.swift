@@ -6,7 +6,7 @@ struct StatusView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 12) {
                 PageHeader(
                     title: "状态总览",
                     subtitle: "硬件、音频和输入法都在这里快速确认",
@@ -36,8 +36,8 @@ struct StatusView: View {
                 // 自适应列：宽窗口并排两列以缩短页面，窄窗口自动退成单列，
                 // 卡片内部因此永远拿得到足够宽度，不会被压出错位换行。
                 LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 360), spacing: 16, alignment: .top)],
-                    alignment: .leading, spacing: 16
+                    columns: [GridItem(.adaptive(minimum: 330), spacing: 12, alignment: .top)],
+                    alignment: .leading, spacing: 12
                 ) {
                     healthCard
                     audioCard
@@ -51,7 +51,7 @@ struct StatusView: View {
             }
             .frame(maxWidth: 1180, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(22)
+            .padding(16)
         }
     }
 

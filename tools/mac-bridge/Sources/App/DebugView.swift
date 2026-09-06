@@ -7,7 +7,7 @@ struct DebugView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 12) {
                 PageHeader(
                     title: "调试与测试",
                     subtitle: "只在排查问题或验收硬件时使用这些工具")
@@ -86,7 +86,7 @@ struct DebugView: View {
             }
             .frame(maxWidth: 920, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(28)
+            .padding(16)
         }
     }
 

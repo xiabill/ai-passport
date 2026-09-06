@@ -29,13 +29,13 @@ struct PageHeader: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 20) {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 1) {
                 // The top bar already carries the brand; repeating it here only
                 // pushed the real content further down.
                 Text(title)
-                    .font(.system(size: 21, weight: .bold))
+                    .font(.system(size: 17, weight: .bold))
                 Text(subtitle)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -66,13 +66,13 @@ struct SurfaceCard<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 11) {
             if let title {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(title).font(.headline.weight(.semibold))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title).font(.callout.weight(.semibold))
                     if let subtitle {
                         Text(subtitle)
-                            .font(.subheadline)
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -80,14 +80,14 @@ struct SurfaceCard<Content: View>: View {
             }
             content
         }
-        .padding(22)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.10), lineWidth: 1)
         }
-        .shadow(color: .black.opacity(0.08), radius: 12, y: 5)
+        .shadow(color: .black.opacity(0.06), radius: 7, y: 3)
     }
 }
 

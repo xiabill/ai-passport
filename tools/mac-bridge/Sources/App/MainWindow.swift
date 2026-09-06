@@ -14,7 +14,7 @@ enum MainWindow {
         let root = RootView(model: AppModel.shared)
         let hosting = NSHostingView(rootView: root)
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 1120, height: 760),
+            contentRect: NSRect(x: 0, y: 0, width: 980, height: 700),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false)
@@ -22,7 +22,9 @@ enum MainWindow {
         window.contentView = hosting
         window.center()
         window.isReleasedWhenClosed = false
-        window.minSize = NSSize(width: 720, height: 520)
+        // Below this the bindings grid and the two-column cards would be squeezed
+        // instead of reflowed, which is what used to break the layout.
+        window.minSize = NSSize(width: 880, height: 600)
         window.titlebarAppearsTransparent = false
         // Navigation lives in the in-app top tab bar, so the window needs no
         // toolbar of its own.

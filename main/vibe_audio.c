@@ -35,7 +35,7 @@ static int s_quiet;
 static volatile uint8_t s_beep_pending;
 static portMUX_TYPE s_beep_mu = portMUX_INITIALIZER_UNLOCKED;
 
-static uint8_t peak_level(const int16_t *pcm, int n)
+static int raw_peak(const int16_t *pcm, int n)
 {
     int peak = 0;
     for (int i = 0; i < n; i++) {
@@ -43,12 +43,23 @@ static uint8_t peak_level(const int16_t *pcm, int n)
         if (v < 0) v = -v;
         if (v > peak) peak = v;
     }
-    // Compress the raw 16-bit peak into a calmer 0..16 display range. A
-    // normal speaking voice should stay green/yellow; only close, loud peaks
-    // should reach red.
-    int level = peak / 2048;
-    if (level > 16) level = 16;
-    return (uint8_t)level;
+    return peak;
+}
+
+// Hearing is closer to logarithmic than linear. The previous peak/2048 left a
+// normal speaking voice in the bottom three steps of a sixteen-step meter, so
+// the waveform barely moved no matter how loud the room was. These thresholds
+// put conversation in the middle of the range and keep headroom for shouting.
+static uint8_t peak_level(int peak)
+{
+    static const uint16_t steps[16] = {
+        150, 260, 420, 650, 950, 1350, 1900, 2600,
+        3600, 5000, 6800, 9200, 12500, 16800, 22000, 28000,
+    };
+    for (uint8_t i = 0; i < 16; i++) {
+        if (peak < steps[i]) return i;
+    }
+    return 16;
 }
 
 static void send_eos(void)
@@ -259,20 +270,12 @@ static void audio_task(void *arg)
                 break;
             }
 
-            uint8_t level = peak_level(pcm, VIBE_AUDIO_SAMPS);
-            vibe_app_note_peak(level);
-            if (level == 0) {
-                int peak = 0;
-                for (int i = 0; i < VIBE_AUDIO_SAMPS; i++) {
-                    int v = pcm[i];
-                    if (v < 0) v = -v;
-                    if (v > peak) peak = v;
-                }
-                if (peak < SILENCE_PEAK) s_quiet++;
-                else s_quiet = 0;
-            } else {
-                s_quiet = 0;
-            }
+            int peak = raw_peak(pcm, VIBE_AUDIO_SAMPS);
+            vibe_app_note_peak(peak_level(peak));
+            // Silence is judged on the raw peak so the display mapping can be
+            // retuned without changing when a take auto-stops.
+            if (peak < SILENCE_PEAK) s_quiet++;
+            else s_quiet = 0;
             if (s_quiet >= SILENCE_BLOCKS) {
                 ESP_LOGI(TAG, "silence timeout");
                 s_recording = false;

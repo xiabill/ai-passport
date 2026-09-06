@@ -83,6 +83,15 @@ enum KeyTap {
 
     /// On macOS, Command+A is the native Select All command (the literal
     /// Control+A binding moves to the beginning of a text field).
+    /// Option+Return inserts a line break without submitting, which most chat
+    /// and editor fields treat as "new line" rather than "send".
+    static func tapNewline() {
+        Log.key("发送 Option+Return（换行）")
+        postModifier(virtualKey: 0x3A, flags: .maskAlternate, down: true)
+        tapKey(0x24, flags: .maskAlternate)
+        postModifier(virtualKey: 0x3A, flags: [], down: false)
+    }
+
     static func tapSelectAll() {
         Log.key("发送 Cmd+A（全选）")
         tapCommandKey(0x00) // A

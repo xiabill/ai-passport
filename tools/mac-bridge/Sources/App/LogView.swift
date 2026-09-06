@@ -13,7 +13,7 @@ struct LogView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 12) {
             PageHeader(
                 title: "日志",
                 subtitle: "按时间查看蓝牙、音频、按键和 Typeless 事件",
@@ -87,7 +87,7 @@ struct LogView: View {
             }
         }
         .frame(maxWidth: 1080, maxHeight: .infinity, alignment: .leading)
-        .padding(28)
+        .padding(16)
     }
 
     private var filterBar: some View {

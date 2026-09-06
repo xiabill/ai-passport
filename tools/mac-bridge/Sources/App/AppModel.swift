@@ -374,6 +374,8 @@ final class AppModel: ObservableObject {
             KeyTap.tapSelectAll()
         case .doubaoClear:
             KeyTap.tapClearAll()
+        case .newline:
+            KeyTap.tapNewline()
         case .typelessDictate, .typelessTranslate, .typelessAsk, .doubao:
             toggleRecording(action)
         }

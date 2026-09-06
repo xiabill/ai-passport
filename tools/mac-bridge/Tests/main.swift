@@ -92,11 +92,17 @@ do {
     expect(map.action(.down, .click) == .typelessDictate, "default down click dictates")
     expect(map.action(.down, .double) == .typelessTranslate, "default down double translates")
     expect(map.action(.down, .long) == .typelessAsk, "default down long asks")
-    expect(map.action(.mid, .long) == .none, "unbound gesture defaults to none")
+    expect(map.action(.mid, .double) == .newline, "default mid double inserts a newline")
+    expect(map.action(.mid, .long) == .newline, "default mid long inserts a newline")
+    // Every gesture is bound by default now, so check the fallback on an empty map.
+    expect(ButtonMap().action(.mid, .long) == .none, "unbound gesture defaults to none")
 
     var custom = ButtonMap.default
     custom.set(.mid, .long, .typelessAsk)
     expect(custom.action(.mid, .long) == .typelessAsk, "rebinding sticks")
+
+    expect(!ButtonAction.newline.isRecording, "newline does not record")
+    expect(ButtonAction.newline.code == 8, "newline wire code")
 
     // Wire order must be gesture index = key * 3 + gesture.
     let codes = custom.actionCodes

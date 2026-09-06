@@ -7,9 +7,31 @@ install_app="${FOLO_VIBE_INSTALL_APP:-/Applications/FoloVibeBridge.app}"
 mkdir -p "$app/Contents/MacOS"
 cp "$root/Info.plist" "$app/Contents/Info.plist"
 
+# A stable signing identity keeps the macOS permission grants across upgrades.
+# An ad-hoc signature ties them to the binary's cdhash, which changes on every
+# build, so every upgrade looked like a different app and lost its grants.
+# ./create-signing-identity.sh sets one up; without it we just warn.
+sign_identity="${FOLO_VIBE_SIGN_IDENTITY:-FoloVibe Bridge Local}"
+
+sign_app() {
+    if ! security find-identity -p codesigning 2>/dev/null | grep -qF "$sign_identity"; then
+        echo "note: no stable signing identity, so macOS will ask for permissions"
+        echo "      again after each upgrade. Run ./create-signing-identity.sh once."
+        return
+    fi
+    if codesign --force --sign "$sign_identity" \
+        --identifier "dev.folovibe.bridge" "$1" >/dev/null 2>&1; then
+        echo "signed with $sign_identity"
+    else
+        echo "warning: signing failed; keeping the ad-hoc signature" >&2
+    fi
+}
+
 package_app() {
     local binary="$1"
     cp "$binary" "$app/Contents/MacOS/FoloVibeBridge"
+    # Sign before copying so the installed bundle carries the signature too.
+    sign_app "$app"
     if [[ "${FOLO_VIBE_SKIP_INSTALL:-0}" != "1" ]]; then
         mkdir -p "$(dirname -- "$install_app")"
         ditto --rsrc --extattr --acl "$app" "$install_app"
