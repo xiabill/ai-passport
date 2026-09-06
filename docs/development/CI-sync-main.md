@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="CI-sync-main.md">English</a>
+  <strong>简体中文</strong> · <a href="CI-sync-main.en.md">English</a>
 </p>
 
 # 上游同步（CI / Upstream Sync）
@@ -23,7 +23,7 @@
 
 ## 注意事项
 
-- 同步目标与上游分支均为 `main`，与 fork 用户约定（`main` 仅允许修改根目录 `README.md` 与 `docs/assets/`）配合使用：`main` 保持与上游最新基线同步、不产生冲突。
+- 同步目标与上游分支均为 `main`，与 fork 用户约定（`main` 仅允许修改根目录 `README.en.md` 与 `docs/assets/`）配合使用：`main` 保持与上游最新基线同步、不产生冲突。
 - **在 `main` 直接开发的例外**：如果用户执意要在 `main` 分支直接开发，必须**停用/关闭本 workflow**（Actions 页面 → Disable），否则每日自动同步会把上游改动强行合入 `main`，产生冲突或覆盖本地开发内容。
 - 若同步失败，查看 Actions 日志确认是否为上游 workflow 文件变更所致；必要时按提示手动在 GitHub 页面 Sync Fork。
 - 升级 Action 时必须从官方仓库核对目标版本对应的完整 commit SHA，并同步更新 workflow 行尾的版本注释。

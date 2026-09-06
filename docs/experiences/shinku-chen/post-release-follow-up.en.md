@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="post-release-follow-up.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="post-release-follow-up.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Post-Release Follow-up for the AI Passport Publishing Flow
@@ -53,10 +53,10 @@ change off the developer's current branch.
 - Verify the merged image includes (or is published alongside) the data
   partition needed for sound; do not assume "one file = whole device".
 - Route each post-release track to upstream only when the learning is general;
-  keep fork-specific customization local per `fork-guide.md`.
+  keep fork-specific customization local per `fork-guide.en.md`.
 
 ## Related documents
 
-- `docs/development/publish-to-community.md` — the publishing workflow.
-- `docs/development/project-completion.md` — the project completion flow and its gates.
-- `docs/development/experience-notes.md` — index for this entry.
+- `docs/development/publish-to-community.en.md` — the publishing workflow.
+- `docs/development/project-completion.en.md` — the project completion flow and its gates.
+- `docs/development/experience-notes.en.md` — index for this entry.

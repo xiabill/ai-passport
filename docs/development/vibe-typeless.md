@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="vibe-typeless.md">English</a>
+  <strong>简体中文</strong> · <a href="vibe-typeless.en.md">English</a>
 </p>
 
 # Vibe Typeless 伴侣
@@ -235,7 +235,7 @@ Bridge 默认是 macOS 的 Fn/Globe 修饰键，不是 F19。请让 Typeless 和
 
 ## 贡献代码
 
-从 `main` 创建 feature 分支；硬件常量放在 BSP，UI/协议逻辑放在 `main`；提交前运行 `./tools/validate.sh`；实体验收单独记录。不要提交凭证、设备二维码密钥、私钥、真实日志或个人数据。详见 [CONTRIBUTING](../../.github/CONTRIBUTING.zh_CN.md) 和 [AGENTS.zh_CN.md](../../AGENTS.zh_CN.md)。
+从 `main` 创建 feature 分支；硬件常量放在 BSP，UI/协议逻辑放在 `main`；提交前运行 `./tools/validate.sh`；实体验收单独记录。不要提交凭证、设备二维码密钥、私钥、真实日志或个人数据。详见 [CONTRIBUTING](../../.github/CONTRIBUTING.md) 和 [AGENTS.md](../../AGENTS.md)。
 
 ## 许可证
 

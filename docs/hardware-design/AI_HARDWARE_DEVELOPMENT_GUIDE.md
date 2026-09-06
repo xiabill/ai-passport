@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="AI_HARDWARE_DEVELOPMENT_GUIDE.md">English</a>
+  <strong>简体中文</strong> · <a href="AI_HARDWARE_DEVELOPMENT_GUIDE.en.md">English</a>
 </p>
 
 # FoloToy AI Passport AI 硬件开发指南
@@ -11,14 +11,14 @@
 文档适用范围：
 
 - 适用对象：本仓库实现的 ESP32-C3 FoloToy AI Passport 板级映射。
-- 产品规格见 [specifications.zh_CN.md](specifications.zh_CN.md)；固件行为以 `bsp_pins.h`、BSP 实现、`sdkconfig.defaults`、`partitions.csv` 与 demo 代码为准。
+- 产品规格见 [specifications.md](specifications.md)；固件行为以 `bsp_pins.h`、BSP 实现、`sdkconfig.defaults`、`partitions.csv` 与 demo 代码为准。
 - 代码复核日期：2026-08-26。
 
 ## 1. 开始任何任务前
 
 AI 应先完成以下检查：
 
-1. 阅读 `AGENTS.md`、本文件和将要修改的 BSP 头文件/实现；产品背景不清楚时再读 `docs/README.md`，不默认加载全部 README。
+1. 阅读 `AGENTS.en.md`、本文件和将要修改的 BSP 头文件/实现；产品背景不清楚时再读 `docs/README.en.md`，不默认加载全部 README。
 2. 执行 `git status --short`，保留用户已有改动，不覆盖、不清理无关文件。
 3. 判断修改属于哪一层：可复用硬件能力放入 `components/bsp`；菜单、动画、业务交互和验证页面放入 `main`。
 4. 以 `bsp_pins.h` 为当前板卡引脚和面板参数的单一事实来源，不在 `.c` 文件重复写 GPIO、I2C 地址或屏幕尺寸。
@@ -229,7 +229,7 @@ SOC 准确度取决于电芯与 profile 的匹配程度。本驱动给出的是�
 当前产品与固件基线使用 8 MB Flash。`sdkconfig.defaults` 固定使用 8 MB Flash 镜像配置，并关闭 `CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE`（不按探测容量回写镜像头，便于 `idf.py merge-bin`）；`partitions.csv` 提供 24 KB NVS、4 KB PHY data、3 MB factory app、位于 `0x356000` 的保护 `cardid`，以及位于 `0x700000` 的永久 Recovery。这不是 ESP-IDF 双槽 OTA 布局；工厂预装 Recovery 负责 BLE 安装，且必须保持固定地址。开机持续按住上键/GPIO0 5 秒时，bootloader 会进入 Recovery。若实机探测结果不是 8 MB，则该设备不符合当前基线；修改项目默认值前应先确认板卡和 Flash 料号。
 
 不得擦除已写身份的设备，也不得移动或覆盖保护分区。社区固件既不包含单机身份，
-也不携带替换 Recovery 的数据。详见 [BLE 兼容契约](../development/ble-recovery-compatibility.zh_CN.md)。
+也不携带替换 Recovery 的数据。详见 [BLE 兼容契约](../development/ble-recovery-compatibility.md)。
 
 控制台固定为 USB Serial/JTAG，不使用 UART0 默认输出，因为其 TX GPIO21 与背光冲突。任何日志接口修改都必须同时检查引脚占用。
 
@@ -268,7 +268,7 @@ SOC 准确度取决于电芯与 profile 的匹配程度。本驱动给出的是�
 ## 12. 开发环境搭建
 
 全新机器安装、各操作系统依赖以及国际/中国大陆下载线路统一以
-[环境引导](../development/environment-setup.zh_CN.md)为准。项目严格使用
+[环境引导](../development/environment-setup.md)为准。项目严格使用
 **ESP-IDF 5.5.3**。不要直接使用系统中的任意 `idf.py`，也不要将 Arduino、
 PlatformIO 或其他 ESP-IDF 版本生成的配置混入当前工程。
 编译优先使用 `./tools/validate.sh --firmware` 生成并验证合并固件，烧录优先把该

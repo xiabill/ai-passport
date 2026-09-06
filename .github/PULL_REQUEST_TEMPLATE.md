@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="PULL_REQUEST_TEMPLATE.md">English</a>
+  <strong>简体中文</strong> · <a href="PULL_REQUEST_TEMPLATE.en.md">English</a>
 </p>
 
 > GitHub 默认使用英文 PR 模板。本文件仅作为中文填写参考，提交的 PR 标题与正文仍须使用英文。
@@ -41,5 +41,5 @@
 - [ ] 已运行相关验证命令，或说明未运行原因。
 - [ ] 已分别报告 build、host tests 与 device tests。
 - [ ] 已更新发生变化的硬件事实或长期行为对应的权威文档。
-- [ ] 若用户可见行为、兼容性或发布流程变化，已更新 `docs/CHANGELOG.zh_CN.md`。
+- [ ] 若用户可见行为、兼容性或发布流程变化，已更新 `docs/CHANGELOG.md`。
 - [ ] 已移除凭证、私密设备链接、个人数据和未脱敏日志。

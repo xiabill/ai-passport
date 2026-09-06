@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="README.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # FoloVibe Bridge
@@ -8,7 +8,7 @@ macOS companion for the AI Passport vibe-typeless firmware. It is a full app: st
 
 It receives IMA-ADPCM frames over BLE, plays them into `BlackHole 2ch`, and taps the configured Typeless modes, Doubao, and Return keys so the input methods can dictate into the focused app.
 
-For the end-to-end firmware, BLE, Typeless, flashing, permissions, and troubleshooting tutorial, see [the Vibe guide](../../docs/development/vibe-typeless.md).
+For the end-to-end firmware, BLE, Typeless, flashing, permissions, and troubleshooting tutorial, see [the Vibe guide](../../docs/development/vibe-typeless.en.md).
 
 For people who only want to use the app, download the latest `FoloVibeBridge-macos.zip` from [GitHub Releases](https://github.com/xiabill/ai-passport/releases/latest). Source-build instructions are below.
 

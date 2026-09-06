@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="CI-sync-main.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="CI-sync-main.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Upstream Synchronization

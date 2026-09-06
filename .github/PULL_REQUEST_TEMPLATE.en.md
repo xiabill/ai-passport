@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="PULL_REQUEST_TEMPLATE.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="PULL_REQUEST_TEMPLATE.md">简体中文</a> · <strong>English</strong>
 </p>
 
 ## Summary
@@ -39,5 +39,5 @@ Commands run:
 - [ ] I ran the relevant validation command or explained why it was not run.
 - [ ] I separated build, host-test, and device-test results.
 - [ ] I updated authoritative documentation for changed hardware facts or durable behavior.
-- [ ] I updated `docs/CHANGELOG.md` if this changes user-visible behavior, compatibility, or release workflow.
+- [ ] I updated `docs/CHANGELOG.en.md` if this changes user-visible behavior, compatibility, or release workflow.
 - [ ] I removed credentials, private device links, personal data, and unsanitized logs.

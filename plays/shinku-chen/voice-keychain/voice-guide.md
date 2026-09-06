@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="voice-guide.md">English</a>
+  <strong>简体中文</strong> · <a href="voice-guide.en.md">English</a>
 </p>
 
 # 音效钥匙扣指南

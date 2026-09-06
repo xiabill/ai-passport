@@ -1,6 +1,6 @@
 # FoloToy AI Passport
 
-English | [简体中文](README.zh_CN.md)
+English | [简体中文](README.md)
 
 FoloToy AI Passport is open wearable AI hardware. This repository is the development baseline for the device. It keeps the **hardware facts, stable interfaces, resource boundaries, reference implementations, and validation methods** needed to build applications in one place.
 
@@ -9,7 +9,7 @@ The repository is organized around the following principles:
 - `main` is the smallest complete runnable baseline and an executable description of the current hardware capabilities.
 - `components/bsp` isolates board-level details and exposes stable APIs to applications.
 - `demo/*` branches show different paths from a product requirement to a working implementation.
-- Development conventions for AI assistants live in [`AGENTS.md`](../AGENTS.md) and [`docs/development/agent-guide.md`](development/agent-guide.md); the complete hardware context and troubleshooting knowledge is in [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
+- Development conventions for AI assistants live in [`AGENTS.en.md`](../AGENTS.en.md) and [`docs/development/agent-guide.en.md`](development/agent-guide.en.md); the complete hardware context and troubleshooting knowledge is in [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md).
 - Build results and physical-device results are reported separately. A successful build must never be presented as successful hardware validation.
 
 ## Hardware capability contract
@@ -28,7 +28,7 @@ The table below describes the application capabilities implemented by the curren
 | Shared bus | ES8311 and CW2017 share I2C0 | `bsp_i2c_*` | Every device must reuse the bus owned by the BSP; do not create another bus on the same port for scanning or a new device |
 | Logging and flashing | Native ESP32-C3 USB Serial/JTAG | ESP-IDF console | GPIO18/19 are reserved for USB; the default UART0 TX on GPIO21 conflicts with the backlight |
 
-All pins, addresses, panel parameters, and button voltage windows are defined only in [`components/bsp/include/bsp_pins.h`](../components/bsp/include/bsp_pins.h). Application code must not duplicate these constants. See the [AI Hardware Development Guide](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the complete pin map, panel initialization, ADC thresholds, I2C addressing rules, audio clocks, and memory details.
+All pins, addresses, panel parameters, and button voltage windows are defined only in [`components/bsp/include/bsp_pins.h`](../components/bsp/include/bsp_pins.h). Application code must not duplicate these constants. See the [AI Hardware Development Guide](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md) for the complete pin map, panel initialization, ADC thresholds, I2C addressing rules, audio clocks, and memory details.
 
 Applications may also use ESP-IDF timers, FreeRTOS tasks, and internal Flash/NVS; the Pomodoro branch contains an NVS example. Wi-Fi and Bluetooth LE remain ESP-IDF application services rather than BSP APIs: their menu pages initialize each stack only while open and release it on exit. `demo/claude-buddy-port` remains a fuller BLE application architecture reference, not a substitute for measuring the current board's antenna, RF performance, power consumption, and coexistence behavior. The current product and firmware baseline uses 8 MB Flash with a 3 MB factory-app partition plus fixed protected identity and permanent-Recovery regions so derivative firmware stays installable through the mini-program.
 
@@ -44,14 +44,14 @@ A simple request can be given directly to an AI assistant:
 Build an offline habit-tracking application for FoloToy AI Passport.
 Use the three physical buttons and the 240×320 display, and preserve records across power loss.
 Start from `main`, create a `feature/*` branch, and develop the application there.
-Follow AGENTS.md and docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md. Inspect relevant demo branches and plays/ applications first,
+Follow AGENTS.en.md and docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md. Inspect relevant demo branches and plays/ applications first,
 keep hardware logic in components/bsp and application logic in main, deliver a runnable
 implementation with tests, and report the build result, unexecuted device checks, and exact
 on-device acceptance steps separately.
 ```
 
-Before starting, check [`plays/`](../plays/README.md) for an existing or reference
-application and the demo branches, and [`docs/development/experience-notes.md`](development/experience-notes.md)
+Before starting, check [`plays/`](../plays/README.en.md) for an existing or reference
+application and the demo branches, and [`docs/development/experience-notes.en.md`](development/experience-notes.en.md)
 for previously recorded, reusable experience. See what is already built and reusable.
 
 The more specific the requirement, the more likely the assistant is to implement it correctly in one pass. Useful details include:
@@ -106,17 +106,17 @@ docs/                    Project docs, changelog, engineering/contribution rules
 sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
 partitions.csv           App plus protected identity/Recovery layout
 dependencies.lock        Reproducible ESP-IDF Managed Component resolution
-AGENTS.md                Mandatory AI-agent entry point (paired with AGENTS.zh_CN.md)
-CLAUDE.md                Claude Code pointer to AGENTS.md (paired Chinese version)
+AGENTS.en.md                Mandatory AI-agent entry point (paired with AGENTS.md)
+CLAUDE.en.md                Claude Code pointer to AGENTS.en.md (paired Chinese version)
 LICENSE                  Repository license
 ```
 
 ## Documentation
 
-- [`docs/INDEX.md`](INDEX.md) — complete documentation index for contribution, engineering, fork, software, and hardware topics.
-- [`docs/development/agent-guide.md`](development/agent-guide.md) — AI-assisted development workflow, source priorities, BSP boundaries, runtime rules, and delivery format.
-- [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) — pin map, acceptance matrix, and troubleshooting guide.
-- [`AGENTS.md`](../AGENTS.md) — mandatory entry point for AI-assisted work.
-- [`docs/fork-guide.md`](fork-guide.md) — fork branch and documentation workflow.
+- [`docs/INDEX.en.md`](INDEX.en.md) — complete documentation index for contribution, engineering, fork, software, and hardware topics.
+- [`docs/development/agent-guide.en.md`](development/agent-guide.en.md) — AI-assisted development workflow, source priorities, BSP boundaries, runtime rules, and delivery format.
+- [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md) — pin map, acceptance matrix, and troubleshooting guide.
+- [`AGENTS.en.md`](../AGENTS.en.md) — mandatory entry point for AI-assisted work.
+- [`docs/fork-guide.en.md`](fork-guide.en.md) — fork branch and documentation workflow.
 
-> This README describes the product and repository. AI agents must begin with `AGENTS.md` and follow its task-specific routing.
+> This README describes the product and repository. AI agents must begin with `AGENTS.en.md` and follow its task-specific routing.

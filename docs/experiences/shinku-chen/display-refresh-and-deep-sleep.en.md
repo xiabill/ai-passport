@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="display-refresh-and-deep-sleep.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="display-refresh-and-deep-sleep.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Display Refresh and Deep-sleep on ESP32-C3 (No PSRAM)

@@ -1,15 +1,15 @@
 <p align="right">
-  <a href="readme-update.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="readme-update.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Action E: Update the Root README
 
-This action updates the fork's root `README.md` on the relevant branches to
+This action updates the fork's root `README.en.md` on the relevant branches to
 reflect the newly released or archived application. It is one of the six optional
-closing actions listed in the [project completion](../project-completion.md).
+closing actions listed in the [project completion](../project-completion.en.md).
 
 The root README path is intentionally reserved for the fork owner. Upstream's
-project overview lives at `docs/README.md`; a fork may add its own root README to
+project overview lives at `docs/README.en.md`; a fork may add its own root README to
 explain its product without replacing upstream documentation.
 
 The fork keeps `main` synced with upstream and puts product work on `feature/*`
@@ -28,8 +28,8 @@ application is registered where it is developed.
 
 ## Rules
 
-- Only touch fork-owned root READMEs (`README.md` / `README.zh_CN.md`); do not
-  modify the upstream project overview at `docs/README.md`.
+- Only touch fork-owned root READMEs (`README.en.md` / `README.md`); do not
+  modify the upstream project overview at `docs/README.en.md`.
 - Check the root README on each relevant branch (`main` and the current
   `feature/*` branch), not just one branch.
 - The fork `main` root README is the **catalog of the fork's projects**: it
@@ -41,7 +41,7 @@ application is registered where it is developed.
   content. Commit them directly (merge) rather than opening a PR; open a PR only
   when the change is meant to go upstream.
 - Follow the repository language rule: English at the default `.md` path and
-  Simplified Chinese at the paired `.zh_CN.md`, aligned in the same change.
+  English at the paired `.en.md`, aligned in the same change.
 
 ## Steps
 
@@ -56,6 +56,6 @@ application is registered where it is developed.
 
 ## Related documents
 
-- Fork workflow and root README ownership: [fork-guide.md](../../fork-guide.md)
-- Application archive skill: [plays-archive](../../../skills/plays-archive/SKILL.md)
-- Documentation conventions: [doc-conventions.md](../../contribution/doc-conventions.md)
+- Fork workflow and root README ownership: [fork-guide.en.md](../../fork-guide.en.md)
+- Application archive skill: [plays-archive](../../../skills/plays-archive/SKILL.en.md)
+- Documentation conventions: [doc-conventions.en.md](../../contribution/doc-conventions.en.md)

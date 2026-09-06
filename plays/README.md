@@ -1,13 +1,13 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="README.md">English</a>
+  <strong>简体中文</strong> · <a href="README.en.md">English</a>
 </p>
 
 # Plays（应用档案）
 
 本目录位于上游 `FoloToy/ai-passport` 仓库，是 AI Passport 应用（plays）的档案库。它用于
 **查询**每个应用做什么、怎么用，靠的是每个应用一份由 AI 生成的功能说明。用
-[`INDEX.md`](INDEX.md) 发现已归档的应用并跳到某个应用的功能说明。它与社区发布流程关联：
-发布固件后（[`docs/development/publish-to-community.md`](../docs/development/publish-to-community.md)），
+[`INDEX.en.md`](INDEX.en.md) 发现已归档的应用并跳到某个应用的功能说明。它与社区发布流程关联：
+发布固件后（[`docs/development/publish-to-community.en.md`](../docs/development/publish-to-community.en.md)），
 助手会询问是否把这个应用归档到这里，并把它提案回上游。
 
 ## 开发新应用之前
@@ -20,7 +20,7 @@
 
 每个 plays 子目录都是一个真实、可运行应用的档案；它的功能说明是你决定"扩展它还是参考它"
 的起点。除应用档案外，也查一下
-[`docs/development/experience-notes.md`](../docs/development/experience-notes.md)
+[`docs/development/experience-notes.en.md`](../docs/development/experience-notes.en.md)
 里其他开发者已经沉淀、可复用的经验。
 
 ## 目录约定
@@ -31,8 +31,8 @@
 
 ```
 plays/<username>/<app-name>/
-  README.md / README.zh_CN.md         # AI 生成的双语功能说明
-  <topic>-guide.md（+ .zh_CN.md）      # 可选的指南/手册，不是经验
+  README.en.md / README.md         # AI 生成的双语功能说明
+  <topic>-guide.md（+ .en.md）      # 可选的指南/手册，不是经验
 ```
 
 `<username>` 是贡献者的 GitHub 用户名（英文小写连字符，如 `shinku-chen`）。
@@ -45,7 +45,7 @@ play 档案是**纯文本**：只存放该应用的**介绍与手册**——READ
 
 ## 每个应用 README 包含什么
 
-每个应用目录下的 `README.md`（及其简体中文配对）是**为后续查询**而生成的 AI 功能说明，不是
+每个应用目录下的 `README.en.md`（及其简体中文配对）是**为后续查询**而生成的 AI 功能说明，不是
 发布产物。它记录：
 
 - **发布标题与描述**：发布到社区时开发者提交的双语标题、双语描述。
@@ -55,7 +55,7 @@ play 档案是**纯文本**：只存放该应用的**介绍与手册**——READ
 - 应用来源，用**开发者发布时提交的源码地址**（HTTPS Git 源码页）精确定位。
 - 封面图文件名与格式，仅作为发布元数据记录——封面图本身**不**提交（档案为纯文本）。
 
-通过总结应用实现与行为来写，默认 `.md` 用英文、配对 `.zh_CN.md` 用简体中文，并在同一次变更
+通过总结应用实现与行为来写，默认 `.md` 用简体中文、配对 `.en.md` 用英文，并在同一次变更
 中对齐。
 
 ## 封面图
@@ -64,7 +64,7 @@ play 档案是**纯文本**：只存放该应用的**介绍与手册**——READ
 格式作为发布元数据。图片本身随社区发布留存。
 
 当为**社区发布**（而非归档）生成封面时，参考
-[`docs/assets/brand/`](../docs/assets/brand/README.md) 下的官方产品图。生成时必须传一张参考图
+[`docs/assets/brand/`](../docs/assets/brand/README.en.md) 下的官方产品图。生成时必须传一张参考图
 （如 `ai-passport-front.png` 或某款配色外壳渲染图）作为生成调用输入，保留其外壳、按键、接口与
 钥匙扣孔原样，只把参考图的屏幕区域**重绘**成该玩法的真实屏显内容。屏幕的尺寸、比例、圆角与外壳内
 位置与参考保持一致，使玩法内容出现在真实 AI Passport 设备屏幕内，而不是一块裸屏幕或自由漂浮的画面。
@@ -75,6 +75,6 @@ play 档案是**纯文本**：只存放该应用的**介绍与手册**——READ
 
 ## 相关
 
-- 档案索引：[`INDEX.md`](INDEX.md)
-- 仓库总览与 demo 分支：[`../docs/README.md`](../docs/README.md)
-- 软件设计索引：[`../docs/software-design/README.md`](../docs/software-design/README.md)
+- 档案索引：[`INDEX.en.md`](INDEX.en.md)
+- 仓库总览与 demo 分支：[`../docs/README.en.md`](../docs/README.en.md)
+- 软件设计索引：[`../docs/software-design/README.en.md`](../docs/software-design/README.en.md)

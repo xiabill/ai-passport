@@ -4,7 +4,7 @@ description: After a firmware release, archive the published application into th
 ---
 
 <p align="right">
-  <a href="SKILL.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="SKILL.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Archive an Application to plays
@@ -12,7 +12,7 @@ description: After a firmware release, archive the published application into th
 This skill archives a published application into the upstream
 `FoloToy/ai-passport` repository's `plays/` application archive so it is
 discoverable in-repository for later querying. It runs after a firmware release
-(see `docs/development/publish-to-community.md` for publishing itself) and only
+(see `docs/development/publish-to-community.en.md` for publishing itself) and only
 when the developer asks to archive the application.
 
 ## Safety and consent gate (run first)
@@ -37,18 +37,18 @@ Confirm the application name, the source it belongs to (for example a `demo/*`
 branch or `main/`), and the contributor's GitHub username. Use the
 lowercase-kebab-case username and application name as the two-level path:
 `plays/<username>/<app-name>/`. See
-[`../../plays/README.md`](../../plays/README.md) for the full convention.
+[`../../plays/README.en.md`](../../plays/README.en.md) for the full convention.
 
 ## Check the project README
 
 Before generating the summary, check the **root README** of both the `main`
 branch and the current branch:
 
-- `git ls-tree --name-only main README.md` — is there a README on `main`?
-- `test -f README.md` — is there a README on the current branch?
+- `git ls-tree --name-only main README.en.md` — is there a README on `main`?
+- `test -f README.en.md` — is there a README on the current branch?
 
 Follow the repository rule that the root README path is reserved for the fork
-owner (see `docs/fork-guide.md`); do not create a root README unless the fork
+owner (see `docs/fork-guide.en.md`); do not create a root README unless the fork
 actually owns one.
 
 1. **If a README exists** (on `main` or the current branch): when archiving, **merge
@@ -69,8 +69,8 @@ actually owns one.
 
 First collect the metadata the developer filled in when publishing to the
 community (bilingual title, bilingual description, and the source address they
-submitted), then write `plays/<username>/<app-name>/README.md` and its paired
-`.zh_CN.md` as an AI-generated functional summary for later querying (not a
+submitted), then write `plays/<username>/<app-name>/README.en.md` and its paired
+`.en.md` as an AI-generated functional summary for later querying (not a
 publishing artifact). Record:
 
 - **Publish title and description**: the bilingual title and description the
@@ -87,7 +87,7 @@ publishing artifact). Record:
 If the root README exists, merge its content into the summary rather than
 ignoring the human-facing description.
 
-Write the default `.md` in English and the `.zh_CN.md` in Simplified Chinese,
+Write the default `.md` in Simplified Chinese and the `.en.md` in English,
 aligned in the same change.
 
 ## Cover image
@@ -96,13 +96,13 @@ The archive is **text-only**: do **not** commit the cover image. Record only its
 file name and format in the summary as publish metadata. The image itself lives
 with the community publication; if a cover must be generated for the publication
 (not the archive), use the official product references under
-[`docs/assets/brand/`](../../docs/assets/brand/README.md): pass a reference (e.g.
+[`docs/assets/brand/`](../../docs/assets/brand/README.en.md): pass a reference (e.g.
 `ai-passport-front.png` or a colorway shell render) as input to the generation
 call, keep its shell, buttons, ports, and key-ring hole as they are, and redraw
 only the reference's screen region into the play's actual on-screen content,
 keeping the screen's size, aspect ratio, corners, and position identical to the
 reference. See the full
-convention in [`docs/assets/brand/README.md`](../../docs/assets/brand/README.md).
+convention in [`docs/assets/brand/README.en.md`](../../docs/assets/brand/README.en.md).
 
 ## Commit
 
@@ -129,7 +129,7 @@ and read it back to confirm. Opening a PR requires separate confirmation.
 
 ## Related documents
 
-- Application archive convention: `../plays/README.md`
-- Post-release follow-up overview: `docs/development/project-completion.md`
-- Firmware publishing: `docs/development/publish-to-community.md`
-- Contribution and commit rules: `docs/contribution/commit-and-pr.md`
+- Application archive convention: `../plays/README.en.md`
+- Post-release follow-up overview: `docs/development/project-completion.en.md`
+- Firmware publishing: `docs/development/publish-to-community.en.md`
+- Contribution and commit rules: `docs/contribution/commit-and-pr.en.md`

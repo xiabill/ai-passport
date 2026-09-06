@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="vibe-typeless.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="vibe-typeless.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Vibe Typeless companion
@@ -247,7 +247,7 @@ Do not bypass the verifier. Check that ESP-IDF is 5.5.3, `sdkconfig.defaults` is
 
 ## Contributing
 
-Create a feature branch from `main`, keep hardware constants in the BSP, keep UI/protocol logic in `main`, run `./tools/validate.sh`, and document physical acceptance separately. Never commit credentials, device QR secrets, private keys, real logs, or personal data. See [CONTRIBUTING](../../.github/CONTRIBUTING.md) and [AGENTS.md](../../AGENTS.md).
+Create a feature branch from `main`, keep hardware constants in the BSP, keep UI/protocol logic in `main`, run `./tools/validate.sh`, and document physical acceptance separately. Never commit credentials, device QR secrets, private keys, real logs, or personal data. See [CONTRIBUTING](../../.github/CONTRIBUTING.en.md) and [AGENTS.en.md](../../AGENTS.en.md).
 
 ## License
 

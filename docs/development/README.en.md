@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="README.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Development Guidelines
@@ -8,17 +8,17 @@ This directory contains AI Passport engineering rules and reusable workflows. Ru
 
 ## Documents
 
-- [agent-guide.md](agent-guide.md): AI-assisted development workflow.
-- [vibe-typeless.md](vibe-typeless.md): Vibe Typeless companion firmware and Mac bridge.
-- [environment-setup.md](environment-setup.md): clean-machine bootstrap for AI agents, including international and mainland China download routes.
-- [build-and-test.md](build-and-test.md): ESP-IDF build and validation.
-- [ble-recovery-compatibility.md](ble-recovery-compatibility.md): mandatory
+- [agent-guide.en.md](agent-guide.en.md): AI-assisted development workflow.
+- [vibe-typeless.en.md](vibe-typeless.en.md): Vibe Typeless companion firmware and Mac bridge.
+- [environment-setup.en.md](environment-setup.en.md): clean-machine bootstrap for AI agents, including international and mainland China download routes.
+- [build-and-test.en.md](build-and-test.en.md): ESP-IDF build and validation.
+- [ble-recovery-compatibility.en.md](ble-recovery-compatibility.en.md): mandatory
   mini-program BLE install artifact, partition, and bootloader contract.
-- [coding-conventions.md](coding-conventions.md): source-code and resource conventions.
-- [CI-validation.md](CI-validation.md): pull-request and main-branch checks.
-- [CI-build-and-release.md](CI-build-and-release.md): tagged firmware builds and releases.
-- [CI-sync-main.md](CI-sync-main.md): upstream synchronization for forks.
-- [publish-to-community.md](publish-to-community.md): publishing firmware to the AI Passport community market.
-- [project-completion.md](project-completion.md): project completion flow — a menu of optional closing actions.
-- [file-issues.md](file-issues.md): filing a suggestion as an upstream GitHub issue.
-- [experience-notes.md](experience-notes.md): index of development experience entries under `docs/experiences/`.
+- [coding-conventions.en.md](coding-conventions.en.md): source-code and resource conventions.
+- [CI-validation.en.md](CI-validation.en.md): pull-request and main-branch checks.
+- [CI-build-and-release.en.md](CI-build-and-release.en.md): tagged firmware builds and releases.
+- [CI-sync-main.en.md](CI-sync-main.en.md): upstream synchronization for forks.
+- [publish-to-community.en.md](publish-to-community.en.md): publishing firmware to the AI Passport community market.
+- [project-completion.en.md](project-completion.en.md): project completion flow — a menu of optional closing actions.
+- [file-issues.en.md](file-issues.en.md): filing a suggestion as an upstream GitHub issue.
+- [experience-notes.en.md](experience-notes.en.md): index of development experience entries under `docs/experiences/`.

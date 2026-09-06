@@ -1,10 +1,10 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="specifications.md">English</a>
+  <strong>简体中文</strong> · <a href="specifications.en.md">English</a>
 </p>
 
 # 产品规格（Specifications）
 
-本文定义面向用户的产品规格。固件引脚、总线和运行约束见[硬件开发指南](AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md)和 `components/bsp/include/bsp_pins.h`。
+本文定义面向用户的产品规格。固件引脚、总线和运行约束见[硬件开发指南](AI_HARDWARE_DEVELOPMENT_GUIDE.md)和 `components/bsp/include/bsp_pins.h`。
 
 | 项目 | 规格 |
 | --- | --- |

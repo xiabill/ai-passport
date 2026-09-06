@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="ble-recovery-compatibility.md">English</a>
+  <strong>简体中文</strong> · <a href="ble-recovery-compatibility.en.md">English</a>
 </p>
 
 # 小程序 BLE 固件兼容规范

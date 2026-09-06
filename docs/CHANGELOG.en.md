@@ -1,10 +1,13 @@
 <p align="right">
-  <a href="CHANGELOG.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="CHANGELOG.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Changelog
 
 ## Unreleased
+
+- Documentation now defaults to Simplified Chinese: every maintained Markdown lives in Chinese at its `.md` path with English moved to a paired `.en.md`, both keeping reciprocal language links, and the static check was inverted to match. The GitHub landing page therefore shows Chinese.
+- Fixed slow or stuck reconnection after the device sleeps. `ble_gap_terminate()` only starts the teardown, and power was cut before the disconnect reached the Mac, which then held a connection to a device that no longer existed and ignored fresh advertisements until its own supervision timeout expired. The device now waits for the disconnect to land (up to 1.2 s) and raises the connection rate first to shorten that wait.
 
 - Fixed BLE button delivery by serializing audio and event notification setup and waiting for both subscriptions before marking the Bridge ready; hardware beep write failures now include diagnostics.
 - Polished every macOS Bridge page with a shared console layout, clearer hierarchy,
@@ -52,15 +55,15 @@
 - Added Chinese punctuation, credential safety, and recoverable file-deletion conventions.
 - Expanded source-comment requirements for functions, state, ownership, concurrency, timing, registers, and magic values.
 - Removed AI execution instructions from product READMEs so they remain human-facing product and repository overviews.
-- Added `docs/development/agent-guide.md` as the focused AI workflow guide.
-- Updated `AGENTS.md`, `docs/INDEX.md`, and the development index for the agent guide.
+- Added `docs/development/agent-guide.en.md` as the focused AI workflow guide.
+- Updated `AGENTS.en.md`, `docs/INDEX.en.md`, and the development index for the agent guide.
 - Documented why the root README path is reserved for fork owners and how GitHub README precedence supports it.
 - Created `main-update` from the upstream-aligned baseline and combined the repository-structure, firmware-CI, and upstream-sync work.
 - Corrected the merged documentation index, workflow path, project tree, and CI references.
 - Moved CI documentation from software design to `docs/development/`.
 - Moved fork-only documentation assets from `assets/docs/` to `docs/assets/`.
-- Moved the upstream English/Chinese project READMEs under `docs/` and renamed the documentation catalog to `docs/INDEX.md`.
-- Initialized `AGENTS.md`, `CLAUDE.md`, and `CHANGELOG.md`.
+- Moved the upstream English/Chinese project READMEs under `docs/` and renamed the documentation catalog to `docs/INDEX.en.md`.
+- Initialized `AGENTS.en.md`, `CLAUDE.en.md`, and `CHANGELOG.en.md`.
 - Standardized the initial project README language filenames.
 - Added the `docs/`, `assets/`, and `skills/` directory structure.
 - Moved the upstream hardware guide into `docs/hardware-design/`.

@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="CODE_OF_CONDUCT.md">English</a>
+  <strong>简体中文</strong> · <a href="CODE_OF_CONDUCT.en.md">English</a>
 </p>
 
 # 贡献者公约行为准则
@@ -51,7 +51,7 @@ wiki 编辑、issue 及其他贡献，并在适当时说明处理原因。
 
 所有社区维护者都有义务保护事件报告者的隐私与安全。
 
-安全漏洞不属于行为准则问题——请按 [`SECURITY.md`](SECURITY.md) 私下报告。
+安全漏洞不属于行为准则问题——请按 [`SECURITY.en.md`](SECURITY.en.md) 私下报告。
 
 ## 执行指引
 

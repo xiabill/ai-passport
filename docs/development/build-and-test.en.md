@@ -1,11 +1,11 @@
 <p align="right">
-  <a href="build-and-test.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="build-and-test.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Build and Test
 
 Use ESP-IDF 5.5.3. On a clean machine or when the toolchain is missing, follow
-the [environment bootstrap](environment-setup.md) first.
+the [environment bootstrap](environment-setup.en.md) first.
 
 > Prefer `./tools/validate.sh --firmware` for firmware builds and flash its
 > verified `build/FoloToy-AI-Passport-full.bin` at offset `0x0` only when the
@@ -32,7 +32,7 @@ regenerated.
 
 The tracked `dependencies.lock` pins Managed Component resolution. After changing an `idf_component.yml`, regenerate the lock with ESP-IDF 5.5.3, review version changes, and commit it with the manifest. An ordinary build must not leave an unexplained lock-file diff.
 
-Firmware validation uses a fresh temporary build directory and an isolated `sdkconfig` generated from the tracked defaults. It does not consume or overwrite a developer's root `sdkconfig`, and it copies only the verified merged image to `build/FoloToy-AI-Passport-full.bin`. The gate also enforces the [mini-program BLE compatibility contract](ble-recovery-compatibility.md): protected partition addresses, application size, partition-table MD5, absence of protected payload data, and the Recovery bootloader hook.
+Firmware validation uses a fresh temporary build directory and an isolated `sdkconfig` generated from the tracked defaults. It does not consume or overwrite a developer's root `sdkconfig`, and it copies only the verified merged image to `build/FoloToy-AI-Passport-full.bin`. The gate also enforces the [mini-program BLE compatibility contract](ble-recovery-compatibility.en.md): protected partition addresses, application size, partition-table MD5, absence of protected payload data, and the Recovery bootloader hook.
 
 The baseline also has a hardware-independent logic test:
 

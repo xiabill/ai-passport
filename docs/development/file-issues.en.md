@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="file-issues.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="file-issues.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Filing Issues
@@ -63,10 +63,10 @@ project-related content. Follow these gates:
 
 Never include credentials, device QR secrets, private device links, personal
 data, or unsanitized logs. Security vulnerabilities must go through
-`.github/SECURITY.md`, not a public issue.
+`.github/SECURITY.en.md`, not a public issue.
 
 ## Related documents
 
-- Project completion overview: [project-completion.md](project-completion.md)
-- Issue skill: [`../../skills/issue-suggestions/SKILL.md`](../../skills/issue-suggestions/SKILL.md)
-- Firmware publishing: [publish-to-community.md](publish-to-community.md)
+- Project completion overview: [project-completion.en.md](project-completion.en.md)
+- Issue skill: [`../../skills/issue-suggestions/SKILL.en.md`](../../skills/issue-suggestions/SKILL.en.md)
+- Firmware publishing: [publish-to-community.en.md](publish-to-community.en.md)

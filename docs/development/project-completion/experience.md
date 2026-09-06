@@ -1,10 +1,10 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="experience.md">English</a>
+  <strong>简体中文</strong> · <a href="experience.en.md">English</a>
 </p>
 
 # 动作 C：发布经验
 
-本动作把一次发布中可复用的、持久的开发经验固化，并作为文档 PR 提交到上游项目。它是[项目开发完成流程](../project-completion.md)列出的六项可选动作之一。
+本动作把一次发布中可复用的、持久的开发经验固化，并作为文档 PR 提交到上游项目。它是[项目开发完成流程](../project-completion.en.md)列出的六项可选动作之一。
 
 工作流由 `experience-pr` skill 驱动。
 
@@ -29,11 +29,11 @@
 1. 确认同意与可用的 GitHub 通道（GitHub MCP、GitHub skill 或 `gh`）。
 2. 对比 fork 与上游，找出 `docs/` 的差异。
 3. 提取并分流可复用经验。
-4. 在 `docs/experiences/<username>/` 下写入一个条目（一个 `.md` 文件，配 `.zh_CN.md`），按内容摘要命名（lowercase-kebab-case），并从经验索引链接它。
+4. 在 `docs/experiences/<username>/` 下写入一个条目（一个 `.md` 文件，配 `.en.md`），按内容摘要命名（lowercase-kebab-case），并从经验索引链接它。
 5. 把变更交给开发者审查，然后在获得明确批准后再 commit、push 到 fork、并向上游开 PR。
 
 ## 相关文档
 
-- 经验索引：[experience-notes.md](../experience-notes.md)
-- Skill：[experience-pr](../../../skills/experience-pr/SKILL.md)
-- Fork 工作流：[fork-guide.md](../../fork-guide.md)
+- 经验索引：[experience-notes.en.md](../experience-notes.en.md)
+- Skill：[experience-pr](../../../skills/experience-pr/SKILL.en.md)
+- Fork 工作流：[fork-guide.en.md](../../fork-guide.en.md)

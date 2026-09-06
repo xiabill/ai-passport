@@ -1,12 +1,12 @@
 <p align="right">
-  <a href="experience.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="experience.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Action C: Publish Experience
 
 This action captures reusable, durable development experience from a release and
 proposes it as a documentation pull request to the upstream project. It is one
-of the six optional closing actions listed in the [project completion](../project-completion.md).
+of the six optional closing actions listed in the [project completion](../project-completion.en.md).
 
 The workflow is driven by the `experience-pr` skill.
 
@@ -38,13 +38,13 @@ Decide where each learning belongs before submitting:
 2. Compare the fork to upstream to find the `docs/` differences.
 3. Extract and route the reusable experience.
 4. Write a single entry under `docs/experiences/<username>/` (one `.md` file plus
-   its `.zh_CN.md` peer), named after the entry's content summary in
+   its `.en.md` peer), named after the entry's content summary in
    lowercase-kebab-case, and link it from the experience index.
 5. Present the change for review, then commit, push to the fork, and open a PR
    only after explicit approval.
 
 ## Related documents
 
-- Experience index: [experience-notes.md](../experience-notes.md)
-- Skill: [experience-pr](../../../skills/experience-pr/SKILL.md)
-- Fork workflow: [fork-guide.md](../../fork-guide.md)
+- Experience index: [experience-notes.en.md](../experience-notes.en.md)
+- Skill: [experience-pr](../../../skills/experience-pr/SKILL.en.md)
+- Fork workflow: [fork-guide.en.md](../../fork-guide.en.md)

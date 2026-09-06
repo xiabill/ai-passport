@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="network-audio-streaming-and-memory.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="network-audio-streaming-and-memory.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Network Audio Streaming and Memory Budgeting on AI Passport

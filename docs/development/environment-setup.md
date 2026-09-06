@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="environment-setup.md">English</a>
+  <strong>简体中文</strong> · <a href="environment-setup.en.md">English</a>
 </p>
 
 # AI Agent 环境引导

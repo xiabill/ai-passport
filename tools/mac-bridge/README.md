@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="README.md">English</a>
+  <strong>简体中文</strong> · <a href="README.en.md">English</a>
 </p>
 
 # FoloVibe Bridge
@@ -8,7 +8,7 @@ AI Passport vibe-typeless 固件的 macOS 伴侣。这是完整应用：总览�
 
 通过 BLE 接收 IMA-ADPCM 麦克风帧，播放到 `BlackHole 2ch`，并按设置里的 Typeless 三手势、豆包和回车键，让输入法把文字打进当前焦点应用。
 
-完整的固件、BLE、Typeless、刷机、权限和故障排查教程见 [Vibe 教程](../../docs/development/vibe-typeless.zh_CN.md)。
+完整的固件、BLE、Typeless、刷机、权限和故障排查教程见 [Vibe 教程](../../docs/development/vibe-typeless.md)。
 
 只想直接使用程序时，请从[最新 GitHub Release](https://github.com/xiabill/ai-passport/releases/latest) 下载 `FoloVibeBridge-macos.zip`；源码构建方法仍见下文。
 

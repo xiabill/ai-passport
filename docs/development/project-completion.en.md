@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="project-completion.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="project-completion.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Project Completion
@@ -36,17 +36,17 @@ project; recording actions capture documentation and open collaboration.
 
 | ID | Action | Reference |
 | --- | --- | --- |
-| A | Publish to the community market | [publish-to-community.md](project-completion/publish-to-community.md) |
-| B | Publish to Git and update the release | [release-update.md](project-completion/release-update.md) |
+| A | Publish to the community market | [publish-to-community.en.md](project-completion/publish-to-community.en.md) |
+| B | Publish to Git and update the release | [release-update.en.md](project-completion/release-update.en.md) |
 
 ### Recording
 
 | ID | Action | Reference |
 | --- | --- | --- |
-| C | Publish experience | [experience.md](project-completion/experience.md) |
-| D | Archive the application to plays | [archive-plays.md](project-completion/archive-plays.md) |
-| E | Update the root README | [readme-update.md](project-completion/readme-update.md) |
-| F | File an issue | [file-issue.md](project-completion/file-issue.md) |
+| C | Publish experience | [experience.en.md](project-completion/experience.en.md) |
+| D | Archive the application to plays | [archive-plays.en.md](project-completion/archive-plays.en.md) |
+| E | Update the root README | [readme-update.en.md](project-completion/readme-update.en.md) |
+| F | File an issue | [file-issue.en.md](project-completion/file-issue.en.md) |
 
 Each action points to a dedicated document in
 [`project-completion/`](project-completion/) that names the repository skill or
@@ -121,7 +121,7 @@ the release actually points to boots and works on real hardware. The artifact
 comes from the release assets (the CI/CD `full.bin`) or, for a Git release with
 no CI artifact, the local `full.bin` the developer built. If it does not run,
 stop and fix before closing out. See
-[`CI-build-and-release.md`](CI-build-and-release.md) for the artifact and
+[`CI-build-and-release.en.md`](CI-build-and-release.en.md) for the artifact and
 flashing.
 
 ## Shared safety and consent gates
@@ -139,6 +139,6 @@ Every action follows the same non-negotiable rules:
 
 ## Related documents
 
-- Firmware publishing: [publish-to-community.md](publish-to-community.md)
-- Fork workflow and root README ownership: [fork-guide.md](../fork-guide.md)
-- Commit and pull-request rules: [commit-and-pr.md](../contribution/commit-and-pr.md)
+- Firmware publishing: [publish-to-community.en.md](publish-to-community.en.md)
+- Fork workflow and root README ownership: [fork-guide.en.md](../fork-guide.en.md)
+- Commit and pull-request rules: [commit-and-pr.en.md](../contribution/commit-and-pr.en.md)

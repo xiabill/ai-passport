@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="audio-compression-trade-offs.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="audio-compression-trade-offs.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Audio Compression Trade-offs on ESP32-C3

@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="network-audio-streaming-and-memory.md">English</a>
+  <strong>简体中文</strong> · <a href="network-audio-streaming-and-memory.en.md">English</a>
 </p>
 
 # AI Passport 网络音频流与内存预算经验

@@ -1,11 +1,11 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="build-and-test.md">English</a>
+  <strong>简体中文</strong> · <a href="build-and-test.en.md">English</a>
 </p>
 
 # 构建与验证（Build & Test）
 
 使用 ESP-IDF 5.5.3。全新机器或缺少工具链时，先按
-[环境引导](environment-setup.zh_CN.md)完成安装。
+[环境引导](environment-setup.md)完成安装。
 
 > 固件编译优先运行 `./tools/validate.sh --firmware`，烧录优先把验证通过的
 > `build/FoloToy-AI-Passport-full.bin` 写入空白设备；对已有身份的设备，只有合并文件
@@ -29,7 +29,7 @@ target 或已跟踪 defaults 时，先保留有意的本地设置，再运行
 
 仓库提交 `dependencies.lock` 以固定 ESP-IDF Managed Components 的解析结果。修改 `idf_component.yml` 后必须使用 ESP-IDF 5.5.3 重新生成锁文件、review 版本变化并与 manifest 一起提交；普通构建不应产生未提交的锁文件差异。
 
-固件门禁使用全新的临时构建目录，并从仓库 `sdkconfig.defaults` 生成隔离的 `sdkconfig`。它不会读取或覆盖开发者根目录的 `sdkconfig`，只把验证通过的合并镜像复制到 `build/FoloToy-AI-Passport-full.bin`。门禁同时强制检查[小程序 BLE 兼容契约](ble-recovery-compatibility.zh_CN.md)：保护分区地址、应用大小、分区表 MD5、保护区数据不入包，以及 Recovery bootloader hook。
+固件门禁使用全新的临时构建目录，并从仓库 `sdkconfig.defaults` 生成隔离的 `sdkconfig`。它不会读取或覆盖开发者根目录的 `sdkconfig`，只把验证通过的合并镜像复制到 `build/FoloToy-AI-Passport-full.bin`。门禁同时强制检查[小程序 BLE 兼容契约](ble-recovery-compatibility.md)：保护分区地址、应用大小、分区表 MD5、保护区数据不入包，以及 Recovery bootloader hook。
 
 当前基线含一个可独立运行的纯逻辑测试：
 

@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="AGENTS.md">English</a>
+  <strong>简体中文</strong> · <a href="AGENTS.en.md">English</a>
 </p>
 
 # AI Agent 仓库规范
@@ -20,23 +20,23 @@
 - demo 删除 screen 前，必须停止所有可能访问其 UI 的任务、定时器、回调和事件处理器。
 - 可测试的状态机、协议、计时和布局计算应与 ESP-IDF/LVGL 解耦，并由 host tests 覆盖。
 - 禁止提交凭证、设备二维码秘密、私钥、个人数据或未脱敏日志。
-- 所有维护中的 Markdown 默认 `.md` 路径必须为英文，简体中文使用配对的 `.zh_CN.md` 文件。两种语言必须保持一致并保留互相切换链接。
+- 所有维护中的 Markdown 默认 `.md` 路径使用简体中文，英文使用配对的 `.en.md` 文件。两种语言必须保持一致并保留互相切换链接。
 
 ## 按任务加载上下文
 
 | 任务 | 修改前读取 |
 | --- | --- |
-| 任意代码修改 | `docs/development/agent-guide.zh_CN.md`、相关头文件和相邻实现 |
-| 环境引导或缺少工具链 | `docs/development/environment-setup.zh_CN.md` |
-| BSP、引脚、总线、显示、音频、电池 | `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md`、`components/bsp/include/bsp_pins.h` |
+| 任意代码修改 | `docs/development/agent-guide.md`、相关头文件和相邻实现 |
+| 环境引导或缺少工具链 | `docs/development/environment-setup.md` |
+| BSP、引脚、总线、显示、音频、电池 | `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`、`components/bsp/include/bsp_pins.h` |
 | Demo 或菜单 | `main/demo.h`、`main/main.c`、最近的 `main/demo_*.c` 实现 |
-| 构建、测试、依赖、分区 | `docs/development/build-and-test.zh_CN.md`、`docs/development/ble-recovery-compatibility.zh_CN.md`、`sdkconfig.defaults`、`partitions.csv` |
-| CI 或发布 | `docs/development/CI-*.zh_CN.md` 中的对应文件与 `.github/workflows/` |
-| 项目开发完成 | `docs/development/project-completion.zh_CN.md`（再进入 `issue-suggestions` 或 `experience-pr` skill） |
-| 文档 | `docs/contribution/doc-conventions.zh_CN.md`、`docs/INDEX.zh_CN.md` |
-| Commit 或 PR | `docs/contribution/commit-and-pr.zh_CN.md` |
+| 构建、测试、依赖、分区 | `docs/development/build-and-test.md`、`docs/development/ble-recovery-compatibility.md`、`sdkconfig.defaults`、`partitions.csv` |
+| CI 或发布 | `docs/development/CI-*.md` 中的对应文件与 `.github/workflows/` |
+| 项目开发完成 | `docs/development/project-completion.md`（再进入 `issue-suggestions` 或 `experience-pr` skill） |
+| 文档 | `docs/contribution/doc-conventions.md`、`docs/INDEX.md` |
+| Commit 或 PR | `docs/contribution/commit-and-pr.md` |
 
-产品概览见 `docs/README.zh_CN.md`；需要发现更多文档时读 `docs/INDEX.zh_CN.md`。Fork 专用流程见 `docs/fork-guide.zh_CN.md`，普通上游开发无需读取。
+产品概览见 `docs/README.md`；需要发现更多文档时读 `docs/INDEX.md`。Fork 专用流程见 `docs/fork-guide.md`，普通上游开发无需读取。
 
 ## 必须执行的验证与交付格式
 
@@ -57,6 +57,6 @@ Device tests: PASS / FAIL / NOT RUN
 Unverified: 仍需板卡、仪器或用户确认的事项
 ```
 
-仅在用户请求或当前工作流明确要求时创建 commit 和 push。用户可见变化记录到 `docs/CHANGELOG.zh_CN.md`；内部重构、CI 维护、拼写修复和生成文件刷新无需记录。
+仅在用户请求或当前工作流明确要求时创建 commit 和 push。用户可见变化记录到 `docs/CHANGELOG.md`；内部重构、CI 维护、拼写修复和生成文件刷新无需记录。
 
-社区规范见 `.github/CONTRIBUTING.zh_CN.md`、`.github/CODE_OF_CONDUCT.zh_CN.md`、`.github/SECURITY.zh_CN.md` 与 `.github/SUPPORT.zh_CN.md`。
+社区规范见 `.github/CONTRIBUTING.md`、`.github/CODE_OF_CONDUCT.md`、`.github/SECURITY.md` 与 `.github/SUPPORT.md`。

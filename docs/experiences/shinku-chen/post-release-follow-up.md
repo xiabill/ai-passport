@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="post-release-follow-up.md">English</a>
+  <strong>简体中文</strong> · <a href="post-release-follow-up.en.md">English</a>
 </p>
 
 # 发布后收尾：AI Passport 发布流程的衔接
@@ -36,10 +36,10 @@ publisher skill 用设备码流程：跑 `authorize` 会打开官方创作者页
 
 - 发布前务必确认目的地（社区 vs Git）。
 - 确认合并镜像包含了（或随附发布了）出声所需的数据分区；不要假设"一个文件 = 整台设备"。
-- 每条发布后轨道只有经验是通用时才回上游；纯 fork 定制按 `fork-guide.md` 留在本地。
+- 每条发布后轨道只有经验是通用时才回上游；纯 fork 定制按 `fork-guide.en.md` 留在本地。
 
 ## 相关文档
 
-- `docs/development/publish-to-community.md` — 发布工作流。
-- `docs/development/project-completion.md` — 项目完成流程与门槛。
-- `docs/development/experience-notes.md` — 本条的索引。
+- `docs/development/publish-to-community.en.md` — 发布工作流。
+- `docs/development/project-completion.en.md` — 项目完成流程与门槛。
+- `docs/development/experience-notes.en.md` — 本条的索引。

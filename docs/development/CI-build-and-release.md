@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="CI-build-and-release.md">English</a>
+  <strong>简体中文</strong> · <a href="CI-build-and-release.en.md">English</a>
 </p>
 
 # 自动构建与发布（CI / Build & Release）
@@ -67,9 +67,9 @@ tag 触发的 Release 只有在合并固件与它的 Release 说明一起发布�
   要求。
 
 用英文写 Release 说明（项目双语时再配一份简体中文），并在 GitHub/GitLab Release 上链接它们。对
-用户可见的行为，保持与 `docs/CHANGELOG.md` 一致。
+用户可见的行为，保持与 `docs/CHANGELOG.en.md` 一致。
 
 ## 相关文件
 
 - `.github/workflows/build-firmware.yml`：本流水线定义。
-- 详见 `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`（硬件/烧录细节）。
+- 详见 `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md`（硬件/烧录细节）。

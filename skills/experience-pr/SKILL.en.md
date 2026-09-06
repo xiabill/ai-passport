@@ -4,7 +4,7 @@ description: After a firmware release, collect reusable development experience a
 ---
 
 <p align="right">
-  <a href="SKILL.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="SKILL.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Collect Development Experience and Submit a PR
@@ -98,10 +98,10 @@ before submitting:
   reusable interfaces or release-flow improvements). Submit these as a PR to the
   upstream `FoloToy/ai-passport`.
 - **Keep fork-specific customization in the fork** — product-customized
-  content, fork-private business rules, or fork-only assets that `fork-guide.md`
+  content, fork-private business rules, or fork-only assets that `fork-guide.en.md`
   says must not be proposed back to upstream. Do **not** submit these upstream;
   record them as a local documentation change instead (see
-  [`docs/fork-guide.md`](../../docs/fork-guide.md) and the fork README / `docs/assets/`).
+  [`docs/fork-guide.en.md`](../../docs/fork-guide.en.md) and the fork README / `docs/assets/`).
 
 Route each entry according to this split; do not send fork-specific
 customization to the upstream PR.
@@ -109,17 +109,17 @@ customization to the upstream PR.
 ## Write the experience entry
 
 Each experience capture may produce **one or more** entries, each as its own
-`.md` file with its paired `.zh_CN.md` under `docs/experiences/<username>/`,
+`.md` file with its paired `.en.md` under `docs/experiences/<username>/`,
 named after the entry's content summary in lowercase-kebab-case (for example
-`audio-compression-trade-offs.md`), where `<username>` is the contributing
+`audio-compression-trade-offs.en.md`), where `<username>` is the contributing
 developer's GitHub username (lowercase-kebab-case) grouping that developer's
 entries together. This repository requires English at the default `.md` path and a
-paired `.zh_CN.md`, with reciprocal language links and no Chinese prose in the
+paired `.en.md`, with reciprocal language links and no Chinese prose in the
 English file. Link each new entry from the index at
-`docs/development/experience-notes.md`.
+`docs/development/experience-notes.en.md`.
 
 A developer is not limited to one entry. The archive holds **one or more entries
-per developer**, each as its own `.md` file (with its paired `.zh_CN.md`) under
+per developer**, each as its own `.md` file (with its paired `.en.md`) under
 that developer's folder. Capture each reusable, post-release learning as a new
 entry rather than merging it into an existing one, so each entry stays a single,
 self-contained topic.
@@ -135,7 +135,7 @@ developer's current branch.
    Commit title, for example
    `docs(development): add post-release experience notes`) and push it to the
    developer's fork (`origin`).
-3. Fill the upstream `.github/PULL_REQUEST_TEMPLATE.md` completely, in English,
+3. Fill the upstream `.github/PULL_REQUEST_TEMPLATE.en.md` completely, in English,
    and report Build, Host tests, Device tests, and Unverified separately.
 4. Ask for separate confirmation, then open the PR from the fork branch against
    the upstream `FoloToy/ai-passport` through the first available GitHub channel
@@ -147,7 +147,7 @@ developer's current branch.
 
 Report the result as `Build`, `Host tests`, `Device tests`, and `Unverified`
 separately. A docs-only change has no firmware or host-test work, so report
-those as NOT RUN and note the reason. Update `docs/CHANGELOG.md` only if the
+those as NOT RUN and note the reason. Update `docs/CHANGELOG.en.md` only if the
 change affects user-visible behavior, compatibility, or the release workflow.
 
 ## What this skill does not do
@@ -159,10 +159,10 @@ change affects user-visible behavior, compatibility, or the release workflow.
 
 ## Related documents
 
-- Project completion overview: `docs/development/project-completion.md`
-- Experience index: `docs/development/experience-notes.md`
+- Project completion overview: `docs/development/project-completion.en.md`
+- Experience index: `docs/development/experience-notes.en.md`
 - Experience entries: `docs/experiences/`
-- Firmware publishing: `docs/development/publish-to-community.md`
-- PR template: `.github/PULL_REQUEST_TEMPLATE.md`
-- Contribution and commit rules: `docs/contribution/commit-and-pr.md`
-- Fork branch and PR workflow: `docs/fork-guide.md`
+- Firmware publishing: `docs/development/publish-to-community.en.md`
+- PR template: `.github/PULL_REQUEST_TEMPLATE.en.md`
+- Contribution and commit rules: `docs/contribution/commit-and-pr.en.md`
+- Fork branch and PR workflow: `docs/fork-guide.en.md`

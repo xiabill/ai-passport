@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="SECURITY.md">English</a>
+  <strong>简体中文</strong> · <a href="SECURITY.en.md">English</a>
 </p>
 
 # 安全漏洞报告

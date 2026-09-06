@@ -4,7 +4,7 @@ description: 固件发布之后，收集可复用的开发经验并作为文档 
 ---
 
 <p align="right">
-  <strong>简体中文</strong> · <a href="SKILL.md">English</a>
+  <strong>简体中文</strong> · <a href="SKILL.en.md">English</a>
 </p>
 
 # 收集开发经验并提交 PR
@@ -75,22 +75,22 @@ comm -23 \
   经验（例如通用的构建/验证改进、可公开的上游硬件事实、可复用的接口或发布流程改进）。这些
   作为 PR 提交到上游 `FoloToy/ai-passport`。
 - **留在 fork：纯 fork 产品定制** —— 产品定制内容、fork 私有的业务规则、或 fork 专属资源，
-  按 `fork-guide.md` 的规定**不得**提交回上游。这些**不要**提交上游；作为本地文档变更记录即可
-  （见 [`docs/fork-guide.md`](../../docs/fork-guide.md) 与 fork README / `docs/assets/`）。
+  按 `fork-guide.en.md` 的规定**不得**提交回上游。这些**不要**提交上游；作为本地文档变更记录即可
+  （见 [`docs/fork-guide.en.md`](../../docs/fork-guide.en.md) 与 fork README / `docs/assets/`）。
 
 按这个分流为每条经验定归属；不要把 fork 专属定制塞进上游 PR。
 
 ## 写入经验条目
 
-每次经验采集可产出**一条或多条**经验，每条是一个独立的 `.md` 文件并配其 `.zh_CN.md`，放在
+每次经验采集可产出**一条或多条**经验，每条是一个独立的 `.md` 文件并配其 `.en.md`，放在
 `docs/experiences/<username>/` 下，按条目内容概要命名（小写连字符，例如
-`audio-compression-trade-offs.md`），其中 `<username>` 是贡献开发者的 GitHub 用户名
+`audio-compression-trade-offs.en.md`），其中 `<username>` 是贡献开发者的 GitHub 用户名
 （英文小写连字符），把该开发者的条目聚在一起。
-本仓库要求默认 `.md` 路径用英文、配套 `.zh_CN.md`，两者互指语言链接，且英文文件中不得混入中文。
-从 `docs/development/experience-notes.md` 索引链接它。
+本仓库要求默认 `.md` 路径用简体中文、配套 `.en.md` 用英文，两者互指语言链接，且英文文件中不得混入中文。
+从 `docs/development/experience-notes.en.md` 索引链接它。
 
 开发者不限于一条经验。档案保存**每位开发者一条或多条经验**，每条都是该开发者文件夹下的独立
-`.md` 文件（含其配对 `.zh_CN.md`）。每一次可复用的、发布后沉淀的经验都应**新增一条**，而不是
+`.md` 文件（含其配对 `.en.md`）。每一次可复用的、发布后沉淀的经验都应**新增一条**，而不是
 并入已有条目，以保证每条都是一个独立、自包含的主题。
 
 让这个变更落在**独立分支或 worktree** 上。**不要**提交到开发者当前分支。
@@ -100,7 +100,7 @@ comm -23 \
 1. 把 diff 和草案交给开发者，确认分流归属（上游 vs 留在 fork），等待明确授权。
 2. 批准后在独立分支上 commit（英文祈使句 Conventional Commit 标题，例如
    `docs(development): add post-release experience notes`）并推到开发者的 fork（`origin`）。
-3. 用英文完整填写上游 `.github/PULL_REQUEST_TEMPLATE.md`，并分别上报 Build、Host tests、
+3. 用英文完整填写上游 `.github/PULL_REQUEST_TEMPLATE.en.md`，并分别上报 Build、Host tests、
    Device tests、Unverified。
 4. 开 PR 前单独征求确认，然后通过第一个可用的 GitHub 通道（GitHub MCP、GitHub skill、
    或 `gh pr create --repo FoloToy/ai-passport --base main --head <fork>:<branch>`）
@@ -110,7 +110,7 @@ comm -23 \
 
 按 `Build`、`Host tests`、`Device tests`、`Unverified` 分别上报。纯文档变更没有固件或
 host-test 工作，因此这些上报为 NOT RUN 并说明原因。仅当变更影响用户可见行为、兼容性或
-发布流程时更新 `docs/CHANGELOG.md`。
+发布流程时更新 `docs/CHANGELOG.en.md`。
 
 ## 本 skill 不做的事
 
@@ -121,10 +121,10 @@ host-test 工作，因此这些上报为 NOT RUN 并说明原因。仅当变更�
 
 ## 相关文档
 
-- 项目开发完成流程总览：`docs/development/project-completion.md`
-- 经验索引：`docs/development/experience-notes.md`
+- 项目开发完成流程总览：`docs/development/project-completion.en.md`
+- 经验索引：`docs/development/experience-notes.en.md`
 - 经验条目：`docs/experiences/`
-- 固件发布：`docs/development/publish-to-community.md`
-- PR 模板：`.github/PULL_REQUEST_TEMPLATE.md`
-- 贡献与提交规则：`docs/contribution/commit-and-pr.md`
-- fork 分支与 PR 工作流：`docs/fork-guide.md`
+- 固件发布：`docs/development/publish-to-community.en.md`
+- PR 模板：`.github/PULL_REQUEST_TEMPLATE.en.md`
+- 贡献与提交规则：`docs/contribution/commit-and-pr.en.md`
+- fork 分支与 PR 工作流：`docs/fork-guide.en.md`

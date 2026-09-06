@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="README.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Contribution Guidelines
@@ -10,5 +10,5 @@ Rules must state their trigger, required action, prohibited action, validation m
 
 ## Documents
 
-- [doc-conventions.md](doc-conventions.md): context routing, English-default bilingual documents, ownership, maintenance, and content safety.
-- [commit-and-pr.md](commit-and-pr.md): commit and pull-request conventions.
+- [doc-conventions.en.md](doc-conventions.en.md): context routing, English-default bilingual documents, ownership, maintenance, and content safety.
+- [commit-and-pr.en.md](commit-and-pr.en.md): commit and pull-request conventions.

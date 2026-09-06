@@ -1,14 +1,14 @@
 <p align="right">
-  <a href="agent-guide.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="agent-guide.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # AI Agent Development Guide
 
-This guide is for AI coding assistants. `AGENTS.md` is the only mandatory starting document; read this guide for code work and route to hardware or engineering references only when the task requires them.
+This guide is for AI coding assistants. `AGENTS.en.md` is the only mandatory starting document; read this guide for code work and route to hardware or engineering references only when the task requires them.
 
 ## Establish context
 
-1. Read `AGENTS.md` and follow its task routing. Do not load every README or the entire hardware guide by default.
+1. Read `AGENTS.en.md` and follow its task routing. Do not load every README or the entire hardware guide by default.
 2. Run `git status --short --branch` and preserve existing changes.
 3. Read affected public headers, implementations, and neighboring code. Do not infer this board's behavior from a generic ESP32-C3 board.
 4. Search `origin/demo/*` for a relevant example and reuse only applicable design ideas.
@@ -21,7 +21,7 @@ This guide is for AI coding assistants. `AGENTS.md` is the only mandatory starti
 product specification / measurement
   > components/bsp/include/bsp_pins.h
   > BSP public headers and implementation
-  > docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md
+  > docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md
   > README and demo applications
 ```
 
@@ -54,10 +54,10 @@ Only reusable hardware capabilities belong in the BSP. Document blocking behavio
 
 ## Material placement
 
-When the developer submits a reusable asset through you — an image, font, audio clip, or similar project material — save it under the repository-root [`assets/`](../../assets/README.md) by default so it stays available for development and later reuse. Place it in the matching subdirectory (`assets/images/`, `assets/fonts/`, `assets/music/`) and, in that subdirectory's README, record the destination, naming, integration method, and source/license. Never mix binary assets with Markdown documentation. Application or experience archive records (cover, manual, summary) belong in `plays/` or `docs/experiences/`, not in `assets/`; deviate from `assets/` only when the developer explicitly directs another location.
+When the developer submits a reusable asset through you — an image, font, audio clip, or similar project material — save it under the repository-root [`assets/`](../../assets/README.en.md) by default so it stays available for development and later reuse. Place it in the matching subdirectory (`assets/images/`, `assets/fonts/`, `assets/music/`) and, in that subdirectory's README, record the destination, naming, integration method, and source/license. Never mix binary assets with Markdown documentation. Application or experience archive records (cover, manual, summary) belong in `plays/` or `docs/experiences/`, not in `assets/`; deviate from `assets/` only when the developer explicitly directs another location.
 
 ## Delivery
 
-The automated gate is not hardware acceptance. Report `Build`, `Host tests`, `Device tests`, and `Unverified` separately. Use the [hardware guide](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the applicable on-device matrix.
+The automated gate is not hardware acceptance. Report `Build`, `Host tests`, `Device tests`, and `Unverified` separately. Use the [hardware guide](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md) for the applicable on-device matrix.
 
-Related documents: [build and test](build-and-test.md), [coding conventions](coding-conventions.md), [hardware guide](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md), and [documentation index](../INDEX.md).
+Related documents: [build and test](build-and-test.en.md), [coding conventions](coding-conventions.en.md), [hardware guide](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md), and [documentation index](../INDEX.en.md).

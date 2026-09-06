@@ -1,12 +1,12 @@
 <p align="right">
-  <a href="file-issue.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="file-issue.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Action F: File an Issue
 
 This action gathers the releasing developer's own improvement points and files
 them as feature request issues against the upstream project. It is one of the six
-optional closing actions listed in the [project completion](../project-completion.md).
+optional closing actions listed in the [project completion](../project-completion.en.md).
 
 The workflow is driven by the `issue-suggestions` skill. Issues are filed against
 the upstream project, not the fork.
@@ -27,10 +27,10 @@ the upstream project, not the fork.
 
 - Never include credentials, device QR secrets, private device links, personal
   data, or unsanitized logs.
-- Security vulnerabilities go through `.github/SECURITY.md`, not a public issue.
+- Security vulnerabilities go through `.github/SECURITY.en.md`, not a public issue.
 
 ## Related documents
 
-- Filing issues reference: [file-issues.md](../file-issues.md)
-- Skill: [issue-suggestions](../../../skills/issue-suggestions/SKILL.md)
+- Filing issues reference: [file-issues.en.md](../file-issues.en.md)
+- Skill: [issue-suggestions](../../../skills/issue-suggestions/SKILL.en.md)
 - Issue template: [.github/ISSUE_TEMPLATE/feature_request.yml](../../../.github/ISSUE_TEMPLATE/feature_request.yml)

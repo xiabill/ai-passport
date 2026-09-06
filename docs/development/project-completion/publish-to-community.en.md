@@ -1,12 +1,12 @@
 <p align="right">
-  <a href="publish-to-community.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="publish-to-community.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Action A: Publish to the Community Market
 
 This action releases the firmware to the AI Passport community market. It is one
 of the six optional closing actions listed in the
-[project completion](../project-completion.md).
+[project completion](../project-completion.en.md).
 
 The workflow is driven by the official publisher skill. Running the prompt once
 makes the assistant install the skill from the official bundle; nothing is
@@ -24,7 +24,7 @@ committed into the repository.
 
 ## Output
 
-These values form the [published profile](../project-completion.md#published-profile) that
+These values form the [published profile](../project-completion.en.md#published-profile) that
 the other closing actions reuse:
 
 - Application name.
@@ -54,4 +54,4 @@ the other closing actions reuse:
 
 ## Related documents
 
-- Community publishing reference: [publish-to-community.md](../publish-to-community.md)
+- Community publishing reference: [publish-to-community.en.md](../publish-to-community.en.md)

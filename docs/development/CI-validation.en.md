@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="CI-validation.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="CI-validation.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Pull Request Validation
@@ -21,6 +21,6 @@ source <path-to-esp-idf-v5.5.3>/export.sh
 ./tools/validate.sh --firmware
 ```
 
-Follow the [environment bootstrap](environment-setup.md) if ESP-IDF 5.5.3 is
+Follow the [environment bootstrap](environment-setup.en.md) if ESP-IDF 5.5.3 is
 not installed. Reproduce a CI failure with the same mode locally. Do not
 maintain duplicate validation commands inside the workflow.

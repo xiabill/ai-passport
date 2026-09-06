@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="README.md">English</a>
+  <strong>简体中文</strong> · <a href="README.en.md">English</a>
 </p>
 
 # 今天吃啥 (What to Eat Today)

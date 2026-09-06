@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="ble-recovery-compatibility.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="ble-recovery-compatibility.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Mini-Program BLE Firmware Compatibility

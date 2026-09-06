@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="softap-provisioning-and-resource-budget.md">English</a>
+  <strong>简体中文</strong> · <a href="softap-provisioning-and-resource-budget.en.md">English</a>
 </p>
 
 # AI Passport SoftAP 配网与资源预算经验

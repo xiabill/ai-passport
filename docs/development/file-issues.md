@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="file-issues.md">English</a>
+  <strong>简体中文</strong> · <a href="file-issues.en.md">English</a>
 </p>
 
 # 提交 issue
@@ -51,10 +51,10 @@ issue 用于提交围绕固件、BSP、硬件或文档的用户建议、功能�
 ## 安全
 
 永远不要包含凭证、设备 QR 密钥、私密设备链接、个人数据或未脱敏日志。安全漏洞走
-`.github/SECURITY.md`，不要用公开 issue。
+`.github/SECURITY.en.md`，不要用公开 issue。
 
 ## 相关文档
 
-- 项目开发完成流程总览：[project-completion.md](project-completion.md)
-- issue skill：[`../../skills/issue-suggestions/SKILL.md`](../../skills/issue-suggestions/SKILL.md)
-- 固件发布：[publish-to-community.md](publish-to-community.md)
+- 项目开发完成流程总览：[project-completion.en.md](project-completion.en.md)
+- issue skill：[`../../skills/issue-suggestions/SKILL.en.md`](../../skills/issue-suggestions/SKILL.en.md)
+- 固件发布：[publish-to-community.en.md](publish-to-community.en.md)

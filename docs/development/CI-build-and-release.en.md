@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="CI-build-and-release.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="CI-build-and-release.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Automated Build and Release
@@ -14,7 +14,7 @@ All Actions are pinned to full commit SHAs. The build job has `contents: read`; 
 
 Open `https://ai-passport.folotoy.cn/tools/web-flasher/`, connect the USB JTAG/serial device, select the release's merged `FoloToy-AI-Passport-full.bin`, choose a baud rate such as 460800, and write it from `0x0`. The browser performs local writing and verification; it does not upload the firmware file.
 
-For board and flashing details, see [the hardware development guide](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
+For board and flashing details, see [the hardware development guide](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md).
 
 ## Release title
 
@@ -60,9 +60,9 @@ things:
 
 Write the release notes in English (and a Simplified Chinese version where the
 project is bilingual) and link them from the GitHub/GitLab release. Keep them
-consistent with `docs/CHANGELOG.md` for user-visible behavior.
+consistent with `docs/CHANGELOG.en.md` for user-visible behavior.
 
 ## Related documents
 
-- Firmware publishing to the community: [publish-to-community.md](publish-to-community.md)
-- Post-release follow-up: [project-completion.md](project-completion.md)
+- Firmware publishing to the community: [publish-to-community.en.md](publish-to-community.en.md)
+- Post-release follow-up: [project-completion.en.md](project-completion.en.md)

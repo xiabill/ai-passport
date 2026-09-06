@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="project-completion.md">English</a>
+  <strong>简体中文</strong> · <a href="project-completion.en.md">English</a>
 </p>
 
 # 项目开发完成流程
@@ -27,17 +27,17 @@
 
 | 编号 | 动作 | 参考 |
 | --- | --- | --- |
-| A | 发布到社区市场 | [publish-to-community.md](project-completion/publish-to-community.md) |
-| B | 发布到 Git 并更新版本 | [release-update.md](project-completion/release-update.md) |
+| A | 发布到社区市场 | [publish-to-community.en.md](project-completion/publish-to-community.en.md) |
+| B | 发布到 Git 并更新版本 | [release-update.en.md](project-completion/release-update.en.md) |
 
 ### 沉淀
 
 | 编号 | 动作 | 参考 |
 | --- | --- | --- |
-| C | 发布经验 | [experience.md](project-completion/experience.md) |
-| D | 归档应用到 plays | [archive-plays.md](project-completion/archive-plays.md) |
-| E | 更新根 README | [readme-update.md](project-completion/readme-update.md) |
-| F | 提交 issue | [file-issue.md](project-completion/file-issue.md) |
+| C | 发布经验 | [experience.en.md](project-completion/experience.en.md) |
+| D | 归档应用到 plays | [archive-plays.en.md](project-completion/archive-plays.en.md) |
+| E | 更新根 README | [readme-update.en.md](project-completion/readme-update.en.md) |
+| F | 提交 issue | [file-issue.en.md](project-completion/file-issue.en.md) |
 
 每个动作都指向 [`project-completion/`](project-completion/) 下的一份专门文档，文档写明驱动它的仓库 skill 或权威文档。这里不重写 skill；动作文档引用它们。
 
@@ -87,7 +87,7 @@ flowchart TD
 
 ## 发布后的真机验证
 
-当交付动作（A 或 B）产出了合并完整构建时，在把项目视为完成前先到真机验证。下载该 release 的合并完整固件（`FoloToy-AI-Passport-full.bin`，从 `0x0` 烧录的完整构建），烧录到设备并确认正常运行。不要把一次成功的构建或上传当作硬件验证：这一步证明 release 实际指向的产物能在真实硬件上启动并工作。产物来自 release 资产（CI/CD 的 `full.bin`），或对无 CI 产物的 Git release，来自开发者本地构建的 `full.bin`。若不能运行，先停下修复，再继续收口。产物与烧录见 [`CI-build-and-release.md`](CI-build-and-release.md)。
+当交付动作（A 或 B）产出了合并完整构建时，在把项目视为完成前先到真机验证。下载该 release 的合并完整固件（`FoloToy-AI-Passport-full.bin`，从 `0x0` 烧录的完整构建），烧录到设备并确认正常运行。不要把一次成功的构建或上传当作硬件验证：这一步证明 release 实际指向的产物能在真实硬件上启动并工作。产物来自 release 资产（CI/CD 的 `full.bin`），或对无 CI 产物的 Git release，来自开发者本地构建的 `full.bin`。若不能运行，先停下修复，再继续收口。产物与烧录见 [`CI-build-and-release.en.md`](CI-build-and-release.en.md)。
 
 ## 共同的安全与同意门槛
 
@@ -101,6 +101,6 @@ flowchart TD
 
 ## 相关文档
 
-- 固件发布：[publish-to-community.md](publish-to-community.md)
-- Fork 工作流与根 README 归属：[fork-guide.md](../fork-guide.md)
-- 提交与 PR 规则：[commit-and-pr.md](../contribution/commit-and-pr.md)
+- 固件发布：[publish-to-community.en.md](publish-to-community.en.md)
+- Fork 工作流与根 README 归属：[fork-guide.en.md](../fork-guide.en.md)
+- 提交与 PR 规则：[commit-and-pr.en.md](../contribution/commit-and-pr.en.md)

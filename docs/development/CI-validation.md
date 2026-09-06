@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="CI-validation.md">English</a>
+  <strong>简体中文</strong> · <a href="CI-validation.en.md">English</a>
 </p>
 
 # PR 自动验证（CI Validation）
@@ -21,5 +21,5 @@ source <ESP-IDF-v5.5.3-路径>/export.sh
 ./tools/validate.sh --firmware
 ```
 
-未安装 ESP-IDF 5.5.3 时先按[环境引导](environment-setup.zh_CN.md)搭建。CI
+未安装 ESP-IDF 5.5.3 时先按[环境引导](environment-setup.md)搭建。CI
 失败应先在本地运行相同模式。不要在 workflow 中复制另一套构建或校验命令。

@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="AI_HARDWARE_DEVELOPMENT_GUIDE.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # FoloToy AI Passport Hardware Development Guide
@@ -11,12 +11,12 @@ This is the board-level context for AI coding assistants and new developers. It 
 Document scope:
 
 - Applicable target: the ESP32-C3 FoloToy AI Passport mapping implemented by this repository.
-- Product specifications are in [specifications.md](specifications.md); firmware behavior follows `bsp_pins.h`, BSP implementations, `sdkconfig.defaults`, `partitions.csv`, and the demo code.
+- Product specifications are in [specifications.en.md](specifications.en.md); firmware behavior follows `bsp_pins.h`, BSP implementations, `sdkconfig.defaults`, `partitions.csv`, and the demo code.
 - Code audit date: 2026-08-26.
 
 ## 1. Before changing hardware-facing code
 
-1. Read `AGENTS.md`, this guide, and the affected BSP header/implementation.
+1. Read `AGENTS.en.md`, this guide, and the affected BSP header/implementation.
 2. Run `git status --short --branch` and preserve unrelated changes.
 3. Put reusable hardware behavior in `components/bsp`; keep menu, animation, product interaction, and validation pages in `main`.
 4. Keep pins, I2C addresses, and panel dimensions in `bsp_pins.h` only.
@@ -171,7 +171,7 @@ The current product and firmware baseline uses 8 MB Flash. `sdkconfig.defaults` 
 
 Do not erase a provisioned device or move/overlap the protected partitions.
 Community firmware contains neither device identity nor a replacement Recovery
-payload. See the [BLE compatibility contract](../development/ble-recovery-compatibility.md).
+payload. See the [BLE compatibility contract](../development/ble-recovery-compatibility.en.md).
 
 The console is USB Serial/JTAG. Do not switch to the UART0 default output without resolving its GPIO21 conflict with the backlight.
 
@@ -187,7 +187,7 @@ Menu initialization status arrays implicitly follow `DEMOS[]` order; update and 
 
 ## 12. Development environment
 
-Follow the canonical [environment bootstrap](../development/environment-setup.md)
+Follow the canonical [environment bootstrap](../development/environment-setup.en.md)
 for clean-machine installation, OS-specific prerequisites, and international or
 mainland China download routes. Use ESP-IDF 5.5.3 outside the repository,
 activate its `export.sh` in every terminal, and confirm the exact version.

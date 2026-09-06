@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="README.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Plays
@@ -8,10 +8,10 @@ This directory, in the upstream `FoloToy/ai-passport` repository, is the
 application archive of the plays built for the AI Passport. It is for
 **querying** what each application does and how it works, using an AI-generated
 functional summary per application. Use the
-[`INDEX.md`](INDEX.md) to discover the archived plays and jump to a
+[`INDEX.en.md`](INDEX.en.md) to discover the archived plays and jump to a
 per-application summary. It is linked to the community publishing flow: after
 publishing a firmware
-([`docs/development/publish-to-community.md`](../docs/development/publish-to-community.md)),
+([`docs/development/publish-to-community.en.md`](../docs/development/publish-to-community.en.md)),
 the assistant asks whether to archive the application here, proposing it back to
 upstream.
 
@@ -30,7 +30,7 @@ project to build on instead of from scratch:
 Each play subdirectory is an archive of a real, working application; its summary
 is the starting point for deciding whether to extend or reference it. Alongside
 the application archive, also check
-[`docs/development/experience-notes.md`](../docs/development/experience-notes.md)
+[`docs/development/experience-notes.en.md`](../docs/development/experience-notes.en.md)
 for previously recorded, reusable experience from other developer runs.
 
 ## Directory convention
@@ -43,8 +43,8 @@ published or ready to be recorded; do not pre-create empty scaffolding.
 
 ```
 plays/<username>/<app-name>/
-  README.md / README.zh_CN.md   # AI-generated bilingual functional summary
-  <topic>-guide.md (+ .zh_CN.md)  # optional manual / how-to, not experience
+  README.en.md / README.md   # AI-generated bilingual functional summary
+  <topic>-guide.md (+ .en.md)  # optional manual / how-to, not experience
 ```
 
 `<username>` is the contributor's GitHub username (lowercase-kebab-case, e.g.
@@ -61,7 +61,7 @@ entries belong under [`docs/experiences/<username>/`](../docs/experiences/).
 
 ## What the per-application README contains
 
-The per-application `README.md` (and its Simplified Chinese peer) is an
+The per-application `README.en.md` (and its Simplified Chinese peer) is an
 AI-generated functional summary written for later querying, not a publishing
 artifact. It records:
 
@@ -78,7 +78,7 @@ artifact. It records:
 
 Write it by summarizing the application's implementation and behavior, in
 English at the default `.md` path and Simplified Chinese at the paired
-`.zh_CN.md`, aligned in the same change.
+`.en.md`, aligned in the same change.
 
 ## Cover image
 
@@ -89,7 +89,7 @@ publication.
 
 When generating a cover for the community publication (not for the archive), use
 the official product references under
-[`docs/assets/brand/`](../docs/assets/brand/README.md). Always pass a reference
+[`docs/assets/brand/`](../docs/assets/brand/README.en.md). Always pass a reference
 (e.g. `ai-passport-front.png` or a colorway shell render) as input to the
 generation call, keep its shell, buttons, ports, and key-ring hole as they are,
 and redraw only the reference's screen region into the play's actual on-screen
@@ -104,6 +104,6 @@ artifact produced by the build flow, not an in-repository asset.
 
 ## Related
 
-- Archive index: [`INDEX.md`](INDEX.md)
-- Repository overview and demo branches: [`../docs/README.md`](../docs/README.md)
-- Software design index: [`../docs/software-design/README.md`](../docs/software-design/README.md)
+- Archive index: [`INDEX.en.md`](INDEX.en.md)
+- Repository overview and demo branches: [`../docs/README.en.md`](../docs/README.en.md)
+- Software design index: [`../docs/software-design/README.en.md`](../docs/software-design/README.en.md)

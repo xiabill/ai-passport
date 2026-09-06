@@ -4,7 +4,7 @@ description: After a firmware release, gather the releasing developer's own impr
 ---
 
 <p align="right">
-  <a href="SKILL.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="SKILL.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Collect Suggestions and File Issues
@@ -12,7 +12,7 @@ description: After a firmware release, gather the releasing developer's own impr
 This skill turns the releasing developer's own improvement points into
 actionable GitHub issues against the upstream `FoloToy/ai-passport` project. It
 runs only after a firmware release has been published (see
-`docs/development/publish-to-community.md` for publishing itself) and only when
+`docs/development/publish-to-community.en.md` for publishing itself) and only when
 the developer explicitly asks to collect suggestions.
 
 ## Safety and consent gate (run first)
@@ -89,8 +89,8 @@ matching entry:
 
 ## Related documents
 
-- Project completion overview: `docs/development/project-completion.md`
-- Filing issues: `docs/development/file-issues.md`
-- Firmware publishing: `docs/development/publish-to-community.md`
+- Project completion overview: `docs/development/project-completion.en.md`
+- Filing issues: `docs/development/file-issues.en.md`
+- Firmware publishing: `docs/development/publish-to-community.en.md`
 - Issue template: `.github/ISSUE_TEMPLATE/feature_request.yml`
-- Contribution and commit rules: `docs/contribution/commit-and-pr.md`
+- Contribution and commit rules: `docs/contribution/commit-and-pr.en.md`

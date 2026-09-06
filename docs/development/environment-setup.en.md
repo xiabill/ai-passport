@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="environment-setup.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="environment-setup.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Environment Bootstrap for AI Agents

@@ -1,10 +1,10 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="file-issue.md">English</a>
+  <strong>简体中文</strong> · <a href="file-issue.en.md">English</a>
 </p>
 
 # 动作 F：提交 issue
 
-本动作收集发布固件的开发者本人的改进点，把有价值的整理成功能建议 issue，提交到上游项目。它是[项目开发完成流程](../project-completion.md)列出的六项可选动作之一。
+本动作收集发布固件的开发者本人的改进点，把有价值的整理成功能建议 issue，提交到上游项目。它是[项目开发完成流程](../project-completion.en.md)列出的六项可选动作之一。
 
 工作流由 `issue-suggestions` skill 驱动。issue 提交到上游项目，而不是 fork。
 
@@ -21,10 +21,10 @@
 ## 安全
 
 - 绝不包含凭证、设备 QR 密钥、私密设备链接、个人数据或未脱敏日志。
-- 安全漏洞走 `.github/SECURITY.md`，不通过公开 issue。
+- 安全漏洞走 `.github/SECURITY.en.md`，不通过公开 issue。
 
 ## 相关文档
 
-- 提交 issue 参考：[file-issues.md](../file-issues.md)
-- Skill：[issue-suggestions](../../../skills/issue-suggestions/SKILL.md)
+- 提交 issue 参考：[file-issues.en.md](../file-issues.en.md)
+- Skill：[issue-suggestions](../../../skills/issue-suggestions/SKILL.en.md)
 - issue 模板：[.github/ISSUE_TEMPLATE/feature_request.yml](../../../.github/ISSUE_TEMPLATE/feature_request.yml)

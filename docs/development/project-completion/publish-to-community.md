@@ -1,10 +1,10 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="publish-to-community.md">English</a>
+  <strong>简体中文</strong> · <a href="publish-to-community.en.md">English</a>
 </p>
 
 # 动作 A：发布到社区市场
 
-本动作把固件发布到 AI Passport 社区市场。它是[项目开发完成流程](../project-completion.md)列出的六项可选动作之一。
+本动作把固件发布到 AI Passport 社区市场。它是[项目开发完成流程](../project-completion.en.md)列出的六项可选动作之一。
 
 工作流由官方发布 skill 驱动。运行一次提示词，让助手从官方包安装 skill；仓库无需提交任何东西。
 
@@ -16,7 +16,7 @@
 
 ## 输出
 
-这些值构成[共享发布属性](../project-completion.md#共享发布属性)，供其它收尾动作复用：
+这些值构成[共享发布属性](../project-completion.en.md#共享发布属性)，供其它收尾动作复用：
 
 - 应用名。
 - 双语发布标题与简介。
@@ -42,4 +42,4 @@
 
 ## 相关文档
 
-- 社区发布参考：[publish-to-community.md](../publish-to-community.md)
+- 社区发布参考：[publish-to-community.en.md](../publish-to-community.en.md)

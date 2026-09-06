@@ -1,5 +1,5 @@
 <p align="right">
-  <a href="AGENTS.zh_CN.md">简体中文</a> · <strong>English</strong>
+  <a href="AGENTS.md">简体中文</a> · <strong>English</strong>
 </p>
 
 # Repository Guidelines for AI Agents
@@ -20,23 +20,23 @@ This file is the only mandatory entry point for AI-assisted work in this reposit
 - A demo must stop every task, timer, callback, and event handler that can access its UI before deleting the screen.
 - Keep testable state machines, protocols, timing, and layout calculations independent from ESP-IDF/LVGL and cover them with host tests.
 - Never commit credentials, device QR secrets, private keys, personal data, or unsanitized logs.
-- Every maintained Markdown document uses English at its default `.md` path and Simplified Chinese in a paired `.zh_CN.md` file. Keep both versions aligned and retain reciprocal language links.
+- Every maintained Markdown document uses Simplified Chinese at its default `.md` path and English in a paired `.en.md` file. Keep both versions aligned and retain reciprocal language links.
 
 ## Task-specific context routing
 
 | Task | Read before editing |
 | --- | --- |
-| Any code change | `docs/development/agent-guide.md`, relevant headers and neighboring implementation |
-| Environment bootstrap or missing toolchain | `docs/development/environment-setup.md` |
-| BSP, pins, buses, display, audio, battery | `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`, `components/bsp/include/bsp_pins.h` |
+| Any code change | `docs/development/agent-guide.en.md`, relevant headers and neighboring implementation |
+| Environment bootstrap or missing toolchain | `docs/development/environment-setup.en.md` |
+| BSP, pins, buses, display, audio, battery | `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.en.md`, `components/bsp/include/bsp_pins.h` |
 | Demo or menu | `main/demo.h`, `main/main.c`, the nearest `main/demo_*.c` implementation |
-| Build, test, dependencies, partitions | `docs/development/build-and-test.md`, `docs/development/ble-recovery-compatibility.md`, `sdkconfig.defaults`, `partitions.csv` |
+| Build, test, dependencies, partitions | `docs/development/build-and-test.en.md`, `docs/development/ble-recovery-compatibility.en.md`, `sdkconfig.defaults`, `partitions.csv` |
 | CI or release | the matching file in `docs/development/CI-*.md` and `.github/workflows/` |
-| Project completion | `docs/development/project-completion.md` (then the `issue-suggestions` or `experience-pr` skill) |
-| Documentation | `docs/contribution/doc-conventions.md`, `docs/INDEX.md` |
-| Commit or PR | `docs/contribution/commit-and-pr.md` |
+| Project completion | `docs/development/project-completion.en.md` (then the `issue-suggestions` or `experience-pr` skill) |
+| Documentation | `docs/contribution/doc-conventions.en.md`, `docs/INDEX.en.md` |
+| Commit or PR | `docs/contribution/commit-and-pr.en.md` |
 
-Use `docs/README.md` for the product overview and `docs/INDEX.md` when a task needs additional documentation. Fork-specific workflow is in `docs/fork-guide.md` and is not required for ordinary upstream development.
+Use `docs/README.en.md` for the product overview and `docs/INDEX.en.md` when a task needs additional documentation. Fork-specific workflow is in `docs/fork-guide.en.md` and is not required for ordinary upstream development.
 
 ## Required validation and delivery
 
@@ -57,6 +57,6 @@ Device tests: PASS / FAIL / NOT RUN
 Unverified: remaining board, instrument, or user checks
 ```
 
-Create commits and push only when the user requests them or the active workflow explicitly requires them. Record user-visible changes in `docs/CHANGELOG.md`; internal refactors, CI maintenance, typo fixes, and generated-file refreshes do not require a changelog entry.
+Create commits and push only when the user requests them or the active workflow explicitly requires them. Record user-visible changes in `docs/CHANGELOG.en.md`; internal refactors, CI maintenance, typo fixes, and generated-file refreshes do not require a changelog entry.
 
-Community guidance is in `.github/CONTRIBUTING.md`, `.github/CODE_OF_CONDUCT.md`, `.github/SECURITY.md`, and `.github/SUPPORT.md`.
+Community guidance is in `.github/CONTRIBUTING.en.md`, `.github/CODE_OF_CONDUCT.en.md`, `.github/SECURITY.en.md`, and `.github/SUPPORT.en.md`.
