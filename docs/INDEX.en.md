@@ -20,6 +20,7 @@ Use this page to discover repository documentation. `authoritative` documents de
 | [development/vibe-typeless.en.md](development/vibe-typeless.en.md) | Vibe Typeless companion firmware and Mac bridge | reference |
 | [development/environment-setup.en.md](development/environment-setup.en.md) | Clean-machine environment bootstrap for AI agents | authoritative |
 | [development/build-and-test.en.md](development/build-and-test.en.md) | Build and validation commands | authoritative |
+| [development/ota-plan.en.md](development/ota-plan.en.md) | Partition layout and transport for remote OTA (not implemented) | reference |
 | [development/ble-recovery-compatibility.en.md](development/ble-recovery-compatibility.en.md) | Mini-program BLE firmware compatibility contract | authoritative |
 | [development/coding-conventions.en.md](development/coding-conventions.en.md) | C and firmware conventions | authoritative |
 | [development/CI-validation.en.md](development/CI-validation.en.md) | Pull-request and main-branch validation | authoritative |
