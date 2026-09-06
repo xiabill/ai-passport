@@ -9,7 +9,7 @@
 - ESP32-C3 固件（`main/`）：采集设备麦克风，把 16 kHz PCM 编成 IMA-ADPCM，通过 BLE 发送音频，绘制 VIBE 屏幕并上报按键事件。
 - macOS 伴侣（`tools/mac-bridge/`）：连接设备、解码音频、把 PCM 写入 `BlackHole 2ch`，监控 Typeless，并发送 Typeless 三种模式、豆包和回车按键。
 
-仓库是公开的，当前实现位于 [`feature/vibe-typeless`](https://github.com/xiabill/ai-passport/tree/feature/vibe-typeless)。上游 `main` 保持干净的硬件基线。
+仓库是公开的，维护版本位于 [`main`](https://github.com/xiabill/ai-passport/tree/main)。普通用户可以从 [GitHub Releases](https://github.com/xiabill/ai-passport/releases/latest) 下载配套的 Bridge 和固件，开发者则可以按本教程从源码构建。
 
 ## 工作链路
 
@@ -73,7 +73,7 @@ cd tools/mac-bridge
 open FoloVibeBridge.app
 ```
 
-`build.sh` 会先运行核心测试，再构建 release 可执行文件，并默认安装到 `/Applications/FoloVibeBridge.app`；同时保留仓库目录下的本地 bundle。应用不把机器相关的二进制提交到仓库，其他人下载源码后可以自行构建。状态页和设置页包含授权/音频设置向导，用户从系统设置返回后可点击“再次检查”确认状态。
+`build.sh` 会先运行核心测试，再构建 release 可执行文件，并默认安装到 `/Applications/FoloVibeBridge.app`；同时保留仓库目录下的本地 bundle。仓库不提交依赖机器环境的 `.app`；正式构建会作为 GitHub Release 资产提供下载。状态页和设置页包含授权/音频设置向导，用户从系统设置返回后可点击“再次检查”确认状态。
 
 首次打开后：
 

@@ -4,9 +4,9 @@
 
 # Automated Build and Release
 
-`.github/workflows/build-firmware.yml` builds and publishes firmware for tags and supports manual dispatch. Ordinary branch pushes do not trigger it. Keep this page synchronized with the workflow.
+`.github/workflows/build-firmware.yml` builds and publishes the matching macOS Bridge and firmware for tags and supports manual dispatch. Ordinary branch pushes do not trigger it. Keep this page synchronized with the workflow.
 
-The build job restores ccache, runs `./tools/validate.sh --firmware` with ESP-IDF 5.5.3 for ESP32-C3, verifies the bootloader at `0x0`, partition table at `0x8000`, application at `0x10000`, 8 MB Flash arguments, and the complete mini-program BLE compatibility contract, then uploads `FoloToy-AI-Passport-full.bin`. A separate least-privilege release job publishes that artifact only for a tag.
+The firmware job restores ccache, runs `./tools/validate.sh --firmware` with ESP-IDF 5.5.3 for ESP32-C3, verifies the bootloader at `0x0`, partition table at `0x8000`, application at `0x10000`, 8 MB Flash arguments, and the complete mini-program BLE compatibility contract. A macOS 14 job runs the Bridge tests and packages `FoloVibeBridge-macos.zip`. A separate least-privilege release job publishes both assets only for a tag.
 
 All Actions are pinned to full commit SHAs. The build job has `contents: read`; only the tag release job receives `contents: write`.
 
@@ -38,6 +38,10 @@ make sure the release title shows both.
 - **Keep title and tag consistent.** Use `<version>-<app-name>` so the app name
   is visible in both the tag list and the release list. Do not rely on a
   human-readable body alone to carry the app name.
+
+For this Vibe Typeless app, use a tag such as `v0.2.2-vibe-typeless`. Its Release
+should contain both `FoloVibeBridge-macos.zip` and
+`FoloToy-AI-Passport-full.bin`.
 
 ## Release notes
 

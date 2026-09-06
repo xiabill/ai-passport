@@ -10,6 +10,8 @@ It receives IMA-ADPCM frames over BLE, plays them into `BlackHole 2ch`, and taps
 
 For the end-to-end firmware, BLE, Typeless, flashing, permissions, and troubleshooting tutorial, see [the Vibe guide](../../docs/development/vibe-typeless.md).
 
+For people who only want to use the app, download the latest `FoloVibeBridge-macos.zip` from [GitHub Releases](https://github.com/xiabill/ai-passport/releases/latest). Source-build instructions are below.
+
 ## Windows
 
 | Tab | Contents |
@@ -28,6 +30,8 @@ open /Applications/FoloVibeBridge.app
 ```
 
 `./build.sh` runs `swift run FoloVibeCoreTests`, packages the app, and installs it to `/Applications/FoloVibeBridge.app` by default. Full Xcode is not required; a Swift 5.9+ toolchain and Apple Command Line Tools are enough. The status and settings pages include a guided setup flow with permission/setup checks and a “Check again” action after returning from System Settings. Grant Bluetooth and Accessibility/Input Monitoring. Set Typeless to the Typeless key (default Fn), Doubao to the Doubao key (default Right Option in toggle mode), and both microphones to `BlackHole 2ch`.
+
+The release package is unsigned and not notarized. If macOS blocks the first launch, Control-click the app in Finder, choose **Open**, and confirm. The app requires macOS 13 or newer.
 
 The status page includes audio-effect tests for the configured output, a Passport microphone record/playback round, and BLE packet/loss checks. Every mapping in Settings supports both a picker and direct key capture. If BlackHole is missing, the setup guide can open its official installation page and macOS Sound settings.
 
