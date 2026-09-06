@@ -80,6 +80,13 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
         }
     }
 
+    /// Two recording actions drive the same input method when they are equal,
+    /// or when both are Typeless modes. Mirrors VIBE_ACT_SAME_INPUT so the
+    /// device and the bridge agree on what may stop a take.
+    public func drivesSameInput(as other: ButtonAction) -> Bool {
+        self == other || (isTypeless && other.isTypeless)
+    }
+
     public var isTypeless: Bool {
         switch self {
         case .typelessDictate, .typelessTranslate, .typelessAsk: return true
@@ -119,17 +126,18 @@ public struct ButtonMap: Codable, Equatable {
         return out
     }
 
-    /// Mirrors what the firmware used to hardcode, so an existing user keeps
-    /// the same behaviour after upgrading.
+    /// Laid out for the thumb rather than for the old firmware: the two input
+    /// methods sit on the outer keys and confirm sits in the middle, where the
+    /// finger rests.
     public static let `default`: ButtonMap = {
         var map = ButtonMap()
-        map.set(.mid, .click, .typelessDictate)
-        map.set(.mid, .double, .typelessTranslate)
-        map.set(.mid, .long, .typelessAsk)
         map.set(.up, .click, .doubao)
         map.set(.up, .double, .doubaoSelectAll)
         map.set(.up, .long, .doubaoClear)
-        map.set(.down, .click, .enter)
+        map.set(.mid, .click, .enter)
+        map.set(.down, .click, .typelessDictate)
+        map.set(.down, .double, .typelessTranslate)
+        map.set(.down, .long, .typelessAsk)
         return map
     }()
 }

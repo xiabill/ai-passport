@@ -16,7 +16,7 @@ struct DebugView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                             Button { KeyTap.tap(model.settings.current.talk) } label: { Label("Typeless", systemImage: "mic") }
-                            Button { KeyTap.tap(model.settings.current.doubao) } label: { Label("豆包", systemImage: "mic.fill") }
+                            Button { KeyTap.tapDouble(model.settings.current.doubao) } label: { Label("豆包", systemImage: "mic.fill") }
                             Button { KeyTap.tap(model.settings.current.send) } label: { Label("回车", systemImage: "return") }
                         }
                         .buttonStyle(.bordered)

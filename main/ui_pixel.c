@@ -1,6 +1,8 @@
 #include "ui_pixel.h"
 #include "ui_font.h"
 
+#include <stdint.h>
+
 static void start_blink(lv_obj_t *eye);
 
 static lv_obj_t *block(lv_obj_t *parent, int x, int y, int w, int h, uint32_t color)
@@ -81,6 +83,9 @@ lv_obj_t *ui_pixel_mascot_create(lv_obj_t *parent, int x, int y)
     // The mascot is 48px tall and the grass begins at y=286 on the 240x320
     // screen. Its feet therefore sit on the grass at y=238.
     lv_obj_set_pos(m, x, y);
+    // Remember where it stands: an interrupted jump leaves the object
+    // mid-air, and the next jump must start from this baseline.
+    lv_obj_set_user_data(m, (void *)(intptr_t)y);
     lv_obj_set_size(m, 38, 48);
     lv_obj_set_style_bg_opa(m, LV_OPA_TRANSP, 0);
     lv_obj_set_style_border_width(m, 0, 0);
@@ -135,8 +140,12 @@ static void start_blink(lv_obj_t *eye)
 void ui_pixel_mascot_jump(lv_obj_t *mascot)
 {
     if (!mascot) return;
-    int y = lv_obj_get_y(mascot);
     lv_anim_delete(mascot, jump_y);
+    // Jump from the stored baseline, not the current y. An interrupted
+    // animation leaves the mascot mid-air; starting there would shift it
+    // up a few pixels on every interruption until it floats off the grass.
+    int y = (int)(intptr_t)lv_obj_get_user_data(mascot);
+    lv_obj_set_y(mascot, y);
     lv_anim_t anim;
     lv_anim_init(&anim);
     lv_anim_set_var(&anim, mascot);

@@ -87,27 +87,38 @@ do {
 
 do {
     let map = ButtonMap.default
-    expect(map.action(.mid, .click) == .typelessDictate, "default mid click dictates")
-    expect(map.action(.mid, .double) == .typelessTranslate, "default mid double translates")
     expect(map.action(.up, .click) == .doubao, "default up click drives Doubao")
-    expect(map.action(.down, .click) == .enter, "default down click sends Return")
-    expect(map.action(.down, .long) == .none, "unbound gesture defaults to none")
+    expect(map.action(.mid, .click) == .enter, "default mid click confirms")
+    expect(map.action(.down, .click) == .typelessDictate, "default down click dictates")
+    expect(map.action(.down, .double) == .typelessTranslate, "default down double translates")
+    expect(map.action(.down, .long) == .typelessAsk, "default down long asks")
+    expect(map.action(.mid, .long) == .none, "unbound gesture defaults to none")
 
     var custom = ButtonMap.default
-    custom.set(.down, .long, .typelessAsk)
-    expect(custom.action(.down, .long) == .typelessAsk, "rebinding sticks")
+    custom.set(.mid, .long, .typelessAsk)
+    expect(custom.action(.mid, .long) == .typelessAsk, "rebinding sticks")
 
     // Wire order must be gesture index = key * 3 + gesture.
     let codes = custom.actionCodes
     expect(codes.count == 9, "nine action codes")
-    expect(codes[ButtonKey.mid.rawValue * 3 + ButtonGesture.click.rawValue] == 1, "dictate code")
-    expect(codes[ButtonKey.down.rawValue * 3 + ButtonGesture.long.rawValue] == 3, "ask code")
+    expect(codes[ButtonKey.down.rawValue * 3 + ButtonGesture.click.rawValue] == 1, "dictate code")
+    expect(codes[ButtonKey.mid.rawValue * 3 + ButtonGesture.long.rawValue] == 3, "ask code")
     expect(codes[ButtonKey.up.rawValue * 3 + ButtonGesture.click.rawValue] == 4, "Doubao code")
+    expect(codes[ButtonKey.mid.rawValue * 3 + ButtonGesture.click.rawValue] == 5, "Return code")
 
     expect(ButtonAction.typelessDictate.isRecording, "dictate records")
     expect(ButtonAction.doubao.isRecording, "Doubao records")
     expect(!ButtonAction.enter.isRecording, "Return does not record")
     expect(ButtonAction.typelessAsk.isTypeless, "ask is Typeless-backed")
+
+    // Only the same input method may end a take (mirrors VIBE_ACT_SAME_INPUT).
+    expect(
+        ButtonAction.typelessDictate.drivesSameInput(as: .typelessTranslate),
+        "Typeless modes share one input method")
+    expect(
+        !ButtonAction.typelessDictate.drivesSameInput(as: .doubao),
+        "Typeless and Doubao are separate input methods")
+    expect(ButtonAction.doubao.drivesSameInput(as: .doubao), "Doubao stops itself")
     expect(!ButtonAction.doubao.isTypeless, "Doubao is not Typeless-backed")
 
     // Gesture wire encoding: 0x20 | (button << 2) | gesture.

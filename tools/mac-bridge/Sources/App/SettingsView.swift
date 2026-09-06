@@ -119,7 +119,7 @@ struct SettingsView: View {
                 SurfaceCard("输入法快捷键", subtitle: "上面的动作最终按这里的键发给输入法") {
                     VStack(alignment: .leading, spacing: 14) {
                         keyRow("Typeless 基础键", "翻译自动加 Shift，随便问自动加 Space", talkBinding, Hotkey.talkKeys, .blue, "mic.fill", .talk)
-                        keyRow("豆包快捷键", "豆包输入法的免按模式按键", doubaoBinding, Hotkey.doubaoKeys, .green, "mic", .doubao)
+                        keyRow("豆包快捷键", "豆包“免按模式”的按键，Bridge 会按它要求发双击", doubaoBinding, Hotkey.doubaoKeys, .green, "mic", .doubao)
                         keyRow("发送键", "“发送回车”动作使用的键", sendBinding, Hotkey.sendKeys, .accentColor, "return", .send)
                         Text("可以直接从列表选择，也可以点“录入”后按实体键。")
                             .font(.caption)

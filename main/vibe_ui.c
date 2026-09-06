@@ -23,9 +23,9 @@ static lv_obj_t *s_line_batt;
 static lv_obj_t *s_line_tx;
 static lv_obj_t *s_line_last;
 static lv_obj_t *s_meter_hint;
-static lv_obj_t *s_key_ok;
-static lv_obj_t *s_key_dn;
 static lv_obj_t *s_key_up;
+static lv_obj_t *s_key_mid;
+static lv_obj_t *s_key_dn;
 static lv_obj_t *s_bars[VIBE_UI_BARS];
 static lv_obj_t *s_mascot;
 static lv_timer_t *s_timer;
@@ -305,7 +305,7 @@ static void paint(const vibe_ui_model_t *m)
     // 按键提示直接反映当前绑定:设备上写着什么,按下去就是什么。
     if (m->phase == VIBE_PHASE_IDLE || m->phase == VIBE_PHASE_RECORDING) {
         set_gesture_key(s_key_up, "UP", m, VIBE_BTN_UP);
-        set_gesture_key(s_key_ok, "MID", m, VIBE_BTN_MID);
+        set_gesture_key(s_key_mid, "MID", m, VIBE_BTN_MID);
         set_gesture_key(s_key_dn, "DOWN", m, VIBE_BTN_DOWN);
     } else {
         const char *hint = m->phase == VIBE_PHASE_PROCESSING ? "处理" : "等待";
@@ -313,7 +313,7 @@ static void paint(const vibe_ui_model_t *m)
         snprintf(buf, sizeof(buf), "UP\n%s", hint);
         set_key(s_key_up, buf, UI_MUTED);
         snprintf(buf, sizeof(buf), "MID\n%s", hint);
-        set_key(s_key_ok, buf, UI_MUTED);
+        set_key(s_key_mid, buf, UI_MUTED);
         snprintf(buf, sizeof(buf), "DOWN\n%s", hint);
         set_key(s_key_dn, buf, m->phase == VIBE_PHASE_PROCESSING ? UI_ORANGE : UI_MUTED);
     }
@@ -422,9 +422,10 @@ void vibe_ui_start(void)
 
     // With the reduced padding and 4px gaps, all three 64px chips fit inside
     // the 208px content width and height.
-    s_key_ok = key_chip(panel, 4, 158);
-    s_key_dn = key_chip(panel, 72, 158);
-    s_key_up = key_chip(panel, 140, 158);
+    // Hints follow the physical key order on the device: up, middle, down.
+    s_key_up = key_chip(panel, 4, 158);
+    s_key_mid = key_chip(panel, 72, 158);
+    s_key_dn = key_chip(panel, 140, 158);
 
     // The 240x320 screen's grass starts at y=286. Keep the 38x48 mascot
     // centered and place its feet exactly on that boundary.

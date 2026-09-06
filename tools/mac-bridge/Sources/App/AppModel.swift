@@ -325,13 +325,13 @@ final class AppModel: ObservableObject {
         case .enter:
             KeyTap.tap(s.send)
         case .doubaoStart:
-            KeyTap.tap(s.doubao)
+            KeyTap.tapDouble(s.doubao)
             setActiveInput(.doubao)
         case .doubaoStop:
-            KeyTap.tap(s.doubao)
+            KeyTap.tapDouble(s.doubao)
             setActiveInput(nil)
         case .doubaoStopAndSend:
-            KeyTap.tap(s.doubao)
+            KeyTap.tapDouble(s.doubao)
             setActiveInput(nil)
             Log.key("豆包停止后延迟发送回车")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
@@ -384,8 +384,15 @@ final class AppModel: ObservableObject {
     private func toggleRecording(_ action: ButtonAction) {
         let s = settings.current
         if let current = activeInput {
+            // Only the input method that is recording may stop itself. The
+            // device applies the same rule, so a stray press on the other one
+            // never cuts a take short.
+            guard current.drivesSameInput(as: action) else {
+                Log.key("忽略 \(action.title)：\(current.title) 正在录音")
+                return
+            }
             switch current {
-            case .doubao: KeyTap.tap(s.doubao)
+            case .doubao: KeyTap.tapDouble(s.doubao)
             default: KeyTap.tap(s.talk)  // Typeless always stops on its base key
             }
             expect = .idle
@@ -399,7 +406,7 @@ final class AppModel: ObservableObject {
         case .typelessDictate: KeyTap.tap(s.talk)
         case .typelessTranslate: KeyTap.tapTypelessTranslate(s.talk)
         case .typelessAsk: KeyTap.tapTypelessAsk(s.talk)
-        case .doubao: KeyTap.tap(s.doubao)
+        case .doubao: KeyTap.tapDouble(s.doubao)
         default: return
         }
         setActiveInput(action)

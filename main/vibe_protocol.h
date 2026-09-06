@@ -82,6 +82,13 @@ extern "C" {
 #define VIBE_ACT_WAITS_TRANSCRIPT(a) \
     ((a) == VIBE_ACT_DICTATE || (a) == VIBE_ACT_TRANSLATE || (a) == VIBE_ACT_ASK)
 
+// Two recording actions drive the same input method when they are the same
+// action, or when both are Typeless modes. Only a gesture from the same input
+// method may end a take; pressing the other one is ignored so a mistaken press
+// cannot cut a recording short.
+#define VIBE_ACT_SAME_INPUT(a, b) \
+    ((a) == (b) || (VIBE_ACT_WAITS_TRANSCRIPT(a) && VIBE_ACT_WAITS_TRANSCRIPT(b)))
+
 void vibe_packet_pack(uint8_t *out, uint16_t seq, int16_t predictor,
                       uint8_t step_index, const uint8_t *adpcm);
 void vibe_packet_eos(uint8_t *out, uint16_t seq);

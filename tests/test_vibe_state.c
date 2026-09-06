@@ -58,12 +58,21 @@ int main(void)
     assert(o.stop_capture);
     assert(s.phase == VIBE_PHASE_IDLE);
 
-    // A different recording gesture also stops the take in progress.
+    // The other input method must not cut a recording short: pressing the
+    // Doubao gesture while Typeless is recording is reported but ignored.
     linked_idle(&s);
     vibe_state_apply(&s, VIBE_IN_GESTURE, G_MID_CLICK);
     o = vibe_state_apply(&s, VIBE_IN_GESTURE, G_UP_CLICK);
-    assert(o.stop_capture);
+    assert(o.n_events == 1);
+    assert(!o.stop_capture);
     assert(!o.start_capture);
+    assert(s.phase == VIBE_PHASE_RECORDING);
+    assert(s.active_gesture == G_MID_CLICK);
+
+    // A different Typeless mode still ends a Typeless take, since both drive
+    // the same input method.
+    o = vibe_state_apply(&s, VIBE_IN_GESTURE, G_MID_DOUBLE);
+    assert(o.stop_capture);
     assert(s.phase == VIBE_PHASE_PROCESSING);
 
     // Non-recording actions only report; they never touch the microphone.

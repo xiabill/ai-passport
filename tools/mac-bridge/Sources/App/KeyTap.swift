@@ -35,6 +35,44 @@ enum KeyTap {
     /// Typeless keeps Dictate, Translation mode, and Ask anything as separate
     /// shortcuts. The latter two use the same base key as Dictate by default:
     /// base+Shift for Translation and base+Space for Ask anything.
+    /// Doubao's hands-free mode is documented as "double click to start
+    /// talking, double click again or press any key to end". It accepts a
+    /// physical double click but ignored ours when both presses were posted
+    /// back to back with no hold, so this reproduces the timing of a real one:
+    /// press, hold briefly, release, pause, repeat. Runs off the main thread
+    /// because it sleeps between events.
+    static func tapDouble(_ key: Hotkey) {
+        Log.key("双击 \(key.name)（豆包免按模式）")
+        DispatchQueue.global(qos: .userInteractive).async {
+            holdTap(key, holdMs: 45)
+            usleep(140_000)
+            holdTap(key, holdMs: 45)
+        }
+    }
+
+    /// A single press that stays down for `holdMs`, like a finger would.
+    private static func holdTap(_ key: Hotkey, holdMs: UInt32) {
+        let hold = { usleep(holdMs * 1000) }
+        switch key.name {
+        case "Fn":
+            postModifier(virtualKey: functionVirtualKey, flags: .maskSecondaryFn, down: true)
+            hold()
+            postModifier(virtualKey: functionVirtualKey, flags: [], down: false)
+        case "Right Option":
+            postModifier(virtualKey: 0x3D, flags: .maskAlternate, down: true)
+            hold()
+            postModifier(virtualKey: 0x3D, flags: [], down: false)
+        case "Left Option":
+            postModifier(virtualKey: 0x3A, flags: .maskAlternate, down: true)
+            hold()
+            postModifier(virtualKey: 0x3A, flags: [], down: false)
+        default:
+            keyDown(key.carbon)
+            hold()
+            keyUp(key.carbon)
+        }
+    }
+
     static func tapTypelessTranslate(_ key: Hotkey) {
         tapCombo(key, trigger: nil, modifier: CGEventFlags.maskShift)
     }

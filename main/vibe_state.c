@@ -102,9 +102,14 @@ vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint32_t arg)
         push_event(&o, VIBE_GESTURE_EVENT(g / 3U, g % 3U));
 
         if (s->phase == VIBE_PHASE_RECORDING) {
-            // Any recording gesture stops the take. Which input method it
-            // belonged to is the bridge's problem, not ours.
-            if (gesture_records(s, g)) finish_recording(s, &o);
+            // Only the input method that is recording may end its own take.
+            // A gesture belonging to the other one is ignored rather than
+            // cutting the recording short.
+            if (gesture_records(s, g) &&
+                VIBE_ACT_SAME_INPUT(gesture_action(s, s->active_gesture),
+                                    gesture_action(s, g))) {
+                finish_recording(s, &o);
+            }
         } else if (s->phase == VIBE_PHASE_IDLE && gesture_records(s, g)) {
             s->active_gesture = g;
             s->phase = VIBE_PHASE_RECORDING;
