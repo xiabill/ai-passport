@@ -10,6 +10,8 @@ AI Passport vibe-typeless 固件的 macOS 伴侣。这是完整应用：总览�
 
 完整的固件、BLE、Typeless、刷机、权限和故障排查教程见 [Vibe 教程](../../docs/development/vibe-typeless.zh_CN.md)。
 
+只想直接使用程序时，请从[最新 GitHub Release](https://github.com/xiabill/ai-passport/releases/latest) 下载 `FoloVibeBridge-macos.zip`；源码构建方法仍见下文。
+
 ## 窗口
 
 | 页 | 内容 |
@@ -28,6 +30,8 @@ open /Applications/FoloVibeBridge.app
 ```
 
 `./build.sh` 会先跑 `swift run FoloVibeCoreTests`，再打包并默认安装到 `/Applications/FoloVibeBridge.app`。不需要完整 Xcode，Swift 5.9+ 工具链和 Apple Command Line Tools 即可。首次启动时，状态页和设置页会提供授权/音频设置向导；完成系统设置后点击“再次检查”即可复查。给 FoloVibe Bridge 打开蓝牙、辅助功能和输入监控。Typeless 默认 Fn，豆包默认右⌥（免按模式），两边的麦克风都选 `BlackHole 2ch`。
+
+Release 中的程序未签名，也没有经过 Apple 公证。若 macOS 第一次阻止打开，请在 Finder 中对 App 点按住 Control，选择“打开”，再确认。程序需要 macOS 13 或更高版本。
 
 状态页的“声音效果测试”可以播放测试音、录制并回放一轮 Passport 麦克风，并显示 BLE 音频包和丢包情况。设置页的每个动作都支持从列表选择快捷键，或点击“录入”后直接按下目标键；如果未检测到 BlackHole，向导可以打开官方安装页和声音设置。
 

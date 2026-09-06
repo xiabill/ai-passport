@@ -9,7 +9,7 @@ This branch turns the FoloToy AI Passport into a wireless push-to-talk microphon
 - ESP32-C3 firmware in `main/`: captures the board microphone, encodes 16 kHz PCM as IMA-ADPCM, sends audio over BLE, draws the VIBE screen, and reports button events.
 - macOS companion in `tools/mac-bridge/`: connects to the board, decodes audio, writes PCM to `BlackHole 2ch`, watches Typeless, and posts Typeless mode, Doubao, and Return keys.
 
-The repository is public and the active branch is [`feature/vibe-typeless`](https://github.com/xiabill/ai-passport/tree/feature/vibe-typeless). The upstream `main` branch remains the clean hardware baseline.
+The repository is public and the maintained branch is [`main`](https://github.com/xiabill/ai-passport/tree/main). Users can download the packaged Bridge and matching firmware from [GitHub Releases](https://github.com/xiabill/ai-passport/releases/latest); developers can build from this guide.
 
 ## How the pieces fit together
 
@@ -73,7 +73,7 @@ cd tools/mac-bridge
 open /Applications/FoloVibeBridge.app
 ```
 
-`build.sh` first runs the core tests, then builds a release executable, packages it, and installs it to `/Applications/FoloVibeBridge.app` by default; it also keeps the local bundle in the repository directory. The status and settings pages include a guided permission/audio setup flow with explicit checks and a re-check action. The app is intentionally built locally rather than committed as a machine-specific binary.
+`build.sh` first runs the core tests, then builds a release executable, packages it, and installs it to `/Applications/FoloVibeBridge.app` by default; it also keeps the local bundle in the repository directory. The status and settings pages include a guided permission/audio setup flow with explicit checks and a re-check action. The repository does not commit a machine-specific `.app`; release builds are attached as GitHub Release assets.
 
 On first launch:
 
