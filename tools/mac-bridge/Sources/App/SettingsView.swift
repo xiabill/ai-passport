@@ -4,7 +4,6 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var model: AppModel
     @ObservedObject var store: SettingsStore
-    @State private var captureTarget: KeyCaptureTarget?
 
     init(model: AppModel) {
         self.model = model
@@ -102,16 +101,27 @@ struct SettingsView: View {
                     }
                 }
 
-                SurfaceCard("硬件按键", subtitle: "每个动作都显示在硬件上，避免记忆复杂快捷键") {
+                SurfaceCard("硬件按键", subtitle: "三个键各有单击、双击、长按，随意绑定；改完立刻同步到设备") {
                     VStack(alignment: .leading, spacing: 14) {
-                        keyRow("中键 · 单击", "Typeless 语音输入", talkBinding, Hotkey.talkKeys, .blue, "mic.fill", .talk)
-                        keyRow("中键 · 双击", "Typeless 翻译（自动追加 Shift）", talkBinding, Hotkey.talkKeys, .purple, "character.bubble", .talk)
-                        keyRow("中键 · 长按", "Typeless 随便问（自动追加 Space）", talkBinding, Hotkey.talkKeys, .orange, "sparkles", .talk)
-                        Divider()
-                        keyRow("上键", "豆包语音输入", doubaoBinding, Hotkey.doubaoKeys, .green, "mic", .doubao)
-                        keyRow("下键", "发送回车", sendBinding, Hotkey.sendKeys, .accentColor, "return", .send)
-                        keyRow("取消动作", "停止当前输入，不发送内容", cancelBinding, Hotkey.cancelKeys, .red, "xmark.circle", .cancel)
-                        Text("可以直接从列表选择，也可以点“录入”后按实体键。翻译和随便问会自动在 Typeless 基础键上追加 Shift / Space。")
+                        LazyVGrid(
+                            columns: [GridItem(.adaptive(minimum: 250), spacing: 16, alignment: .top)],
+                            alignment: .leading, spacing: 16
+                        ) {
+                            ForEach(ButtonKey.allCases, id: \.self) { gestureGroup($0) }
+                        }
+                        Text("设备屏幕会显示每个键当前的单击动作，所以不用记。绑定保存在 Bridge 里，换绑不需要重刷固件。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                SurfaceCard("输入法快捷键", subtitle: "上面的动作最终按这里的键发给输入法") {
+                    VStack(alignment: .leading, spacing: 14) {
+                        keyRow("Typeless 基础键", "翻译自动加 Shift，随便问自动加 Space", talkBinding, Hotkey.talkKeys, .blue, "mic.fill", .talk)
+                        keyRow("豆包快捷键", "豆包输入法的免按模式按键", doubaoBinding, Hotkey.doubaoKeys, .green, "mic", .doubao)
+                        keyRow("发送键", "“发送回车”动作使用的键", sendBinding, Hotkey.sendKeys, .accentColor, "return", .send)
+                        Text("可以直接从列表选择，也可以点“录入”后按实体键。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -174,11 +184,40 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(28)
         }
-        .sheet(item: $captureTarget) { target in
+        .sheet(item: $model.captureTarget) { target in
             KeyCaptureSheet(title: target.title, keys: target.keys) { key in
                 setKey(target, key)
             }
         }
+    }
+
+    private func gestureGroup(_ key: ButtonKey) -> some View {
+        VStack(alignment: .leading, spacing: 9) {
+            Text(key.title).font(.callout.weight(.semibold))
+            ForEach(ButtonGesture.allCases, id: \.self) { gesture in
+                HStack(spacing: 8) {
+                    Text(gesture.title)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, alignment: .leading)
+                    Picker("", selection: actionBinding(key, gesture)) {
+                        ForEach(ButtonAction.allCases, id: \.self) { action in
+                            Text(action.title).tag(action)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                }
+            }
+        }
+        .padding(12)
+        .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    private func actionBinding(_ key: ButtonKey, _ gesture: ButtonGesture) -> Binding<ButtonAction> {
+        Binding(
+            get: { store.current.buttons.action(key, gesture) },
+            set: { store.current.buttons.set(key, gesture, $0) })
     }
 
     private func keyRow(
@@ -206,7 +245,7 @@ struct SettingsView: View {
             .labelsHidden()
             .pickerStyle(.menu)
             .frame(width: 150, alignment: .trailing)
-            Button("录入") { captureTarget = target }
+            Button("录入") { model.captureTarget = target }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
                 .help("按下要映射的按键")
@@ -274,9 +313,6 @@ struct SettingsView: View {
     private var doubaoBinding: Binding<String> {
         Binding(get: { store.current.doubaoKey }, set: { store.current.doubaoKey = $0 })
     }
-    private var cancelBinding: Binding<String> {
-        Binding(get: { store.current.cancelKey }, set: { store.current.cancelKey = $0 })
-    }
     private var retapOn: Binding<Bool> {
         Binding(get: { store.current.retapEnabled }, set: { store.current.retapEnabled = $0 })
     }
@@ -309,31 +345,28 @@ struct SettingsView: View {
         case .talk: store.current.talkKey = key.name
         case .doubao: store.current.doubaoKey = key.name
         case .send: store.current.sendKey = key.name
-        case .cancel: store.current.cancelKey = key.name
+        }
+    }
+}
+
+enum KeyCaptureTarget: String, Identifiable {
+    case talk, doubao, send
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .talk: return "Typeless 基础键"
+        case .doubao: return "豆包快捷键"
+        case .send: return "发送键"
         }
     }
 
-    private enum KeyCaptureTarget: String, Identifiable {
-        case talk, doubao, send, cancel
-
-        var id: String { rawValue }
-
-        var title: String {
-            switch self {
-            case .talk: return "Typeless 基础键"
-            case .doubao: return "豆包快捷键"
-            case .send: return "发送键"
-            case .cancel: return "取消键"
-            }
-        }
-
-        var keys: [Hotkey] {
-            switch self {
-            case .talk: return Hotkey.talkKeys
-            case .doubao: return Hotkey.doubaoKeys
-            case .send: return Hotkey.sendKeys
-            case .cancel: return Hotkey.cancelKeys
-            }
+    var keys: [Hotkey] {
+        switch self {
+        case .talk: return Hotkey.talkKeys
+        case .doubao: return Hotkey.doubaoKeys
+        case .send: return Hotkey.sendKeys
         }
     }
 }

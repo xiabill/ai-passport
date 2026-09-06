@@ -13,10 +13,10 @@ extern "C" {
 
 typedef struct {
     vibe_phase_t phase;
-    vibe_source_t source;
     bool linked;
     bool audio_sub;
-    bool queued_enter;
+    uint8_t actions[VIBE_GESTURE_COUNT];  // action bound to each gesture
+    uint8_t active_gesture;               // VIBE_GESTURE_NONE when idle
     int battery;          // 0..100, or -1
     int battery_mv;       // or -1
     uint8_t typeless;

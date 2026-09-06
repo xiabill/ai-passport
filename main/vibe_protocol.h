@@ -18,10 +18,12 @@ extern "C" {
 #define VIBE_AUDIO_HZ         16000
 #define VIBE_FLAG_EOS         0x01U
 
+// Legacy semantic events 1..11. The firmware no longer emits these; they stay
+// documented so a bridge can still understand an older device.
 #define VIBE_BLE_START  1U
 #define VIBE_BLE_STOP   2U
 #define VIBE_BLE_ENTER  3U
-#define VIBE_BLE_CANCEL 4U
+// 4 is retired (legacy cancel). Do not reuse: old bridges map it to Escape.
 #define VIBE_BLE_DOUBAO_START 5U
 #define VIBE_BLE_DOUBAO_STOP  6U
 #define VIBE_BLE_DOUBAO_STOP_SEND 7U
@@ -39,6 +41,46 @@ extern "C" {
 // remain reserved for Typeless state feedback.
 #define VIBE_CTRL_POWER_MODE_STANDARD 0x80U
 #define VIBE_CTRL_POWER_MODE_ECO      0x81U
+
+// Raw gesture events. The device no longer decides what a button means; it
+// reports which button was pressed and how, and the bridge maps that to an
+// action. Encoding: 0x20 | (button << 2) | gesture, i.e. 0x20..0x2A.
+#define VIBE_GESTURE_COUNT 9
+#define VIBE_BLE_GESTURE_BASE 0x20U
+#define VIBE_BTN_UP    0U
+#define VIBE_BTN_MID   1U
+#define VIBE_BTN_DOWN  2U
+#define VIBE_GES_CLICK  0U
+#define VIBE_GES_DOUBLE 1U
+#define VIBE_GES_LONG   2U
+#define VIBE_GESTURE_EVENT(btn, ges) \
+    ((uint8_t)(VIBE_BLE_GESTURE_BASE | ((btn) << 2) | (ges)))
+#define VIBE_GESTURE_BIT(btn, ges) ((uint16_t)1U << ((btn) * 3U + (ges)))
+
+// Control command: 0x91 followed by 9 action codes, one per gesture index
+// (button * 3 + gesture). The device uses them for two things only: deciding
+// whether a gesture arms the microphone, and labelling the on-screen key
+// hints. Rebinding an action is a 10-byte write, never a reflash.
+#define VIBE_CTRL_ACTIONS 0x91U
+#define VIBE_CTRL_ACTIONS_LEN (1U + VIBE_GESTURE_COUNT)
+
+#define VIBE_ACT_NONE       0U
+#define VIBE_ACT_DICTATE    1U
+#define VIBE_ACT_TRANSLATE  2U
+#define VIBE_ACT_ASK        3U
+#define VIBE_ACT_DOUBAO     4U
+#define VIBE_ACT_ENTER      5U
+#define VIBE_ACT_SELECT_ALL 6U
+#define VIBE_ACT_CLEAR      7U
+#define VIBE_ACT_COUNT      8U
+
+// Actions that must arm the microphone on the device itself.
+#define VIBE_ACT_RECORDS(a) \
+    ((a) == VIBE_ACT_DICTATE || (a) == VIBE_ACT_TRANSLATE || \
+     (a) == VIBE_ACT_ASK || (a) == VIBE_ACT_DOUBAO)
+// Of those, the ones backed by Typeless, whose transcript we must wait for.
+#define VIBE_ACT_WAITS_TRANSCRIPT(a) \
+    ((a) == VIBE_ACT_DICTATE || (a) == VIBE_ACT_TRANSLATE || (a) == VIBE_ACT_ASK)
 
 void vibe_packet_pack(uint8_t *out, uint16_t seq, int16_t predictor,
                       uint8_t step_index, const uint8_t *adpcm);

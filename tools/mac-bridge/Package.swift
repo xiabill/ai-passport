@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "FoloVibeBridge",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v14)],  // RootView 用了 macOS 14 的 toolbar(removing:)
     products: [
         .executable(name: "FoloVibeBridge", targets: ["FoloVibeBridge"]),
         .executable(name: "FoloVibeCoreTests", targets: ["FoloVibeCoreTests"]),

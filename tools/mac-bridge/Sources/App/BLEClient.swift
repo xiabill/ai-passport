@@ -38,6 +38,8 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     var autoReconnect = true
 
     var onEvent: ((VibeEvent) -> Void)?
+    var onGesture: ((GestureEvent) -> Void)?
+    private var desiredActions = [UInt8]()
     var onPCM: (([Int16]) -> Void)?
 
     var snapshot: Snapshot {
@@ -65,6 +67,22 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             self.desiredPowerMode = mode
             self.writePowerMode()
         }
+    }
+
+    /// Pushes the gesture-to-action bindings so the device knows which gestures
+    /// arm the microphone and what to print under each key hint.
+    func writeActions(_ codes: [UInt8]) {
+        queue.async { [self] in
+            desiredActions = codes
+            writeActionsLocked()
+        }
+    }
+
+    private func writeActionsLocked() {
+        guard let p = peripheral, let c = control, !desiredActions.isEmpty else { return }
+        p.writeValue(
+            Data([VibeProtocol.ctrlActions] + desiredActions), for: c, type: .withoutResponse)
+        Log.ble("同步按键绑定")
     }
 
     private func writePowerMode() {
@@ -288,6 +306,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             update { $0.subscribed = true; $0.phase = "已就绪" }
             Log.ble("音频/按键事件通知均已开启")
             writePowerMode()
+            writeActionsLocked()
             p.readRSSI()
         }
     }
@@ -326,12 +345,21 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     ) {
         guard let data = characteristic.value, error == nil else { return }
         if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
+            let byte = data.first, let gesture = GestureEvent.parse(byte)
+        {
+            update { $0.lastEvent = gesture.title }
+            Log.ble("手势 \(gesture.title)")
+            DispatchQueue.main.async { self.onGesture?(gesture) }
+            return
+        }
+        // Older firmware still speaks the semantic events.
+        if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
             let byte = data.first, let ev = VibeEvent(rawValue: byte)
         {
             if ev == .start || ev == .typelessTranslate || ev == .typelessAsk || ev == .doubaoStart {
                 update { $0.streaming = true }
             }
-            if ev == .stop || ev == .cancel || ev == .doubaoStop || ev == .doubaoStopAndSend {
+            if ev == .stop || ev == .doubaoStop || ev == .doubaoStopAndSend {
                 update { $0.streaming = false }
                 mic.finish()
             }

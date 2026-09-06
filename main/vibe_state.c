@@ -19,74 +19,45 @@ static void ready_phase(vibe_state_t *s)
     else s->phase = VIBE_PHASE_IDLE;
 }
 
-static bool is_typeless_source(vibe_source_t source)
+static uint8_t gesture_action(const vibe_state_t *s, uint8_t g)
 {
-    return source == VIBE_SOURCE_TYPELESS ||
-           source == VIBE_SOURCE_TYPELESS_TRANSLATE ||
-           source == VIBE_SOURCE_TYPELESS_ASK;
+    return g < VIBE_GESTURE_COUNT ? s->actions[g] : VIBE_ACT_NONE;
+}
+
+static bool gesture_records(const vibe_state_t *s, uint8_t g)
+{
+    return VIBE_ACT_RECORDS(gesture_action(s, g));
+}
+
+static bool gesture_waits_transcript(const vibe_state_t *s, uint8_t g)
+{
+    return VIBE_ACT_WAITS_TRANSCRIPT(gesture_action(s, g));
 }
 
 void vibe_state_init(vibe_state_t *s)
 {
     s->phase = VIBE_PHASE_DOWN;
-    s->source = VIBE_SOURCE_NONE;
     s->linked = false;
     s->audio_sub = false;
     s->typeless = VIBE_TL_IDLE;
-    s->queued_enter = false;
+    for (int i = 0; i < VIBE_GESTURE_COUNT; i++) s->actions[i] = VIBE_ACT_NONE;
+    s->active_gesture = VIBE_GESTURE_NONE;
 }
 
-static vibe_out_t start_recording(vibe_state_t *s, vibe_source_t source, uint8_t event)
+// Stops capture. Typeless-backed gestures park in PROCESSING until the bridge
+// reports the transcript landed; everything else is done immediately.
+static void finish_recording(vibe_state_t *s, vibe_out_t *o)
 {
-    vibe_out_t o = out_none();
-    s->source = source;
-    s->queued_enter = false;
-    s->phase = VIBE_PHASE_RECORDING;
-    o.start_capture = true;
-    push_event(&o, event);
-    return o;
-}
-
-static vibe_out_t stop_typeless(vibe_state_t *s, bool queue_enter)
-{
-    vibe_out_t o = out_none();
-    o.stop_capture = true;
-    s->queued_enter = queue_enter;
-    push_event(&o, VIBE_BLE_STOP);
-    s->phase = VIBE_PHASE_PROCESSING;
-    return o;
-}
-
-static vibe_out_t stop_doubao(vibe_state_t *s, bool send)
-{
-    vibe_out_t o = out_none();
-    o.stop_capture = true;
-    s->queued_enter = false;
-    push_event(&o, send ? VIBE_BLE_DOUBAO_STOP_SEND : VIBE_BLE_DOUBAO_STOP);
-    s->source = VIBE_SOURCE_NONE;
-    ready_phase(s);
-    return o;
-}
-
-static vibe_out_t doubao_edit(vibe_state_t *s, uint8_t event)
-{
-    vibe_out_t o = out_none();
-    if (s->phase == VIBE_PHASE_RECORDING && s->source == VIBE_SOURCE_DOUBAO) {
-        // Do not leave the microphone running while editing the text field.
-        o.stop_capture = true;
-        push_event(&o, VIBE_BLE_DOUBAO_STOP);
-        s->source = VIBE_SOURCE_NONE;
-        s->queued_enter = false;
+    o->stop_capture = true;
+    if (gesture_waits_transcript(s, s->active_gesture)) {
+        s->phase = VIBE_PHASE_PROCESSING;
+    } else {
+        s->active_gesture = VIBE_GESTURE_NONE;
         ready_phase(s);
     }
-    if (s->phase == VIBE_PHASE_IDLE) {
-        push_event(&o, event);
-        o.edit_action = true;
-    }
-    return o;
 }
 
-vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint8_t typeless_byte)
+vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint32_t arg)
 {
     vibe_out_t o = out_none();
 
@@ -98,10 +69,9 @@ vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint8_t typeless_byte
 
     case VIBE_IN_LINK_DOWN:
         if (s->phase == VIBE_PHASE_RECORDING) o.stop_capture = true;
-        s->source = VIBE_SOURCE_NONE;
         s->linked = false;
         s->audio_sub = false;
-        s->queued_enter = false;
+        s->active_gesture = VIBE_GESTURE_NONE;
         s->phase = VIBE_PHASE_DOWN;
         break;
 
@@ -113,89 +83,53 @@ vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint8_t typeless_byte
     case VIBE_IN_AUDIO_UNSUB:
         s->audio_sub = false;
         if (s->phase == VIBE_PHASE_RECORDING) o.stop_capture = true;
-        s->source = VIBE_SOURCE_NONE;
-        s->queued_enter = false;
-        if (s->linked) s->phase = VIBE_PHASE_WAIT;
-        else s->phase = VIBE_PHASE_DOWN;
+        s->active_gesture = VIBE_GESTURE_NONE;
+        s->phase = s->linked ? VIBE_PHASE_WAIT : VIBE_PHASE_DOWN;
         break;
 
-    case VIBE_IN_OK:
-        if (s->phase == VIBE_PHASE_IDLE) {
-            return start_recording(s, VIBE_SOURCE_TYPELESS, VIBE_BLE_START);
-        } else if (s->phase == VIBE_PHASE_RECORDING && is_typeless_source(s->source)) {
-            return stop_typeless(s, false);
-        }
+    case VIBE_IN_ACTIONS: {
+        uint8_t g = (uint8_t)(arg & 0xFFU);
+        uint8_t action = (uint8_t)((arg >> 8) & 0xFFU);
+        if (g < VIBE_GESTURE_COUNT && action < VIBE_ACT_COUNT) s->actions[g] = action;
         break;
+    }
 
-    case VIBE_IN_OK_DOUBLE:
-        if (s->phase == VIBE_PHASE_IDLE) {
-            return start_recording(s, VIBE_SOURCE_TYPELESS_TRANSLATE,
-                                   VIBE_BLE_TYPELESS_TRANSLATE);
-        }
-        break;
+    case VIBE_IN_GESTURE: {
+        uint8_t g = (uint8_t)arg;
+        if (g >= VIBE_GESTURE_COUNT) break;
+        // The gesture is always reported: the bridge decides what it means,
+        // including gestures that carry no recording at all.
+        push_event(&o, VIBE_GESTURE_EVENT(g / 3U, g % 3U));
 
-    case VIBE_IN_OK_LONG:
-        if (s->phase == VIBE_PHASE_IDLE) {
-            return start_recording(s, VIBE_SOURCE_TYPELESS_ASK,
-                                   VIBE_BLE_TYPELESS_ASK);
-        }
-        break;
-
-    case VIBE_IN_DOWN:
         if (s->phase == VIBE_PHASE_RECORDING) {
-            if (is_typeless_source(s->source)) return stop_typeless(s, true);
-            if (s->source == VIBE_SOURCE_DOUBAO) return stop_doubao(s, true);
-        }
-        if (s->phase == VIBE_PHASE_IDLE) {
-            push_event(&o, VIBE_BLE_ENTER);
-        } else if (s->phase == VIBE_PHASE_PROCESSING) {
-            s->queued_enter = true;
-        }
-        break;
-
-    case VIBE_IN_UP:
-        if (s->phase == VIBE_PHASE_IDLE) {
-            return start_recording(s, VIBE_SOURCE_DOUBAO, VIBE_BLE_DOUBAO_START);
-        }
-        if (s->phase == VIBE_PHASE_RECORDING && s->source == VIBE_SOURCE_DOUBAO) {
-            return stop_doubao(s, false);
+            // Any recording gesture stops the take. Which input method it
+            // belonged to is the bridge's problem, not ours.
+            if (gesture_records(s, g)) finish_recording(s, &o);
+        } else if (s->phase == VIBE_PHASE_IDLE && gesture_records(s, g)) {
+            s->active_gesture = g;
+            s->phase = VIBE_PHASE_RECORDING;
+            o.start_capture = true;
         }
         break;
-
-    case VIBE_IN_UP_DOUBLE:
-        return doubao_edit(s, VIBE_BLE_DOUBAO_SELECT_ALL);
-
-    case VIBE_IN_UP_LONG:
-        return doubao_edit(s, VIBE_BLE_DOUBAO_CLEAR);
+    }
 
     case VIBE_IN_TYPELESS:
-        s->typeless = typeless_byte;
-        if (s->phase == VIBE_PHASE_PROCESSING && is_typeless_source(s->source) &&
-            (typeless_byte == VIBE_TL_IDLE || typeless_byte == VIBE_TL_DOWN)) {
-            if (s->queued_enter) {
-                push_event(&o, VIBE_BLE_ENTER);
-                s->queued_enter = false;
-            }
+        s->typeless = (uint8_t)arg;
+        if (s->phase == VIBE_PHASE_PROCESSING &&
+            (s->typeless == VIBE_TL_IDLE || s->typeless == VIBE_TL_DOWN)) {
+            s->active_gesture = VIBE_GESTURE_NONE;
             ready_phase(s);
-            s->source = VIBE_SOURCE_NONE;
         }
         break;
 
     case VIBE_IN_SILENCE:
-        if (s->phase == VIBE_PHASE_RECORDING) {
-            if (is_typeless_source(s->source)) return stop_typeless(s, false);
-            if (s->source == VIBE_SOURCE_DOUBAO) return stop_doubao(s, false);
-        }
+        if (s->phase == VIBE_PHASE_RECORDING) finish_recording(s, &o);
         break;
 
     case VIBE_IN_PROC_TIMEOUT:
-        if (s->phase == VIBE_PHASE_PROCESSING && is_typeless_source(s->source)) {
-            if (s->queued_enter) {
-                push_event(&o, VIBE_BLE_ENTER);
-                s->queued_enter = false;
-            }
+        if (s->phase == VIBE_PHASE_PROCESSING) {
+            s->active_gesture = VIBE_GESTURE_NONE;
             ready_phase(s);
-            s->source = VIBE_SOURCE_NONE;
         }
         break;
     }

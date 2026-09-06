@@ -86,6 +86,44 @@ do {
 }
 
 do {
+    let map = ButtonMap.default
+    expect(map.action(.mid, .click) == .typelessDictate, "default mid click dictates")
+    expect(map.action(.mid, .double) == .typelessTranslate, "default mid double translates")
+    expect(map.action(.up, .click) == .doubao, "default up click drives Doubao")
+    expect(map.action(.down, .click) == .enter, "default down click sends Return")
+    expect(map.action(.down, .long) == .none, "unbound gesture defaults to none")
+
+    var custom = ButtonMap.default
+    custom.set(.down, .long, .typelessAsk)
+    expect(custom.action(.down, .long) == .typelessAsk, "rebinding sticks")
+
+    // Wire order must be gesture index = key * 3 + gesture.
+    let codes = custom.actionCodes
+    expect(codes.count == 9, "nine action codes")
+    expect(codes[ButtonKey.mid.rawValue * 3 + ButtonGesture.click.rawValue] == 1, "dictate code")
+    expect(codes[ButtonKey.down.rawValue * 3 + ButtonGesture.long.rawValue] == 3, "ask code")
+    expect(codes[ButtonKey.up.rawValue * 3 + ButtonGesture.click.rawValue] == 4, "Doubao code")
+
+    expect(ButtonAction.typelessDictate.isRecording, "dictate records")
+    expect(ButtonAction.doubao.isRecording, "Doubao records")
+    expect(!ButtonAction.enter.isRecording, "Return does not record")
+    expect(ButtonAction.typelessAsk.isTypeless, "ask is Typeless-backed")
+    expect(!ButtonAction.doubao.isTypeless, "Doubao is not Typeless-backed")
+
+    // Gesture wire encoding: 0x20 | (button << 2) | gesture.
+    expect(GestureEvent.parse(0x24) == GestureEvent(key: .mid, gesture: .click), "0x24 = mid click")
+    expect(GestureEvent.parse(0x20) == GestureEvent(key: .up, gesture: .click), "0x20 = up click")
+    expect(GestureEvent.parse(0x2A) == GestureEvent(key: .down, gesture: .long), "0x2A = down long")
+    expect(GestureEvent.parse(0x19) == nil, "reject non-gesture byte")
+
+    let ud = UserDefaults(suiteName: "folovibe.buttons.\(UUID().uuidString)")!
+    let store = SettingsStore(defaults: ud)
+    store.current.buttons.set(.up, .long, .enter)
+    expect(SettingsStore(defaults: ud).current.buttons.action(.up, .long) == .enter,
+        "bindings round trip")
+}
+
+do {
     let line = LogLine.parse("01:02:03.456 [蓝牙] 已连接 FoloVibe-4C11")
     expect(line.time == "01:02:03.456", "log time")
     expect(line.category == "蓝牙", "log category")

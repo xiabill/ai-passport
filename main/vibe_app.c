@@ -13,7 +13,11 @@
 
 static const char *TAG = "vibe_app";
 
-#define PROC_TIMEOUT_US (8 * 1000 * 1000)
+// Fallback only. The normal exit from PROCESSING is the bridge writing back a
+// Typeless idle/down state, which arrives within one poll of the transcript
+// landing. This must outlast a long transcription, otherwise a queued Return
+// fires while Typeless is still writing into the focused field.
+#define PROC_TIMEOUT_US (20 * 1000 * 1000)
 
 static SemaphoreHandle_t s_mu;
 static vibe_state_t s_st;
@@ -26,16 +30,16 @@ static uint8_t s_last_event;
 static bool s_swallow_click;
 static esp_timer_handle_t s_proc_timer;
 
-static void apply(vibe_in_t in, uint8_t typeless_byte);
+static void apply(vibe_in_t in, uint32_t arg);
 
 static void publish_locked(void)
 {
     vibe_ui_model_t m = {0};
     m.phase = s_st.phase;
-    m.source = s_st.source;
+    m.active_gesture = s_st.active_gesture;
+    for (int i = 0; i < VIBE_GESTURE_COUNT; i++) m.actions[i] = s_st.actions[i];
     m.linked = s_st.linked;
     m.audio_sub = s_st.audio_sub;
-    m.queued_enter = s_st.queued_enter;
     m.typeless = s_st.typeless;
     m.power_mode = vibe_power_mode();
     m.last_event = s_last_event;
@@ -61,10 +65,10 @@ static void arm_proc_timer(bool on)
     if (on) esp_timer_start_once(s_proc_timer, PROC_TIMEOUT_US);
 }
 
-static void apply(vibe_in_t in, uint8_t typeless_byte)
+static void apply(vibe_in_t in, uint32_t arg)
 {
     xSemaphoreTake(s_mu, portMAX_DELAY);
-    vibe_out_t o = vibe_state_apply(&s_st, in, typeless_byte);
+    vibe_out_t o = vibe_state_apply(&s_st, in, arg);
     bool processing = s_st.phase == VIBE_PHASE_PROCESSING;
     if (o.n_events) s_last_event = o.ble_events[o.n_events - 1];
     publish_locked();
@@ -119,6 +123,22 @@ esp_err_t vibe_app_start(void)
     return ESP_OK;
 }
 
+// BSP enumerates buttons as UP/DOWN/OK; the wire protocol orders them by
+// physical position (up/middle/down). Translate once, here.
+static uint8_t wire_button(bsp_btn_t btn)
+{
+    switch (btn) {
+    case BSP_BTN_UP: return VIBE_BTN_UP;
+    case BSP_BTN_OK: return VIBE_BTN_MID;
+    default: return VIBE_BTN_DOWN;
+    }
+}
+
+static void report_gesture(bsp_btn_t btn, uint8_t gesture)
+{
+    apply(VIBE_IN_GESTURE, (uint32_t)(wire_button(btn) * 3U + gesture));
+}
+
 void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
 {
     if (ev == BSP_BTN_PRESS) {
@@ -130,13 +150,11 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
         // A long press is reported at the threshold. Prevent a component
         // implementation that also emits CLICK on release from firing twice.
         s_swallow_click = true;
-        if (btn == BSP_BTN_OK) apply(VIBE_IN_OK_LONG, 0);
-        else if (btn == BSP_BTN_UP) apply(VIBE_IN_UP_LONG, 0);
+        report_gesture(btn, VIBE_GES_LONG);
         return;
     }
     if (ev == BSP_BTN_DOUBLE) {
-        if (btn == BSP_BTN_OK) apply(VIBE_IN_OK_DOUBLE, 0);
-        else if (btn == BSP_BTN_UP) apply(VIBE_IN_UP_DOUBLE, 0);
+        report_gesture(btn, VIBE_GES_DOUBLE);
         return;
     }
     if (ev != BSP_BTN_CLICK) return;
@@ -146,9 +164,14 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
     }
     vibe_power_on_input();
     vibe_ble_note_activity();
-    if (btn == BSP_BTN_OK) apply(VIBE_IN_OK, 0);
-    else if (btn == BSP_BTN_DOWN) apply(VIBE_IN_DOWN, 0);
-    else if (btn == BSP_BTN_UP) apply(VIBE_IN_UP, 0);
+    report_gesture(btn, VIBE_GES_CLICK);
+}
+
+void vibe_app_on_actions(const uint8_t *actions, size_t len)
+{
+    for (size_t i = 0; i < len && i < VIBE_GESTURE_COUNT; i++) {
+        apply(VIBE_IN_ACTIONS, (uint32_t)i | ((uint32_t)actions[i] << 8));
+    }
 }
 
 void vibe_app_on_ble_link(bool up)

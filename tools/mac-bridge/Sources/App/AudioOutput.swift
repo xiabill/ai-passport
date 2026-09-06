@@ -7,10 +7,16 @@ final class AudioOutput {
     private let format = AVAudioFormat(
         commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: false)!
     private let lock = NSLock()
-    private var fifo = [Float]()
+    // Fixed ring buffer: the render callback runs on the realtime audio thread,
+    // so it must not resize or memmove a Swift array. Capacity is a power of two
+    // (~0.5 s at 16 kHz) so the wrap is a mask instead of a division.
+    private static let ringCapacity = 8192
+    private static let ringMask = ringCapacity - 1
+    private var ring = [Float](repeating: 0, count: ringCapacity)
+    private var head = 0
+    private var count = 0
     private var primed = false
     private let primeFrames = 1280
-    private let maxFrames = 8000
     private var sourceNode: AVAudioSourceNode!
     private var deviceName = "BlackHole 2ch"
     private var testTone = false
@@ -49,10 +55,13 @@ final class AudioOutput {
                 self.phase = p
                 return noErr
             }
-            if !self.primed && self.fifo.count >= self.primeFrames { self.primed = true }
-            let avail = self.primed ? min(n, self.fifo.count) : 0
-            for i in 0..<avail { out[i] = self.fifo[i] }
-            if avail > 0 { self.fifo.removeFirst(avail) }
+            if !self.primed && self.count >= self.primeFrames { self.primed = true }
+            let avail = self.primed ? min(n, self.count) : 0
+            for i in 0..<avail {
+                out[i] = self.ring[(self.head + i) & Self.ringMask]
+            }
+            self.head = (self.head + avail) & Self.ringMask
+            self.count -= avail
             if avail < n { self.primed = false }
             self.lock.unlock()
             for i in avail..<n { out[i] = 0 }
@@ -94,6 +103,8 @@ final class AudioOutput {
             try connectAndStart()
             lock.lock()
             primed = false
+            head = 0
+            count = 0
             lock.unlock()
             Log.audio("引擎已重建")
         } catch {
@@ -116,9 +127,14 @@ final class AudioOutput {
         for s in samples {
             let v = s == Int16.min ? 32767 : abs(Int(s))
             if v > lastPeak { lastPeak = v }
-            fifo.append(Float(s) / 32768.0)
+            if count == Self.ringCapacity {
+                // 缓冲已满说明渲染跟不上，丢最老的样本而不是让延迟一直堆积。
+                head = (head + 1) & Self.ringMask
+                count -= 1
+            }
+            ring[(head + count) & Self.ringMask] = Float(s) / 32768.0
+            count += 1
         }
-        if fifo.count > maxFrames { fifo.removeFirst(fifo.count - maxFrames) }
         lock.unlock()
     }
 
@@ -137,6 +153,55 @@ final class AudioOutput {
         outputDevices().compactMap(deviceName).sorted {
             $0.localizedCaseInsensitiveCompare($1) == .orderedAscending
         }
+    }
+
+    /// Devices that carry both input and output channels, i.e. virtual
+    /// loopback drivers such as BlackHole. These are the only devices that can
+    /// carry Bridge audio into a dictation app.
+    static func loopbackDeviceNames() -> [String] {
+        allDevices()
+            .filter { deviceHasOutput($0) && deviceHasInput($0) }
+            .compactMap(deviceName)
+            .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+
+    private static func allDevices() -> [AudioDeviceID] {
+        var addr = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDevices,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain)
+        var size: UInt32 = 0
+        guard AudioObjectGetPropertyDataSize(
+            AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size) == noErr
+        else { return [] }
+        var devices = [AudioDeviceID](
+            repeating: 0, count: Int(size) / MemoryLayout<AudioDeviceID>.size)
+        guard AudioObjectGetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size, &devices) == noErr
+        else { return [] }
+        return devices
+    }
+
+    private static func deviceHasInput(_ dev: AudioDeviceID) -> Bool {
+        channelCount(dev, scope: kAudioDevicePropertyScopeInput) > 0
+    }
+
+    private static func channelCount(_ dev: AudioDeviceID, scope: AudioObjectPropertyScope) -> Int {
+        var addr = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyStreamConfiguration,
+            mScope: scope,
+            mElement: kAudioObjectPropertyElementMain)
+        var size: UInt32 = 0
+        guard AudioObjectGetPropertyDataSize(dev, &addr, 0, nil, &size) == noErr, size > 0 else {
+            return 0
+        }
+        let ptr = UnsafeMutableRawPointer.allocate(
+            byteCount: Int(size), alignment: MemoryLayout<AudioBufferList>.alignment)
+        defer { ptr.deallocate() }
+        guard AudioObjectGetPropertyData(dev, &addr, 0, nil, &size, ptr) == noErr else { return 0 }
+        let list = UnsafeMutableAudioBufferListPointer(
+            ptr.assumingMemoryBound(to: AudioBufferList.self))
+        return list.reduce(0) { $0 + Int($1.mNumberChannels) }
     }
 
     private static func outputDevices() -> [AudioDeviceID] {

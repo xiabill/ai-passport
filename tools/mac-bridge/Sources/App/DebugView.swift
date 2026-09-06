@@ -99,7 +99,6 @@ struct DebugView: View {
         case .doubaoSelectAll: return "textformat"
         case .doubaoClear: return "delete.left"
         case .enter: return "return"
-        case .cancel: return "xmark.circle"
         }
     }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vibe_protocol.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -17,38 +19,31 @@ typedef enum {
     VIBE_PHASE_PROCESSING,   // waiting for Typeless after stop
 } vibe_phase_t;
 
-typedef enum {
-    VIBE_SOURCE_NONE = 0,
-    VIBE_SOURCE_TYPELESS,
-    VIBE_SOURCE_TYPELESS_TRANSLATE,
-    VIBE_SOURCE_TYPELESS_ASK,
-    VIBE_SOURCE_DOUBAO,
-} vibe_source_t;
+// Gesture index: button * 3 + gesture, i.e. 0..8. VIBE_GESTURE_COUNT lives in
+// vibe_protocol.h, next to the wire format that carries these actions.
+#define VIBE_GESTURE_NONE  0xFFU
 
 typedef enum {
     VIBE_IN_LINK_UP = 0,
     VIBE_IN_LINK_DOWN,
     VIBE_IN_AUDIO_SUB,
     VIBE_IN_AUDIO_UNSUB,
-    VIBE_IN_OK,              // Typeless toggle
-    VIBE_IN_OK_DOUBLE,       // Typeless translation shortcut
-    VIBE_IN_OK_LONG,         // Typeless Ask anything shortcut
-    VIBE_IN_DOWN,            // Return / stop-and-send
-    VIBE_IN_UP,              // Doubao toggle
-    VIBE_IN_UP_DOUBLE,       // Doubao select all
-    VIBE_IN_UP_LONG,         // Doubao clear all
-    VIBE_IN_TYPELESS,        // typeless_byte is valid
+    VIBE_IN_GESTURE,         // arg = gesture index 0..8
+    VIBE_IN_ACTIONS,         // arg = gesture index | (action << 8)
+    VIBE_IN_TYPELESS,        // arg = typeless state byte
     VIBE_IN_SILENCE,         // 30 s below peak threshold while recording
     VIBE_IN_PROC_TIMEOUT,    // processing wait expired
 } vibe_in_t;
 
 typedef struct {
     vibe_phase_t phase;
-    vibe_source_t source;
     bool linked;
     bool audio_sub;
     uint8_t typeless;
-    bool queued_enter;
+    // Action bound to each gesture, supplied by the bridge. Used only to decide
+    // whether to arm the microphone and to label the on-screen key hints.
+    uint8_t actions[VIBE_GESTURE_COUNT];
+    uint8_t active_gesture;  // VIBE_GESTURE_NONE when idle
 } vibe_state_t;
 
 typedef struct {
@@ -60,7 +55,7 @@ typedef struct {
 } vibe_out_t;
 
 void vibe_state_init(vibe_state_t *s);
-vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint8_t typeless_byte);
+vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint32_t arg);
 
 #ifdef __cplusplus
 }

@@ -7,6 +7,11 @@ public enum VibeProtocol {
     public static let audioPacket = 166
     public static let flagEOS: UInt8 = 0x01
 
+    /// Raw gesture events: 0x20 | (button << 2) | gesture.
+    public static let gestureBase: UInt8 = 0x20
+    /// Control write: 0x91 followed by one action code per gesture.
+    public static let ctrlActions: UInt8 = 0x91
+
     public static let serviceUUID = "F0100001-0000-4A6B-9E10-464F4C4F5631"
     public static let audioUUID = "F0100002-0000-4A6B-9E10-464F4C4F5631"
     public static let eventUUID = "F0100003-0000-4A6B-9E10-464F4C4F5631"
@@ -19,7 +24,6 @@ public enum VibeEvent: UInt8, CaseIterable, Equatable {
     case start = 1
     case stop = 2
     case enter = 3
-    case cancel = 4
     case doubaoStart = 5
     case doubaoStop = 6
     case doubaoStopAndSend = 7
@@ -33,7 +37,6 @@ public enum VibeEvent: UInt8, CaseIterable, Equatable {
         case .start: return "开始说话"
         case .stop: return "停止说话"
         case .enter: return "发送"
-        case .cancel: return "取消"
         case .doubaoStart: return "豆包开始"
         case .doubaoStop: return "豆包停止"
         case .doubaoStopAndSend: return "豆包停止并发送"
@@ -65,4 +68,27 @@ public struct AudioPacket: Equatable {
         return AudioPacket(
             seq: seq, predictor: predictor, stepIndex: step, flags: flags, eos: eos, adpcm: adpcm)
     }
+}
+
+/// A button gesture reported by the device. Replaces the old semantic events:
+/// the device says what was pressed, the bridge decides what it means.
+public struct GestureEvent: Equatable {
+    public var key: ButtonKey
+    public var gesture: ButtonGesture
+
+    public init(key: ButtonKey, gesture: ButtonGesture) {
+        self.key = key
+        self.gesture = gesture
+    }
+
+    public static func parse(_ byte: UInt8) -> GestureEvent? {
+        guard byte >= VibeProtocol.gestureBase else { return nil }
+        let payload = byte - VibeProtocol.gestureBase
+        guard let key = ButtonKey(rawValue: Int(payload >> 2)),
+            let gesture = ButtonGesture(rawValue: Int(payload & 0x03))
+        else { return nil }
+        return GestureEvent(key: key, gesture: gesture)
+    }
+
+    public var title: String { "\(key.title)\(gesture.title)" }
 }

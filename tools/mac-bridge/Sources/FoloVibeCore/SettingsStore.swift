@@ -33,7 +33,7 @@ public struct BridgeSettings: Equatable, Codable {
     public var talkKey: String
     public var doubaoKey: String
     public var sendKey: String
-    public var cancelKey: String
+    public var buttons: ButtonMap
     public var retapEnabled: Bool
     public var retapFromSec: Double
     public var retapToSec: Double
@@ -50,7 +50,7 @@ public struct BridgeSettings: Equatable, Codable {
         talkKey: String,
         doubaoKey: String,
         sendKey: String,
-        cancelKey: String,
+        buttons: ButtonMap = .default,
         retapEnabled: Bool,
         retapFromSec: Double,
         retapToSec: Double,
@@ -66,7 +66,7 @@ public struct BridgeSettings: Equatable, Codable {
         self.talkKey = talkKey
         self.doubaoKey = doubaoKey
         self.sendKey = sendKey
-        self.cancelKey = cancelKey
+        self.buttons = buttons
         self.retapEnabled = retapEnabled
         self.retapFromSec = retapFromSec
         self.retapToSec = retapToSec
@@ -84,7 +84,7 @@ public struct BridgeSettings: Equatable, Codable {
         talkKey: "Fn",
         doubaoKey: "Right Option",
         sendKey: "Return",
-        cancelKey: "Escape",
+        buttons: .default,
         retapEnabled: true,
         retapFromSec: 2,
         retapToSec: 6,
@@ -105,12 +105,9 @@ public struct BridgeSettings: Equatable, Codable {
     public var doubao: Hotkey {
         Hotkey.named(doubaoKey, in: Hotkey.doubaoKeys, fallback: Hotkey.doubaoKeys[0])
     }
-    public var cancel: Hotkey {
-        Hotkey.named(cancelKey, in: Hotkey.cancelKeys, fallback: Hotkey.cancelKeys[0])
-    }
 
     private enum CodingKeys: String, CodingKey {
-        case devicePrefix, outputDevice, talkKey, doubaoKey, sendKey, cancelKey
+        case devicePrefix, outputDevice, talkKey, doubaoKey, sendKey, buttons
         case retapEnabled, retapFromSec, retapToSec, retapMax, typelessPollSec
         case launchAtLogin, startHidden, autoReconnect, powerMode
     }
@@ -124,7 +121,7 @@ public struct BridgeSettings: Equatable, Codable {
         talkKey = try c.decodeIfPresent(String.self, forKey: .talkKey) ?? d.talkKey
         doubaoKey = try c.decodeIfPresent(String.self, forKey: .doubaoKey) ?? d.doubaoKey
         sendKey = try c.decodeIfPresent(String.self, forKey: .sendKey) ?? d.sendKey
-        cancelKey = try c.decodeIfPresent(String.self, forKey: .cancelKey) ?? d.cancelKey
+        buttons = try c.decodeIfPresent(ButtonMap.self, forKey: .buttons) ?? d.buttons
         retapEnabled = try c.decodeIfPresent(Bool.self, forKey: .retapEnabled) ?? d.retapEnabled
         retapFromSec = try c.decodeIfPresent(Double.self, forKey: .retapFromSec) ?? d.retapFromSec
         retapToSec = try c.decodeIfPresent(Double.self, forKey: .retapToSec) ?? d.retapToSec

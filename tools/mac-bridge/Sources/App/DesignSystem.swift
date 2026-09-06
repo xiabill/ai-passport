@@ -13,18 +13,15 @@ enum FoloVibePalette {
 }
 
 struct PageHeader: View {
-    let eyebrow: String
     let title: String
     let subtitle: String
     var trailing: AnyView?
 
     init(
-        eyebrow: String = "FOLOVIBE BRIDGE",
         title: String,
         subtitle: String,
         trailing: AnyView? = nil
     ) {
-        self.eyebrow = eyebrow
         self.title = title
         self.subtitle = subtitle
         self.trailing = trailing
@@ -32,13 +29,11 @@ struct PageHeader: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 20) {
-            VStack(alignment: .leading, spacing: 5) {
-                Text(eyebrow)
-                    .font(.caption2.weight(.bold))
-                    .tracking(1.1)
-                    .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 4) {
+                // The top bar already carries the brand; repeating it here only
+                // pushed the real content further down.
                 Text(title)
-                    .font(.system(size: 30, weight: .bold))
+                    .font(.system(size: 21, weight: .bold))
                 Text(subtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)

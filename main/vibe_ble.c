@@ -93,14 +93,22 @@ static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
     (void)attr_handle;
     (void)arg;
     if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
+        uint16_t len = OS_MBUF_PKTLEN(ctxt->om);
         uint8_t v = 0;
-        if (OS_MBUF_PKTLEN(ctxt->om) >= 1) {
-            os_mbuf_copydata(ctxt->om, 0, 1, &v);
-            if (v == VIBE_CTRL_POWER_MODE_STANDARD || v == VIBE_CTRL_POWER_MODE_ECO) {
-                vibe_app_on_power_mode(v == VIBE_CTRL_POWER_MODE_ECO ? 1 : 0);
-            } else {
-                vibe_app_on_typeless(v);
-            }
+        if (len < 1) return 0;
+        os_mbuf_copydata(ctxt->om, 0, 1, &v);
+
+        if (v == VIBE_CTRL_ACTIONS) {
+            // 0x91 followed by one action code per gesture.
+            uint8_t actions[VIBE_GESTURE_COUNT] = {0};
+            uint16_t n = len - 1;
+            if (n > VIBE_GESTURE_COUNT) n = VIBE_GESTURE_COUNT;
+            os_mbuf_copydata(ctxt->om, 1, n, actions);
+            vibe_app_on_actions(actions, n);
+        } else if (v == VIBE_CTRL_POWER_MODE_STANDARD || v == VIBE_CTRL_POWER_MODE_ECO) {
+            vibe_app_on_power_mode(v == VIBE_CTRL_POWER_MODE_ECO ? 1 : 0);
+        } else {
+            vibe_app_on_typeless(v);
         }
         return 0;
     }

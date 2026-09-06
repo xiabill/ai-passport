@@ -31,7 +31,7 @@ static lv_obj_t *s_mascot;
 static lv_timer_t *s_timer;
 static vibe_ui_model_t s_live;
 static vibe_phase_t s_shown = (vibe_phase_t)255;
-static vibe_source_t s_shown_source = (vibe_source_t)255;
+static uint8_t s_shown_gesture = 0xFEU;
 static uint32_t s_rec_t0;
 static bool s_led_on;
 
@@ -138,15 +138,26 @@ static const char *phase_title(vibe_phase_t p)
     }
 }
 
-static const char *source_title(vibe_source_t source)
+// Short labels for the on-screen key hints. The bridge owns the real action
+// names; the device only needs something that fits under a key.
+static const char *action_title(uint8_t action)
 {
-    switch (source) {
-    case VIBE_SOURCE_TYPELESS: return "语音";
-    case VIBE_SOURCE_TYPELESS_TRANSLATE: return "翻译";
-    case VIBE_SOURCE_TYPELESS_ASK: return "随便问";
-    case VIBE_SOURCE_DOUBAO: return "豆包";
+    switch (action) {
+    case VIBE_ACT_DICTATE: return "语音";
+    case VIBE_ACT_TRANSLATE: return "翻译";
+    case VIBE_ACT_ASK: return "随便问";
+    case VIBE_ACT_DOUBAO: return "豆包";
+    case VIBE_ACT_ENTER: return "发送";
+    case VIBE_ACT_SELECT_ALL: return "全选";
+    case VIBE_ACT_CLEAR: return "删除";
     default: return "--";
     }
+}
+
+static const char *active_title(const vibe_ui_model_t *m)
+{
+    if (m->active_gesture >= VIBE_GESTURE_COUNT) return "--";
+    return action_title(m->actions[m->active_gesture]);
 }
 
 static const char *power_mode_title(vibe_power_mode_t mode)
@@ -162,21 +173,44 @@ static uint32_t bar_color(uint8_t level, bool enabled)
     return UI_RED;
 }
 
+// Events are raw gestures now, so the screen names the gesture rather than a
+// meaning the device no longer owns.
 static const char *event_title(uint8_t ev)
 {
-    switch (ev) {
-    case VIBE_BLE_START: return "启动";
-    case VIBE_BLE_STOP: return "停止";
-    case VIBE_BLE_ENTER: return "发送";
-    case VIBE_BLE_CANCEL: return "取消";
-    case VIBE_BLE_DOUBAO_START: return "豆包启动";
-    case VIBE_BLE_DOUBAO_STOP: return "豆包停止";
-    case VIBE_BLE_DOUBAO_STOP_SEND: return "豆包发送";
-    case VIBE_BLE_TYPELESS_TRANSLATE: return "翻译启动";
-    case VIBE_BLE_TYPELESS_ASK: return "提问启动";
-    case VIBE_BLE_DOUBAO_SELECT_ALL: return "全选";
-    case VIBE_BLE_DOUBAO_CLEAR: return "删除";
-    default: return "--";
+    static char buf[24];
+    if (ev < VIBE_BLE_GESTURE_BASE) return "--";
+    uint8_t btn = (uint8_t)((ev - VIBE_BLE_GESTURE_BASE) >> 2);
+    uint8_t ges = (uint8_t)(ev & 0x03U);
+    if (btn > VIBE_BTN_DOWN || ges > VIBE_GES_LONG) return "--";
+    const char *bn = btn == VIBE_BTN_UP ? "上" : (btn == VIBE_BTN_MID ? "中" : "下");
+    const char *gn = ges == VIBE_GES_CLICK ? "单击"
+                   : (ges == VIBE_GES_DOUBLE ? "双击" : "长按");
+    snprintf(buf, sizeof(buf), "%s键%s", bn, gn);
+    return buf;
+}
+
+
+// One key hint = physical key name + whatever its single click is bound to.
+static void set_gesture_key(lv_obj_t *obj, const char *name,
+                            const vibe_ui_model_t *m, uint8_t button)
+{
+    char buf[32];
+    bool active = m->active_gesture < VIBE_GESTURE_COUNT &&
+                  (m->active_gesture / 3U) == button;
+    if (active) {
+        snprintf(buf, sizeof(buf), "%s\n停止", name);
+        set_key(obj, buf, UI_RED);
+        return;
+    }
+    uint8_t action = m->actions[button * 3U + VIBE_GES_CLICK];
+    snprintf(buf, sizeof(buf), "%s\n%s", name, action_title(action));
+    if (action == VIBE_ACT_NONE) {
+        set_key(obj, buf, UI_MUTED);
+    } else if (m->phase == VIBE_PHASE_RECORDING && VIBE_ACT_RECORDS(action)) {
+        // 录音中按另一个录音键会打断当前这段,弱化提示。
+        set_key(obj, buf, UI_MUTED);
+    } else {
+        set_key(obj, buf, UI_PAPER);
     }
 }
 
@@ -202,7 +236,7 @@ static void paint(const vibe_ui_model_t *m)
 
     char line[64];
     snprintf(line, sizeof(line), "%s  %s",
-             source_title(m->source), m->linked ? "已连接" : "未连接");
+             active_title(m), m->linked ? "已连接" : "未连接");
     lv_label_set_text(s_line_tl, line);
 
     snprintf(line, sizeof(line), "%s  %s", vibe_ble_name(),
@@ -237,11 +271,7 @@ static void paint(const vibe_ui_model_t *m)
     }
     lv_label_set_text(s_line_tx, line);
 
-    if (m->queued_enter) {
-        snprintf(line, sizeof(line), "最近 %s  待发送", event_title(m->last_event));
-    } else {
-        snprintf(line, sizeof(line), "最近 %s", event_title(m->last_event));
-    }
+    snprintf(line, sizeof(line), "最近 %s", event_title(m->last_event));
     lv_label_set_text(s_line_last, line);
 
     const bool recording = m->phase == VIBE_PHASE_RECORDING && m->audio_sub;
@@ -272,43 +302,25 @@ static void paint(const vibe_ui_model_t *m)
             lv_color_hex(bar_color(m->bars[i], m->audio_sub)), 0);
     }
 
-    switch (m->phase) {
-    case VIBE_PHASE_IDLE:
-        set_key(s_key_ok, "OK\n语音", UI_YELLOW);
-        set_key(s_key_dn, "DOWN\n返回", UI_PAPER);
-        set_key(s_key_up, "UP\n豆包", UI_PAPER);
-        break;
-    case VIBE_PHASE_RECORDING:
-        if (m->source == VIBE_SOURCE_DOUBAO) {
-            set_key(s_key_ok, "OK\n空闲", UI_MUTED);
-            set_key(s_key_dn, "DOWN\n发送", UI_YELLOW);
-            set_key(s_key_up, "UP\n停止", UI_RED);
-        } else {
-            set_key(s_key_ok, "OK\n停止", UI_RED);
-            set_key(s_key_dn, "DOWN\n发送", UI_YELLOW);
-            set_key(s_key_up, "UP\n空闲", UI_MUTED);
-        }
-        break;
-    case VIBE_PHASE_PROCESSING:
-        set_key(s_key_ok, "OK\n空闲", UI_MUTED);
-        set_key(s_key_dn, m->queued_enter ? "DOWN\n等待" : "DOWN\n发送", UI_ORANGE);
-        set_key(s_key_up, "UP\n空闲", UI_MUTED);
-        break;
-    case VIBE_PHASE_WAIT:
-        set_key(s_key_ok, "OK\n等待", UI_MUTED);
-        set_key(s_key_dn, "DOWN\n等待", UI_MUTED);
-        set_key(s_key_up, "UP\n等待", UI_MUTED);
-        break;
-    default:
-        set_key(s_key_ok, "OK\n等待", UI_MUTED);
-        set_key(s_key_dn, "DOWN\n等待", UI_MUTED);
-        set_key(s_key_up, "UP\n等待", UI_MUTED);
-        break;
+    // 按键提示直接反映当前绑定:设备上写着什么,按下去就是什么。
+    if (m->phase == VIBE_PHASE_IDLE || m->phase == VIBE_PHASE_RECORDING) {
+        set_gesture_key(s_key_up, "UP", m, VIBE_BTN_UP);
+        set_gesture_key(s_key_ok, "MID", m, VIBE_BTN_MID);
+        set_gesture_key(s_key_dn, "DOWN", m, VIBE_BTN_DOWN);
+    } else {
+        const char *hint = m->phase == VIBE_PHASE_PROCESSING ? "处理" : "等待";
+        char buf[24];
+        snprintf(buf, sizeof(buf), "UP\n%s", hint);
+        set_key(s_key_up, buf, UI_MUTED);
+        snprintf(buf, sizeof(buf), "MID\n%s", hint);
+        set_key(s_key_ok, buf, UI_MUTED);
+        snprintf(buf, sizeof(buf), "DOWN\n%s", hint);
+        set_key(s_key_dn, buf, m->phase == VIBE_PHASE_PROCESSING ? UI_ORANGE : UI_MUTED);
     }
 
-    if (m->phase != s_shown || m->source != s_shown_source) {
+    if (m->phase != s_shown || m->active_gesture != s_shown_gesture) {
         s_shown = m->phase;
-        s_shown_source = m->source;
+        s_shown_gesture = m->active_gesture;
         ui_pixel_mascot_jump(s_mascot);
     }
 }

@@ -1,3 +1,4 @@
+import AppKit
 import Combine
 import FoloVibeCore
 import Foundation
@@ -30,17 +31,6 @@ enum AppTab: String, CaseIterable, Hashable {
 }
 
 final class AppModel: ObservableObject {
-    enum ActiveInput: String {
-        case typeless = "Typeless"
-        case typelessTranslate = "Typeless 翻译"
-        case typelessAsk = "Typeless 随便问"
-        case doubao = "豆包"
-
-        var isTypeless: Bool {
-            self != .doubao
-        }
-    }
-
     static let shared = AppModel()
 
     let settings = SettingsStore()
@@ -62,6 +52,7 @@ final class AppModel: ObservableObject {
     @Published var lastAction = "—"
     @Published var debugNote = ""
     @Published var activeInputTitle = "—"
+    @Published var captureTarget: KeyCaptureTarget?
     @Published var audioDeviceNames: [String] = []
     @Published var audioTestNote = "尚未测试"
     @Published var repairNote = ""
@@ -72,8 +63,16 @@ final class AppModel: ObservableObject {
     private var lastOutput = ""
     private var lastPrefix = ""
     private var lastTypelessPoll = Date.distantPast
+    private var lastEnvCheck = Date.distantPast
+    private var awaitingTranscript = false
+
+    /// refreshChecks() enumerates every CoreAudio device and reads the Typeless
+    /// settings file; far too costly for the 0.5 s UI tick.
+    private static let envCheckSec: TimeInterval = 5
     private var appliedPowerMode: BridgePowerMode?
-    private var activeInput: ActiveInput?
+    private var activeInput: ButtonAction?
+    private var pendingEnter = false
+    private var appliedButtons = ButtonMap.default
     private var lastMicWarning = ""
 
     private init() {}
@@ -85,8 +84,11 @@ final class AppModel: ObservableObject {
         ble.setPowerMode(settings.current.powerMode)
         appliedPowerMode = settings.current.powerMode
         ble.onEvent = { [weak self] ev in self?.handle(ev) }
+        ble.onGesture = { [weak self] g in self?.handleGesture(g) }
+        ble.writeActions(settings.current.buttons.actionCodes)
         applyAudio()
         refreshChecks()
+        followTypelessIfStranded()
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.tick()
         }
@@ -139,17 +141,8 @@ final class AppModel: ObservableObject {
             repairNote = "已重新扫描 Passport；请保持设备开机并靠近 Mac。"
             return
         }
-        if !blackholeOK {
-            if let installed = audioDeviceNames.first(where: {
-                $0.localizedCaseInsensitiveContains("blackhole")
-            }) {
-                settings.current.outputDevice = installed
-                applyAudio()
-                repairNote = "已切换到已安装的 \(installed)，正在重新检查音频链路。"
-            } else {
-                Permissions.openBlackHoleDownload()
-                repairNote = "未检测到 BlackHole，已打开官方安装页；安装后点“再次检查”。"
-            }
+        if !blackholeOK || !typelessMicOK {
+            autoPairAudio()
             return
         }
         if !typeless.running {
@@ -157,12 +150,118 @@ final class AppModel: ObservableObject {
             repairNote = "已尝试打开 Typeless；启动后点“再次检查”。"
             return
         }
-        if !typelessMicOK {
-            _ = Permissions.openTypeless()
-            repairNote = "已打开 Typeless，请在“语音输入”中选择 \(settings.current.outputDevice)，再点“再次检查”。"
+        repairNote = "检查完成，没有发现需要修复的项目。"
+    }
+
+    /// Picks an audio device that both sides can actually use and configures
+    /// them together. A loopback device that CoreAudio reports is useless if
+    /// Typeless cannot enumerate it, so the choice is the intersection of the
+    /// two lists rather than a hardcoded BlackHole.
+    /// Loopback devices that both CoreAudio and Typeless can see. Exposed so
+    /// the setup guide can tell the user what it is about to pick.
+    var usableLoopbacks: [String] {
+        let visible = Permissions.typelessVisibleMicLabels()
+        return AudioOutput.loopbackDeviceNames().filter { device in
+            visible.contains { $0.caseInsensitiveCompare(device) == .orderedSame }
+        }
+    }
+
+    /// If the bridge points at a device Typeless cannot use, follow whatever
+    /// Typeless already selected. Only our own setting is touched, so this is
+    /// safe to run unattended at launch — unlike autoPairAudio(), which may
+    /// restart Typeless to write its config.
+    func followTypelessIfStranded() {
+        let usable = usableLoopbacks
+        guard !usable.isEmpty, let mic = Permissions.typelessMicLabel() else { return }
+        let currentWorks = usable.contains {
+            $0.caseInsensitiveCompare(settings.current.outputDevice) == .orderedSame
+        }
+        guard !currentWorks,
+            usable.contains(where: { $0.caseInsensitiveCompare(mic) == .orderedSame })
+        else { return }
+        Log.audio("输出设备 \(settings.current.outputDevice) 不可用，跟随 Typeless 改用 \(mic)")
+        settings.current.outputDevice = mic
+        applyAudio()
+    }
+
+    func autoPairAudio() {
+        let loopbacks = AudioOutput.loopbackDeviceNames()
+        let visible = Permissions.typelessVisibleMicLabels()
+        let usable = loopbacks.filter { device in
+            visible.contains { $0.caseInsensitiveCompare(device) == .orderedSame }
+        }
+
+        guard let pick = preferredLoopback(usable) else {
+            if loopbacks.isEmpty {
+                Permissions.openBlackHoleDownload()
+                repairNote = "没有找到任何回环音频设备，已打开 BlackHole 安装页；安装后点“再次检查”。"
+            } else if visible.isEmpty {
+                _ = Permissions.openTypeless()
+                repairNote = "还读不到 Typeless 的设备列表，请先打开 Typeless 再点“自动修复”。"
+            } else {
+                repairNote = "系统里有 \(loopbacks.joined(separator: "、"))，但 Typeless 一个都枚举不到。"
+                    + "请退出并重新打开 Typeless；若仍然如此，改用它能看到的回环设备。"
+            }
+            refreshChecks()
             return
         }
-        repairNote = "检查完成，没有发现需要修复的项目。"
+
+        if settings.current.outputDevice != pick {
+            settings.current.outputDevice = pick
+            applyAudio()
+        }
+        if Permissions.typelessMicLabel()?.caseInsensitiveCompare(pick) == .orderedSame {
+            repairNote = "音频链路已对齐：Bridge 与 Typeless 都在用 \(pick)。"
+            refreshChecks()
+            return
+        }
+        pointTypelessAt(pick)
+    }
+
+    /// Keeps the user's existing choice when it still works, otherwise prefers
+    /// BlackHole as the best-known device before falling back to any loopback.
+    private func preferredLoopback(_ usable: [String]) -> String? {
+        if let current = usable.first(where: {
+            $0.caseInsensitiveCompare(settings.current.outputDevice) == .orderedSame
+        }) { return current }
+        if let blackhole = usable.first(where: {
+            $0.localizedCaseInsensitiveContains("blackhole")
+        }) { return blackhole }
+        return usable.first
+    }
+
+    /// Typeless keeps its settings in memory and rewrites them on quit, so the
+    /// file can only be edited while it is closed.
+    private func pointTypelessAt(_ label: String) {
+        let running = NSRunningApplication.runningApplications(
+            withBundleIdentifier: "now.typeless.desktop")
+        guard !running.isEmpty else {
+            applyTypelessMic(label)
+            return
+        }
+        repairNote = "正在重启 Typeless 以写入麦克风设置…"
+        running.forEach { $0.terminate() }
+        waitForTypelessExit(retries: 20, label: label)
+    }
+
+    private func waitForTypelessExit(retries: Int, label: String) {
+        guard Permissions.typelessRunning, retries > 0 else {
+            applyTypelessMic(label)
+            return
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.waitForTypelessExit(retries: retries - 1, label: label)
+        }
+    }
+
+    private func applyTypelessMic(_ label: String) {
+        let ok = Permissions.setTypelessMic(label)
+        _ = Permissions.openTypeless()
+        repairNote = ok
+            ? "已把 Typeless 麦克风设为 \(label) 并重新打开它，链路配置完成。"
+            : "无法写入 Typeless 设置，请在它的“语音输入”里手动选择 \(label)。"
+        Log.typeless(repairNote)
+        refreshChecks()
     }
 
     func playAudioTest() {
@@ -200,53 +299,40 @@ final class AppModel: ObservableObject {
         switch ev {
         case .start:
             KeyTap.tap(s.talk)
-            activeInput = .typeless
-            activeInputTitle = ActiveInput.typeless.rawValue
+            setActiveInput(.typelessDictate)
             expect = .recording
             lastHotkey = Date()
             retaps = 0
         case .typelessTranslate:
             KeyTap.tapTypelessTranslate(s.talk)
-            activeInput = .typelessTranslate
-            activeInputTitle = ActiveInput.typelessTranslate.rawValue
+            setActiveInput(.typelessTranslate)
             expect = .recording
             lastHotkey = Date()
             retaps = 0
         case .typelessAsk:
             KeyTap.tapTypelessAsk(s.talk)
-            activeInput = .typelessAsk
-            activeInputTitle = ActiveInput.typelessAsk.rawValue
+            setActiveInput(.typelessAsk)
             expect = .recording
             lastHotkey = Date()
             retaps = 0
         case .stop:
             KeyTap.tap(s.talk)
-            activeInput = .typeless
-            activeInputTitle = ActiveInput.typeless.rawValue
+            setActiveInput(.typelessDictate)
             expect = .idle
             lastHotkey = Date()
             retaps = 0
+            awaitingTranscript = true
         case .enter:
             KeyTap.tap(s.send)
-        case .cancel:
-            if ble.snapshot.streaming { KeyTap.tap(s.talk) }
-            KeyTap.tap(s.cancel)
-            activeInput = nil
-            activeInputTitle = "—"
-            expect = .idle
-            lastHotkey = Date()
         case .doubaoStart:
             KeyTap.tap(s.doubao)
-            activeInput = .doubao
-            activeInputTitle = ActiveInput.doubao.rawValue
+            setActiveInput(.doubao)
         case .doubaoStop:
             KeyTap.tap(s.doubao)
-            activeInput = nil
-            activeInputTitle = "—"
+            setActiveInput(nil)
         case .doubaoStopAndSend:
             KeyTap.tap(s.doubao)
-            activeInput = nil
-            activeInputTitle = "—"
+            setActiveInput(nil)
             Log.key("豆包停止后延迟发送回车")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
                 guard let self else { return }
@@ -262,6 +348,78 @@ final class AppModel: ObservableObject {
         }
     }
 
+    private func setActiveInput(_ action: ButtonAction?) {
+        activeInput = action
+        activeInputTitle = action?.title ?? "—"
+    }
+
+    /// The device reports which button was pressed and how; the binding decides
+    /// what that means. Rebinding therefore never needs a firmware flash.
+    func handleGesture(_ gesture: GestureEvent) {
+        let action = settings.current.buttons.action(gesture.key, gesture.gesture)
+        lastAction = action == .none
+            ? "\(gesture.title)（未绑定）"
+            : "\(gesture.title) → \(action.title)"
+        Log.key(lastAction)
+        perform(action)
+    }
+
+    private func perform(_ action: ButtonAction) {
+        switch action {
+        case .none:
+            break
+        case .enter:
+            sendReturn()
+        case .doubaoSelectAll:
+            KeyTap.tapSelectAll()
+        case .doubaoClear:
+            KeyTap.tapClearAll()
+        case .typelessDictate, .typelessTranslate, .typelessAsk, .doubao:
+            toggleRecording(action)
+        }
+    }
+
+    /// The device already decided whether this press starts or stops a take, so
+    /// the bridge mirrors that using the input it currently believes is live.
+    private func toggleRecording(_ action: ButtonAction) {
+        let s = settings.current
+        if let current = activeInput {
+            switch current {
+            case .doubao: KeyTap.tap(s.doubao)
+            default: KeyTap.tap(s.talk)  // Typeless always stops on its base key
+            }
+            expect = .idle
+            lastHotkey = Date()
+            retaps = 0
+            if current.isTypeless { awaitingTranscript = true }
+            setActiveInput(nil)
+            return
+        }
+        switch action {
+        case .typelessDictate: KeyTap.tap(s.talk)
+        case .typelessTranslate: KeyTap.tapTypelessTranslate(s.talk)
+        case .typelessAsk: KeyTap.tapTypelessAsk(s.talk)
+        case .doubao: KeyTap.tap(s.doubao)
+        default: return
+        }
+        setActiveInput(action)
+        if action.isTypeless {
+            expect = .recording
+            lastHotkey = Date()
+            retaps = 0
+        }
+    }
+
+    /// Return must land after the transcript, never in the middle of it.
+    private func sendReturn() {
+        if awaitingTranscript || activeInput?.isTypeless == true {
+            pendingEnter = true
+            Log.key("回车排队，等待转写落地")
+            return
+        }
+        KeyTap.tap(settings.current.send)
+    }
+
     func simulate(_ ev: VibeEvent) {
         Log.debug("模拟 \(ev.title)")
         handle(ev)
@@ -274,6 +432,10 @@ final class AppModel: ObservableObject {
         }
         ble.autoReconnect = settings.current.autoReconnect
         if lastOutput != settings.current.outputDevice { applyAudio() }
+        if appliedButtons != settings.current.buttons {
+            appliedButtons = settings.current.buttons
+            ble.writeActions(settings.current.buttons.actionCodes)
+        }
         if appliedPowerMode != settings.current.powerMode {
             appliedPowerMode = settings.current.powerMode
             ble.setPowerMode(settings.current.powerMode)
@@ -282,11 +444,17 @@ final class AppModel: ObservableObject {
 
         bleSnap = ble.snapshot
         audioPeak = audio.peak
-        refreshChecks()
+        if Date().timeIntervalSince(lastEnvCheck) >= Self.envCheckSec {
+            lastEnvCheck = Date()
+            refreshChecks()
+        }
         if mic.result != "未测试" { audioTestNote = mic.result }
 
         let interval = max(0.5, settings.current.typelessPollSec)
-        let hot = bleSnap.streaming
+        // 录音中和等待转写落地时都要快轮询：停止后设备停在 PROCESSING 相位，
+        // 要等我们把 Typeless 的空闲状态写回去才会放行排队的回车。慢轮询会白白
+        // 吃掉设备端的超时预算，让回车抢在文字之前落下。
+        let hot = bleSnap.streaming || awaitingTranscript
         if hot || Date().timeIntervalSince(lastTypelessPoll) >= interval {
             lastTypelessPoll = Date()
             let st = typeless.poll()
@@ -294,9 +462,16 @@ final class AppModel: ObservableObject {
                 Log.typeless(st.title)
                 typelessState = st
             }
+            if st == .idle || st == .down {
+                awaitingTranscript = false
+                if pendingEnter {
+                    pendingEnter = false
+                    Log.key("转写完成，补发回车")
+                    KeyTap.tap(settings.current.send)
+                }
+            }
             if activeInput?.isTypeless == true && !bleSnap.streaming && st == .idle {
-                activeInput = nil
-                activeInputTitle = "—"
+                setActiveInput(nil)
             }
             ble.writeTypeless(st.rawValue)
             closedLoop(st)

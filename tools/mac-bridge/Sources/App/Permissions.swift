@@ -64,9 +64,70 @@ enum Permissions {
         return label
     }
 
+    /// The link only works when Typeless listens to the very device the Bridge
+    /// writes into. A hardcoded "blackhole" match used to report success even
+    /// when the two sides pointed at different devices.
     static func typelessMicOK(_ outputDevice: String) -> Bool {
         guard let label = typelessMicLabel() else { return false }
-        let needle = outputDevice.lowercased()
-        return label.lowercased().contains("blackhole") || label.lowercased().contains(needle)
+        return label.caseInsensitiveCompare(outputDevice) == .orderedSame
+            || label.localizedCaseInsensitiveContains(outputDevice)
+    }
+
+    static var typelessSettingsPath: String {
+        NSHomeDirectory() + "/Library/Application Support/Typeless/app-settings.json"
+    }
+
+    static var typelessRunning: Bool {
+        !NSRunningApplication.runningApplications(withBundleIdentifier: "now.typeless.desktop")
+            .isEmpty
+    }
+
+    /// Input devices Typeless itself enumerated. Chromium does not always see
+    /// every CoreAudio device, so a device missing from this list cannot be
+    /// selected inside Typeless no matter what the system reports.
+    static func typelessVisibleMics() -> [[String: Any]] {
+        guard let data = try? Data(contentsOf: URL(fileURLWithPath: typelessSettingsPath)),
+            let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let devices = obj["microphoneDevices"] as? [[String: Any]]
+        else { return [] }
+        return devices.filter { ($0["kind"] as? String) == "audioinput" }
+    }
+
+    static func typelessVisibleMicLabels() -> [String] {
+        typelessVisibleMics().compactMap { $0["label"] as? String }
+            .filter { !$0.hasPrefix("Auto-detect") }
+    }
+
+    /// Points Typeless at `label`, keeping a one-time backup. Typeless caches
+    /// settings in memory and rewrites the file on quit, so this is only safe
+    /// while it is not running; the caller is responsible for that.
+    @discardableResult
+    static func setTypelessMic(_ label: String) -> Bool {
+        let url = URL(fileURLWithPath: typelessSettingsPath)
+        guard let data = try? Data(contentsOf: url),
+            var obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let devices = obj["microphoneDevices"] as? [[String: Any]],
+            let match = devices.first(where: { ($0["label"] as? String) == label })
+        else { return false }
+
+        let backup = url.deletingLastPathComponent()
+            .appendingPathComponent("app-settings.json.folovibe-backup")
+        if !FileManager.default.fileExists(atPath: backup.path) {
+            try? data.write(to: backup)
+        }
+        obj["selectedMicrophoneDevice"] = match
+        guard let out = try? JSONSerialization.data(withJSONObject: obj, options: [.prettyPrinted])
+        else { return false }
+        // Atomic: a half-written settings file would break Typeless on launch.
+        let tmp = url.deletingLastPathComponent()
+            .appendingPathComponent("app-settings.json.folovibe-tmp")
+        guard (try? out.write(to: tmp)) != nil else { return false }
+        do {
+            _ = try FileManager.default.replaceItemAt(url, withItemAt: tmp)
+            return true
+        } catch {
+            try? FileManager.default.removeItem(at: tmp)
+            return false
+        }
     }
 }

@@ -32,21 +32,26 @@ struct StatusView: View {
 
                 SetupGuideView(model: model, compactWhenReady: true)
                 connectionCard
-                powerModeCard
-                quickActions
 
-                HStack(alignment: .top, spacing: 16) {
+                // 自适应列：宽窗口并排两列以缩短页面，窄窗口自动退成单列，
+                // 卡片内部因此永远拿得到足够宽度，不会被压出错位换行。
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 360), spacing: 16, alignment: .top)],
+                    alignment: .leading, spacing: 16
+                ) {
                     healthCard
                     audioCard
+                    powerModeCard
+                    audioTestCard
                 }
 
-                audioTestCard
+                quickActions
 
                 if !issueList.isEmpty { issuesCard }
             }
-            .frame(maxWidth: 980, alignment: .leading)
+            .frame(maxWidth: 1180, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(28)
+            .padding(22)
         }
     }
 
@@ -74,7 +79,7 @@ struct StatusView: View {
                 }
             }
             Divider()
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 116), spacing: 10)], spacing: 10) {
                 MetricTile(label: "蓝牙", value: model.bleSnap.bluetoothOn ? "已开启" : "未开启", symbol: "dot.radiowaves.left.and.right", tint: model.bleSnap.bluetoothOn ? .green : .orange)
                 MetricTile(label: "服务", value: model.bleSnap.subscribed ? "已订阅" : "等待中", symbol: "antenna.radiowaves.left.and.right", tint: model.bleSnap.subscribed ? .green : .orange)
                 MetricTile(label: "MTU", value: "\(model.bleSnap.mtu)", symbol: "arrow.left.arrow.right", tint: .blue)
@@ -84,7 +89,7 @@ struct StatusView: View {
 
     private var quickActions: some View {
         SurfaceCard("硬件操作", subtitle: "按键会自动触发对应输入法，下面是当前映射") {
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 250), spacing: 12)], spacing: 12) {
                 action(title: "语音输入", detail: "单击中键", shortcut: model.settings.current.talkKey, symbol: "mic.fill", tint: .blue)
                 action(title: "翻译", detail: "双击中键", shortcut: "\(model.settings.current.talkKey) + Shift", symbol: "character.bubble", tint: .purple)
                 action(title: "随便问", detail: "长按中键", shortcut: "\(model.settings.current.talkKey) + Space", symbol: "sparkles", tint: .orange)
@@ -94,6 +99,18 @@ struct StatusView: View {
 
     private var powerModeCard: some View {
         SurfaceCard("设备功耗模式", subtitle: model.settings.current.powerMode.subtitle) {
+            ViewThatFits(in: .horizontal) {
+                powerModeRow(vertical: false)
+                powerModeRow(vertical: true)
+            }
+        }
+    }
+
+    private func powerModeRow(vertical: Bool) -> some View {
+        let layout: AnyLayout = vertical
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+            : AnyLayout(HStackLayout(spacing: 14))
+        return layout {
             HStack(spacing: 14) {
                 Image(systemName: model.settings.current.powerMode.symbol)
                     .font(.title3.weight(.semibold))
@@ -110,16 +127,16 @@ struct StatusView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                Spacer()
-                Picker("功耗模式", selection: powerModeBinding) {
-                    ForEach(BridgePowerMode.allCases, id: \.self) { mode in
-                        Label(mode.title, systemImage: mode.symbol).tag(mode)
-                    }
-                }
-                .labelsHidden()
-                .pickerStyle(.segmented)
-                .frame(width: 230)
+                Spacer(minLength: 0)
             }
+            Picker("功耗模式", selection: powerModeBinding) {
+                ForEach(BridgePowerMode.allCases, id: \.self) { mode in
+                    Label(mode.title, systemImage: mode.symbol).tag(mode)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+            .frame(width: 220)
         }
     }
 
@@ -142,7 +159,7 @@ struct StatusView: View {
         SurfaceCard("运行检查", subtitle: "输入前建议全部显示为正常") {
             VStack(alignment: .leading, spacing: 13) {
                 CheckRow(title: "辅助功能", detail: model.axOK ? "可以发送快捷键" : "需要在系统设置中授权", ok: model.axOK)
-                CheckRow(title: "BlackHole 音频", detail: model.blackholeOK ? "输出设备可用" : "未找到配置的输出设备", ok: model.blackholeOK)
+                CheckRow(title: "虚拟音频设备", detail: model.blackholeOK ? model.settings.current.outputDevice : "未找到配置的输出设备", ok: model.blackholeOK)
                 CheckRow(title: "Typeless", detail: model.typeless.running ? "应用正在运行" : "请先打开 Typeless", ok: model.typeless.running)
                 CheckRow(title: "Typeless 麦克风", detail: model.typelessMicOK ? model.typelessMicLabel : "需要选择正确的音频设备", ok: model.typelessMicOK)
             }
@@ -177,19 +194,9 @@ struct StatusView: View {
     private var audioTestCard: some View {
         SurfaceCard("声音效果测试", subtitle: "按顺序验证设备麦克风 → BLE → Bridge → 虚拟音频设备") {
             VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 10) {
-                    Button { model.playAudioTest() } label: {
-                        Label("播放测试音", systemImage: "speaker.wave.2.fill")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    Button { model.toggleMicTest() } label: {
-                        Label(
-                            model.mic.isArmed ? "取消录音测试" : "录一段设备麦克风",
-                            systemImage: model.mic.isArmed ? "stop.circle" : "record.circle")
-                    }
-                    Button { model.refreshChecks() } label: {
-                        Label("刷新链路", systemImage: "arrow.clockwise")
-                    }
+                ViewThatFits(in: .horizontal) {
+                    audioTestButtons(vertical: false)
+                    audioTestButtons(vertical: true)
                 }
                 Text(model.audioTestNote)
                     .font(.callout)
@@ -201,6 +208,26 @@ struct StatusView: View {
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func audioTestButtons(vertical: Bool) -> some View {
+        let layout: AnyLayout = vertical
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            : AnyLayout(HStackLayout(spacing: 10))
+        return layout {
+            Button { model.playAudioTest() } label: {
+                Label("播放测试音", systemImage: "speaker.wave.2.fill")
+            }
+            .buttonStyle(.borderedProminent)
+            Button { model.toggleMicTest() } label: {
+                Label(
+                    model.mic.isArmed ? "取消录音测试" : "录一段设备麦克风",
+                    systemImage: model.mic.isArmed ? "stop.circle" : "record.circle")
+            }
+            Button { model.refreshChecks() } label: {
+                Label("刷新链路", systemImage: "arrow.clockwise")
             }
         }
     }
@@ -223,11 +250,11 @@ struct StatusView: View {
         if !model.bleSnap.subscribed { out.append("等待 Passport 广播 FoloVibe-* 并靠近 Mac") }
         if !model.axOK { out.append("在系统设置里给 FoloVibe Bridge 打开辅助功能") }
         if !model.blackholeOK {
-            out.append("未找到 \(model.settings.current.outputDevice)，请安装 BlackHole 2ch")
+            out.append("未找到 \(model.settings.current.outputDevice)，用状态页的“一键配置”自动挑一个可用设备")
         }
         if !model.typeless.running { out.append("打开 Typeless") }
         if model.typeless.running && !model.typelessMicOK {
-            out.append("把 Typeless 麦克风改成 \(model.settings.current.outputDevice)")
+            out.append("把 Typeless 麦克风改成 \(model.settings.current.outputDevice)，或用“一键配置”自动写入")
         }
         return out
     }

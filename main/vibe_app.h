@@ -3,6 +3,7 @@
 #include "bsp_button.h"
 #include "esp_err.h"
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -18,6 +19,9 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev);
 void vibe_app_on_ble_link(bool up);
 void vibe_app_on_audio_sub(bool sub);
 void vibe_app_on_typeless(uint8_t state);
+
+// Gesture-to-action bindings pushed by the bridge over the control channel.
+void vibe_app_on_actions(const uint8_t *actions, size_t len);
 void vibe_app_on_power_mode(uint8_t mode);
 void vibe_app_on_silence(void);
 void vibe_app_note_peak(uint8_t level);

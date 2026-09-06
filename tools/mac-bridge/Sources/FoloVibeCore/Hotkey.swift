@@ -45,11 +45,6 @@ public struct Hotkey: Equatable, Hashable {
         Hotkey(name: "Tab", carbon: 0x30),
     ]
 
-    public static let cancelKeys: [Hotkey] = [
-        Hotkey(name: "Escape", carbon: 0x35),
-        Hotkey(name: "Delete", carbon: 0x33),
-    ]
-
     public static func named(_ name: String, in list: [Hotkey], fallback: Hotkey) -> Hotkey {
         list.first { $0.name == name } ?? fallback
     }

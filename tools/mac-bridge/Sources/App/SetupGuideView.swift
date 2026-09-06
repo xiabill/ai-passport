@@ -33,12 +33,14 @@ struct SetupGuideView: View {
                 actionTitle: model.bleSnap.subscribed ? nil : "重新连接"),
             SetupStep(
                 id: "audio",
-                title: "BlackHole 音频",
-                detail: model.blackholeOK ? "输出设备可用：\(model.settings.current.outputDevice)" : "在声音设置确认已安装并启用 BlackHole 2ch",
+                title: "虚拟音频设备",
+                detail: model.blackholeOK
+                    ? "正在使用 \(model.settings.current.outputDevice)"
+                    : audioHint,
                 symbol: "waveform",
                 tint: .purple,
                 ok: model.blackholeOK,
-                actionTitle: model.blackholeOK ? nil : "打开声音设置"),
+                actionTitle: model.blackholeOK ? nil : "一键配置"),
             SetupStep(
                 id: "typeless",
                 title: "Typeless",
@@ -50,12 +52,30 @@ struct SetupGuideView: View {
             SetupStep(
                 id: "microphone",
                 title: "Typeless 麦克风",
-                detail: model.typelessMicOK ? "已选择 \(model.typelessMicLabel)" : "打开 Typeless 设置 → 语音输入，选择 \(model.settings.current.outputDevice)",
+                detail: model.typelessMicOK
+                    ? "已对齐 \(model.typelessMicLabel)"
+                    : micHint,
                 symbol: "slider.horizontal.3",
                 tint: .pink,
                 ok: model.typelessMicOK,
-                actionTitle: model.typelessMicOK ? nil : "打开 Typeless"),
+                actionTitle: model.typelessMicOK ? nil : "一键配置"),
         ]
+    }
+
+    /// Reports what is actually available so a first-time user is not told to
+    /// install BlackHole when a working loopback device is already present.
+    private var audioHint: String {
+        let usable = model.usableLoopbacks
+        if !usable.isEmpty { return "点“一键配置”使用 \(usable.joined(separator: "、"))" }
+        let loopbacks = AudioOutput.loopbackDeviceNames()
+        if loopbacks.isEmpty { return "尚未安装虚拟音频设备，点“一键配置”前往安装 BlackHole" }
+        return "系统有 \(loopbacks.joined(separator: "、"))，但 Typeless 枚举不到，请重启 Typeless"
+    }
+
+    private var micHint: String {
+        let usable = model.usableLoopbacks
+        if usable.isEmpty { return "先完成上一步的虚拟音频设备配置" }
+        return "点“一键配置”，自动把 Typeless 的语音输入设为 \(usable.first ?? "")"
     }
 
     var body: some View {
@@ -73,44 +93,59 @@ struct SetupGuideView: View {
     }
 
     private var fullGuide: some View {
-        VStack(alignment: .leading, spacing: 15) {
-                HStack(spacing: 12) {
-                    ProgressView(value: Double(steps.filter { $0.ok }.count), total: Double(steps.count))
-                        .tint(steps.allSatisfy { $0.ok } ? .green : .accentColor)
-                    Text("\(steps.filter { $0.ok }.count)/\(steps.count) 已完成")
-                        .font(.callout.weight(.semibold))
-                        .foregroundStyle(steps.allSatisfy { $0.ok } ? .green : .primary)
-                        .monospacedDigit()
-                    Spacer()
-                    Button { model.repairSetup() } label: {
-                        Label("自动修复", systemImage: "wand.and.stars")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    Button { model.refreshChecks() } label: {
-                        Label("再次检查", systemImage: "arrow.clockwise")
-                    }
-                    .buttonStyle(.bordered)
+        let pending = steps.filter { !$0.ok }
+        let done = steps.filter { $0.ok }
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 12) {
+                ProgressView(value: Double(done.count), total: Double(steps.count))
+                    .tint(pending.isEmpty ? .green : .accentColor)
+                Text("\(done.count)/\(steps.count) 已完成")
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(pending.isEmpty ? .green : .primary)
+                    .monospacedDigit()
+                    .fixedSize()
+                Spacer(minLength: 8)
+                Button { model.repairSetup() } label: {
+                    Label("自动修复", systemImage: "wand.and.stars")
                 }
+                .buttonStyle(.borderedProminent)
+                Button { model.refreshChecks() } label: {
+                    Label("再次检查", systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(.bordered)
+            }
 
+            // 只展开还没做完的步骤。已完成的六行会把首屏整个吃掉，而向导要
+            // 回答的问题只有一个：接下来还要做什么。
+            if !pending.isEmpty {
                 VStack(spacing: 0) {
-                    ForEach(steps) { step in
+                    ForEach(pending) { step in
                         stepRow(step)
-                        if step.id != steps.last?.id { Divider().padding(.leading, 42) }
+                        if step.id != pending.last?.id { Divider().padding(.leading, 42) }
                     }
-                }
-
-                if steps.allSatisfy({ $0.ok }) {
-                    Label("设置完成，可以直接使用硬件按键。", systemImage: "checkmark.seal.fill")
-                        .font(.callout.weight(.medium))
-                        .foregroundStyle(.green)
-                } else {
-                    Label(
-                        model.repairNote.isEmpty ? "授权后如果状态没有变化，请等待一秒再点“再次检查”。" : model.repairNote,
-                        systemImage: model.repairNote.isEmpty ? "info.circle" : "wrench.and.screwdriver")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
             }
+
+            if !done.isEmpty {
+                Label(
+                    "已通过：" + done.map(\.title).joined(separator: "、"),
+                    systemImage: "checkmark.circle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.green)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if pending.isEmpty {
+                Label("设置完成，可以直接使用硬件按键。", systemImage: "checkmark.seal.fill")
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.green)
+            } else if !model.repairNote.isEmpty {
+                Label(model.repairNote, systemImage: "wrench.and.screwdriver")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 
     private var readySummary: some View {
@@ -171,9 +206,9 @@ struct SetupGuideView: View {
             Permissions.openBluetooth()
         case "device":
             model.ble.reconnect()
-        case "audio":
-            Permissions.openSound()
-        case "typeless", "microphone":
+        case "audio", "microphone":
+            model.autoPairAudio()
+        case "typeless":
             if !Permissions.openTypeless() {
                 NSWorkspace.shared.open(URL(fileURLWithPath: "/Applications"))
             }
