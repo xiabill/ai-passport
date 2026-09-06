@@ -17,7 +17,7 @@ This public fork of [FoloToy/ai-passport](https://github.com/FoloToy/ai-passport
 
 Download the latest [FoloVibe Bridge macOS package](https://github.com/xiabill/ai-passport/releases/latest), unzip it, and move `FoloVibeBridge.app` to `/Applications`. The same release contains the matching `FoloToy-AI-Passport-full.bin` firmware image.
 
-On first launch, follow the in-app setup checks. Grant Bluetooth and Accessibility/Input Monitoring, install BlackHole 2ch, then select matching keys in Typeless, Doubao, and Bridge. The detailed [user guide](docs/releases/v0.3.3-vibe-typeless.en.md) covers installation, permissions, key mappings, firmware flashing, and troubleshooting.
+On first launch, follow the in-app setup checks. Grant Bluetooth and Accessibility/Input Monitoring, install BlackHole 2ch, then select matching keys in Typeless, Doubao, and Bridge. The detailed [user guide](docs/releases/v0.3.4-vibe-typeless.en.md) covers installation, permissions, key mappings, firmware flashing, and troubleshooting.
 
 ## Quick start for developers
 
