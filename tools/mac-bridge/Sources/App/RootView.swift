@@ -4,14 +4,23 @@ import SwiftUI
 struct RootView: View {
     @ObservedObject var model: AppModel
 
+    @ViewBuilder
     var body: some View {
+        if #available(macOS 14.0, *) {
+            navigation
+                .toolbar(removing: .sidebarToggle)
+        } else {
+            navigation
+        }
+    }
+
+    private var navigation: some View {
         NavigationSplitView {
             sidebar
         } detail: {
             detail
                 .background(Color(nsColor: .windowBackgroundColor))
         }
-        .toolbar(removing: .sidebarToggle)
         .toolbar(.hidden, for: .windowToolbar)
         .navigationSplitViewColumnWidth(min: 216, ideal: 242, max: 286)
     }
