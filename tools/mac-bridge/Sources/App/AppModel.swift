@@ -38,6 +38,7 @@ final class AppModel: ObservableObject {
     let mic = MicTest()
     let typeless = TypelessWatch()
     let logFilter = LogFilter()
+    let updater = Updater()
     private(set) var ble: BLEClient!
 
     @Published var tab: AppTab = .status
@@ -53,6 +54,10 @@ final class AppModel: ObservableObject {
     @Published var debugNote = ""
     @Published var activeInputTitle = "—"
     @Published var captureTarget: KeyCaptureTarget?
+    @Published var firmwareVersion = "—"
+    @Published var otaProgress: Double = 0
+    @Published var otaNote = ""
+    @Published var otaRunning = false
     @Published var audioDeviceNames: [String] = []
     @Published var audioTestNote = "尚未测试"
     @Published var repairNote = ""
@@ -85,10 +90,20 @@ final class AppModel: ObservableObject {
         appliedPowerMode = settings.current.powerMode
         ble.onEvent = { [weak self] ev in self?.handle(ev) }
         ble.onGesture = { [weak self] g in self?.handleGesture(g) }
+        ble.onFirmwareVersion = { [weak self] v in self?.firmwareVersion = v }
+        ble.onOTAProgress = { [weak self] p in self?.otaProgress = p }
+        ble.onOTAFinished = { [weak self] err in
+            guard let self else { return }
+            self.otaRunning = false
+            self.otaNote = err ?? "固件已发送，设备正在校验并重启"
+            Log.sys(self.otaNote)
+        }
         ble.writeActions(settings.current.buttons.actionCodes)
         applyAudio()
         refreshChecks()
         followTypelessIfStranded()
+        // Quiet check on launch; the settings page shows the result.
+        updater.check(quiet: true)
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.tick()
         }
@@ -427,6 +442,33 @@ final class AppModel: ObservableObject {
             return
         }
         KeyTap.tap(settings.current.send)
+    }
+
+    /// True when the device runs an older build than the latest release.
+    var firmwareUpdateAvailable: Bool {
+        guard let latest = updater.latest, firmwareVersion != "—", !firmwareVersion.isEmpty
+        else { return false }
+        return versionIsNewer(latest.version, than: ReleaseInfo.version(fromTag: firmwareVersion))
+    }
+
+    /// Downloads the firmware from the current release and streams it to the
+    /// device. Recording is refused while this runs.
+    func upgradeFirmware() {
+        guard !otaRunning else { return }
+        otaRunning = true
+        otaProgress = 0
+        otaNote = "正在下载固件…"
+        updater.downloadFirmware { [weak self] data, error in
+            guard let self else { return }
+            guard let data else {
+                self.otaRunning = false
+                self.otaNote = error ?? "下载失败"
+                return
+            }
+            self.otaNote = "正在推送 \(data.count / 1024) KB 到设备…"
+            Log.sys(self.otaNote)
+            self.ble.sendFirmware(data)
+        }
     }
 
     func simulate(_ ev: VibeEvent) {

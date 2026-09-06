@@ -12,6 +12,23 @@ public enum VibeProtocol {
     /// Control write: 0x91 followed by one action code per gesture.
     public static let ctrlActions: UInt8 = 0x91
 
+    /// Read-only firmware version, so the bridge can tell whether the device
+    /// needs an upgrade.
+    public static let versionUUID = "F0100005-0000-4A6B-9E10-464F4C4F5631"
+    /// Firmware image stream: one 6-byte header ('F','W', length LE32) then raw
+    /// image bytes.
+    public static let otaUUID = "F0100006-0000-4A6B-9E10-464F4C4F5631"
+
+    public static func otaHeader(length: Int) -> Data {
+        var d = Data([0x46, 0x57])
+        let n = UInt32(length)
+        d.append(contentsOf: [
+            UInt8(n & 0xFF), UInt8((n >> 8) & 0xFF),
+            UInt8((n >> 16) & 0xFF), UInt8((n >> 24) & 0xFF),
+        ])
+        return d
+    }
+
     public static let serviceUUID = "F0100001-0000-4A6B-9E10-464F4C4F5631"
     public static let audioUUID = "F0100002-0000-4A6B-9E10-464F4C4F5631"
     public static let eventUUID = "F0100003-0000-4A6B-9E10-464F4C4F5631"

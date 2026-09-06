@@ -141,6 +141,39 @@ do {
 }
 
 do {
+    expect(ReleaseInfo.version(fromTag: "v0.3.3-vibe-typeless") == "0.3.3", "tag to version")
+    expect(ReleaseInfo.version(fromTag: "0.4.0") == "0.4.0", "bare tag")
+
+    expect(versionIsNewer("0.3.4", than: "0.3.3"), "patch bump is newer")
+    expect(versionIsNewer("0.4.0", than: "0.3.9"), "minor bump beats higher patch")
+    expect(versionIsNewer("1.0.0", than: "0.9.9"), "major bump")
+    expect(!versionIsNewer("0.3.3", than: "0.3.3"), "same version is not newer")
+    expect(!versionIsNewer("0.3.2", than: "0.3.3"), "older is not newer")
+    // A dev build like 0.3.3-2-gc05cd86 must not offer to "upgrade" to 0.3.3.
+    expect(!versionIsNewer("0.3.3", than: "0.3.3-2-gc05cd86"), "release is not newer than its own dev build")
+    expect(versionIsNewer("0.3.4", than: "0.3.3-2-gc05cd86"), "next release beats a dev build")
+
+    let json = """
+    {"tag_name":"v0.3.3-vibe-typeless","assets":[
+      {"name":"FoloVibeBridge-macos.zip","browser_download_url":"https://example.com/a.zip"},
+      {"name":"FoloToy-AI-Passport-full.bin","browser_download_url":"https://example.com/f.bin"}]}
+    """.data(using: .utf8)!
+    let info = ReleaseInfo.parse(json)
+    expect(info?.version == "0.3.3", "parsed version")
+    expect(info?.appURL?.lastPathComponent == "a.zip", "parsed app asset")
+    expect(info?.firmwareURL?.lastPathComponent == "f.bin", "parsed firmware asset")
+    expect(ReleaseInfo.parse(Data("nonsense".utf8)) == nil, "reject malformed release")
+}
+
+do {
+    let h = VibeProtocol.otaHeader(length: 1216672)
+    expect(h.count == 6, "OTA header is six bytes")
+    expect(h[0] == 0x46 && h[1] == 0x57, "OTA header magic")
+    let len = UInt32(h[2]) | (UInt32(h[3]) << 8) | (UInt32(h[4]) << 16) | (UInt32(h[5]) << 24)
+    expect(len == 1216672, "OTA header carries the length little-endian")
+}
+
+do {
     let line = LogLine.parse("01:02:03.456 [蓝牙] 已连接 FoloVibe-4C11")
     expect(line.time == "01:02:03.456", "log time")
     expect(line.category == "蓝牙", "log category")

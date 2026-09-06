@@ -17,6 +17,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         var lastPacketHex = ""
         var lastEvent: String = "—"
         var handoffPaused = false
+        var firmwareVersion = ""
     }
 
     private var central: CBCentralManager!
@@ -24,6 +25,8 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     private var control: CBCharacteristic?
     private var audioCharacteristic: CBCharacteristic?
     private var eventCharacteristic: CBCharacteristic?
+    private var otaCharacteristic: CBCharacteristic?
+    private var versionCharacteristic: CBCharacteristic?
     private var audioNotifyReady = false
     private var eventNotifyReady = false
     private var lastSeq: UInt16?
@@ -39,7 +42,11 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
 
     var onEvent: ((VibeEvent) -> Void)?
     var onGesture: ((GestureEvent) -> Void)?
+    var onFirmwareVersion: ((String) -> Void)?
+    var onOTAProgress: ((Double) -> Void)?
+    var onOTAFinished: ((String?) -> Void)?
     private var desiredActions = [UInt8]()
+    private var reclaimTimer: DispatchSourceTimer?
     var onPCM: (([Int16]) -> Void)?
 
     var snapshot: Snapshot {
@@ -66,6 +73,32 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         queue.async { [self] in
             self.desiredPowerMode = mode
             self.writePowerMode()
+        }
+    }
+
+    /// Streams a firmware image to the device. Chunks are paced to the
+    /// negotiated MTU and written without response; the device reboots itself
+    /// once the image verifies, so success looks like a disconnect.
+    func sendFirmware(_ image: Data) {
+        queue.async { [self] in
+            guard let p = peripheral, let c = otaCharacteristic else {
+                DispatchQueue.main.async { self.onOTAFinished?("设备未连接或不支持 OTA") }
+                return
+            }
+            let chunk = max(20, p.maximumWriteValueLength(for: .withoutResponse))
+            p.writeValue(VibeProtocol.otaHeader(length: image.count), for: c, type: .withoutResponse)
+            var sent = 0
+            while sent < image.count {
+                let end = min(sent + chunk, image.count)
+                p.writeValue(image.subdata(in: sent..<end), for: c, type: .withoutResponse)
+                sent = end
+                let done = Double(sent) / Double(image.count)
+                DispatchQueue.main.async { self.onOTAProgress?(done) }
+                // Without response there is no flow control, so pace the writes
+                // to stay inside the controller's buffer.
+                Thread.sleep(forTimeInterval: 0.006)
+            }
+            DispatchQueue.main.async { self.onOTAFinished?(nil) }
         }
     }
 
@@ -159,6 +192,35 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
 
     private var isHandoffPaused: Bool { Date() < handoffUntil }
 
+    /// macOS can restore a previous BLE connection on its own without telling
+    /// the app. The device then stops advertising, so scanning alone never finds
+    /// it again and the link looks stuck until something power-cycles it. Poll
+    /// for a system-held connection while scanning and take it over.
+    private func startReclaim() {
+        reclaimTimer?.cancel()
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + 3, repeating: 3)
+        timer.setEventHandler { [weak self] in
+            guard let self, self.peripheral == nil, self.central.state == .poweredOn else { return }
+            let uuid = CBUUID(string: VibeProtocol.serviceUUID)
+            guard let held = self.central.retrieveConnectedPeripherals(withServices: [uuid]).first
+            else { return }
+            Log.ble("接管系统已保持的连接 \(held.name ?? "?")")
+            self.central.stopScan()
+            self.peripheral = held
+            held.delegate = self
+            self.update { $0.phase = "连接中"; $0.deviceName = held.name ?? $0.deviceName }
+            self.central.connect(held)
+        }
+        timer.resume()
+        reclaimTimer = timer
+    }
+
+    private func stopReclaim() {
+        reclaimTimer?.cancel()
+        reclaimTimer = nil
+    }
+
     private func update(_ change: (inout Snapshot) -> Void) {
         lock.lock()
         change(&snap)
@@ -182,6 +244,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         update { $0.phase = "扫描中" }
         Log.ble("扫描 \(prefix)*")
         central.scanForPeripherals(withServices: [uuid])
+        startReclaim()
     }
 
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
@@ -210,6 +273,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        stopReclaim()
         if isHandoffPaused {
             central.cancelPeripheralConnection(peripheral)
             return
@@ -267,6 +331,8 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
                 CBUUID(string: VibeProtocol.audioUUID),
                 CBUUID(string: VibeProtocol.eventUUID),
                 CBUUID(string: VibeProtocol.controlUUID),
+                CBUUID(string: VibeProtocol.versionUUID),
+                CBUUID(string: VibeProtocol.otaUUID),
             ], for: svc)
     }
 
@@ -282,6 +348,11 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
                 eventCharacteristic = ch
             } else if ch.uuid == CBUUID(string: VibeProtocol.controlUUID) {
                 control = ch
+            } else if ch.uuid == CBUUID(string: VibeProtocol.versionUUID) {
+                versionCharacteristic = ch
+                peripheral.readValue(for: ch)
+            } else if ch.uuid == CBUUID(string: VibeProtocol.otaUUID) {
+                otaCharacteristic = ch
             }
         }
         let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse) + 3
@@ -344,6 +415,13 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         _ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?
     ) {
         guard let data = characteristic.value, error == nil else { return }
+        if characteristic.uuid == CBUUID(string: VibeProtocol.versionUUID) {
+            let version = String(decoding: data, as: UTF8.self)
+            update { $0.firmwareVersion = version }
+            Log.ble("设备固件 \(version)")
+            DispatchQueue.main.async { self.onFirmwareVersion?(version) }
+            return
+        }
         if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
             let byte = data.first, let gesture = GestureEvent.parse(byte)
         {

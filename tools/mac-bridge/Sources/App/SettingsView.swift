@@ -4,10 +4,12 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var model: AppModel
     @ObservedObject var store: SettingsStore
+    @ObservedObject var updater: Updater
 
     init(model: AppModel) {
         self.model = model
         self.store = model.settings
+        self.updater = model.updater
     }
 
     var body: some View {
@@ -177,6 +179,63 @@ struct SettingsView: View {
                             systemImage: model.typelessMicOK ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
                             .font(.caption)
                             .foregroundStyle(model.typelessMicOK ? .green : .orange)
+                    }
+                }
+
+                SurfaceCard("软件更新", subtitle: "从 GitHub 获取最新版本") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 10) {
+                            Text("当前版本 \(model.updater.currentVersion)")
+                                .font(.callout.weight(.medium))
+                            Spacer()
+                            Button { model.updater.check() } label: {
+                                Label("检查更新", systemImage: "arrow.clockwise")
+                            }
+                            .disabled(model.updater.busy)
+                            if model.updater.updateAvailable {
+                                Button { model.updater.installUpdate() } label: {
+                                    Label("升级并重启", systemImage: "arrow.down.circle.fill")
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .disabled(model.updater.busy)
+                            }
+                        }
+                        Text(model.updater.status)
+                            .font(.caption)
+                            .foregroundStyle(model.updater.updateAvailable ? .orange : .secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Divider()
+
+                        // Firmware follows the app: upgrade the Mac side first,
+                        // then let it push the matching image to the device.
+                        HStack(spacing: 10) {
+                            Text("设备固件 \(model.firmwareVersion)")
+                                .font(.callout.weight(.medium))
+                            Spacer()
+                            if model.otaRunning {
+                                ProgressView(value: model.otaProgress).frame(width: 120)
+                                Text("\(Int(model.otaProgress * 100))%")
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            } else if model.firmwareUpdateAvailable {
+                                Button { model.upgradeFirmware() } label: {
+                                    Label("升级固件", systemImage: "cpu")
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .disabled(!model.bleSnap.subscribed)
+                            }
+                        }
+                        if !model.otaNote.isEmpty {
+                            Text(model.otaNote)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        } else if model.firmwareUpdateAvailable && !model.bleSnap.subscribed {
+                            Text("设备未连接，连上后才能升级固件")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
                     }
                 }
 

@@ -63,8 +63,18 @@ run_firmware_checks() (
     SDKCONFIG_DEFAULTS="${repo_root}/sdkconfig.defaults" \
         idf.py -B "${validation_build_dir}" \
         -D "SDKCONFIG=${validation_build_dir}/sdkconfig" build
-    idf.py -B "${validation_build_dir}" merge-bin \
-        -o "${validation_build_dir}/FoloToy-AI-Passport-full.bin"
+    # Merge only the three images the artifact contract expects. Letting
+    # merge-bin follow flash_args would also pull in the OTA data image, and
+    # because that partition sits past cardid the merged file would stretch
+    # across the protected identity region — flashing it from 0x0 would erase
+    # every device's cardid. OTA data needs no seeding: an erased slot means
+    # "unset", so the device boots factory and the first upgrade writes it.
+    python -m esptool --chip esp32c3 merge_bin \
+        -o "${validation_build_dir}/FoloToy-AI-Passport-full.bin" -f raw \
+        --flash_mode dio --flash_freq 80m --flash_size 8MB \
+        0x0 "${validation_build_dir}/bootloader/bootloader.bin" \
+        0x8000 "${validation_build_dir}/partition_table/partition-table.bin" \
+        0x10000 "${validation_build_dir}/FoloToy-AI-Passport.bin"
     python3 tools/verify_firmware.py "${validation_build_dir}"
     mkdir -p "${repo_root}/build"
     install -m 0644 \

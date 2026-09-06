@@ -1,5 +1,8 @@
 #include "vibe_ble.h"
 #include "vibe_app.h"
+#include "vibe_ota.h"
+
+#include "esp_app_desc.h"
 #include "vibe_protocol.h"
 #include "demo_radio.h"
 
@@ -37,6 +40,13 @@ static const ble_uuid128_t s_event_uuid = BLE_UUID128_INIT(
 static const ble_uuid128_t s_ctrl_uuid = BLE_UUID128_INIT(
     0x31, 0x56, 0x4F, 0x4C, 0x4F, 0x46, 0x10, 0x9E,
     0x6B, 0x4A, 0x00, 0x00, 0x04, 0x00, 0x10, 0xF0);
+
+static const ble_uuid128_t s_ver_uuid = BLE_UUID128_INIT(
+    0x31, 0x56, 0x4F, 0x4C, 0x4F, 0x46, 0x10, 0x9E,
+    0x6B, 0x4A, 0x00, 0x00, 0x05, 0x00, 0x10, 0xF0);
+static const ble_uuid128_t s_ota_uuid = BLE_UUID128_INIT(
+    0x31, 0x56, 0x4F, 0x4C, 0x4F, 0x46, 0x10, 0x9E,
+    0x6B, 0x4A, 0x00, 0x00, 0x06, 0x00, 0x10, 0xF0);
 
 static uint16_t s_audio_handle;
 static uint16_t s_event_handle;
@@ -82,6 +92,18 @@ static const struct ble_gatt_svc_def s_svcs[] = {
                 .access_cb = chr_access,
                 .flags = BLE_GATT_CHR_F_WRITE_NO_RSP | BLE_GATT_CHR_F_WRITE,
             },
+            {
+                // Lets the bridge tell whether the device needs an upgrade.
+                .uuid = &s_ver_uuid.u,
+                .access_cb = chr_access,
+                .flags = BLE_GATT_CHR_F_READ,
+            },
+            {
+                // Firmware image stream; see vibe_ota.c for the framing.
+                .uuid = &s_ota_uuid.u,
+                .access_cb = chr_access,
+                .flags = BLE_GATT_CHR_F_WRITE_NO_RSP | BLE_GATT_CHR_F_WRITE,
+            },
             {0},
         },
     },
@@ -94,7 +116,24 @@ static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
     (void)conn_handle;
     (void)attr_handle;
     (void)arg;
+    if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR) {
+        if (ble_uuid_cmp(ctxt->chr->uuid, &s_ver_uuid.u) == 0) {
+            const esp_app_desc_t *desc = esp_app_get_description();
+            const char *v = desc ? desc->version : "";
+            return os_mbuf_append(ctxt->om, v, strlen(v)) == 0
+                ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+        }
+        return BLE_ATT_ERR_READ_NOT_PERMITTED;
+    }
     if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
+        if (ble_uuid_cmp(ctxt->chr->uuid, &s_ota_uuid.u) == 0) {
+            uint16_t len = OS_MBUF_PKTLEN(ctxt->om);
+            static uint8_t chunk[512];
+            if (len > sizeof(chunk)) return BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN;
+            os_mbuf_copydata(ctxt->om, 0, len, chunk);
+            vibe_ota_feed(chunk, len);
+            return 0;
+        }
         uint16_t len = OS_MBUF_PKTLEN(ctxt->om);
         uint8_t v = 0;
         if (len < 1) return 0;

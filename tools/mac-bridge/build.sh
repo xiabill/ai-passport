@@ -7,6 +7,18 @@ install_app="${FOLO_VIBE_INSTALL_APP:-/Applications/FoloVibeBridge.app}"
 mkdir -p "$app/Contents/MacOS"
 cp "$root/Info.plist" "$app/Contents/Info.plist"
 
+# Stamp the version from the git tag. Hand-maintained versions drift: the
+# plist still said 0.2.2 several releases later, which makes an updater
+# unable to tell whether it is current.
+version="$(git -C "$root" describe --tags --always 2>/dev/null | sed 's/^v//; s/-vibe-typeless//')"
+if [[ -n "$version" ]]; then
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $version" \
+        "$app/Contents/Info.plist" >/dev/null 2>&1 || true
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $version" \
+        "$app/Contents/Info.plist" >/dev/null 2>&1 || true
+    echo "version $version"
+fi
+
 # A stable signing identity keeps the macOS permission grants across upgrades.
 # An ad-hoc signature ties them to the binary's cdhash, which changes on every
 # build, so every upgrade looked like a different app and lost its grants.
