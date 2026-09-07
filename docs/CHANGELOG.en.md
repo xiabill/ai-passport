@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+- Added custom key mapping: any shortcut can be bound to any of the nine gestures, recorded in settings; existing binding configurations keep working.
+- Fixed the link dropping during long speech: the NimBLE buffer pool was exhausted by one audio packet every 20ms and the stack reported that as a link failure; the pool is now three times larger.
+- Added an ultra power mode (screen off after 30s, deep sleep after 2 minutes) and powered down the panel and fuel gauge during deep sleep.
 - Documentation now defaults to Simplified Chinese: every maintained Markdown lives in Chinese at its `.md` path with English moved to a paired `.en.md`, both keeping reciprocal language links, and the static check was inverted to match. The GitHub landing page therefore shows Chinese.
 - Fixed slow or stuck reconnection after the device sleeps. `ble_gap_terminate()` only starts the teardown, and power was cut before the disconnect reached the Mac, which then held a connection to a device that no longer existed and ignored fresh advertisements until its own supervision timeout expired. The device now waits for the disconnect to land (up to 1.2 s) and raises the connection rate first to shorten that wait.
 
