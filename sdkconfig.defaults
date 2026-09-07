@@ -54,3 +54,7 @@ CONFIG_BT_NIMBLE_HOST_BASED_PRIVACY=n
 CONFIG_BT_NIMBLE_NVS_PERSIST=n
 # 166-byte ADPCM notifies need ATT_MTU >= 169.
 CONFIG_BT_NIMBLE_ATT_PREFERRED_MTU=185
+# 录音时每 20 ms 推一包音频。默认 12 个缓冲块只有约 240 ms 深度,链路一抖动
+# 队列就满,notify 开始失败;设备因此发不出数据,4 秒的 supervision timeout 到
+# 期后链路断开 —— 表现为"说得久一点就掉线"。加深到约 1 秒。
+CONFIG_BT_NIMBLE_MSYS_1_BLOCK_COUNT=48

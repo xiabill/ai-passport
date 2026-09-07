@@ -56,6 +56,7 @@ static bool s_audio_sub;
 static bool s_event_sub;
 static uint32_t s_sent;
 static uint32_t s_dropped;
+static uint32_t s_drop_streak;
 static char s_name[16];
 static int s_gear = -1;  // -1 unknown, 0 idle, 1 fast
 static esp_timer_handle_t s_idle_timer;
@@ -146,8 +147,9 @@ static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
             if (n > VIBE_GESTURE_COUNT) n = VIBE_GESTURE_COUNT;
             os_mbuf_copydata(ctxt->om, 1, n, actions);
             vibe_app_on_actions(actions, n);
-        } else if (v == VIBE_CTRL_POWER_MODE_STANDARD || v == VIBE_CTRL_POWER_MODE_ECO) {
-            vibe_app_on_power_mode(v == VIBE_CTRL_POWER_MODE_ECO ? 1 : 0);
+        } else if (v == VIBE_CTRL_POWER_MODE_STANDARD || v == VIBE_CTRL_POWER_MODE_ECO ||
+                   v == VIBE_CTRL_POWER_MODE_ULTRA) {
+            vibe_app_on_power_mode((uint8_t)(v - VIBE_CTRL_POWER_MODE_STANDARD));
         } else {
             vibe_app_on_typeless(v);
         }
@@ -200,7 +202,10 @@ static void apply_gear(int gear)
         p.itvl_min = 6;   // 7.5 ms
         p.itvl_max = 12;  // 15 ms
         p.latency = 0;
-        p.supervision_timeout = 400;
+        // 6 s, matching the idle gear. The old 4 s was *shorter* than idle,
+        // so the link was least tolerant exactly while streaming audio: one
+        // burst of interference could drop a take mid-sentence.
+        p.supervision_timeout = 600;
     } else {
         p.itvl_min = 24;  // 30 ms
         p.itvl_max = 40;  // 50 ms
@@ -480,15 +485,20 @@ static esp_err_t notify_buf(uint16_t handle, const uint8_t *data, size_t len)
     struct os_mbuf *om = ble_hs_mbuf_from_flat(data, len);
     if (!om) {
         s_dropped++;
+        // A run of these means the send queue is not draining; left unnoticed
+        // it ends as a supervision timeout, so say so once per run.
+        if (++s_drop_streak == 10) ESP_LOGW(TAG, "out of BLE buffers; audio backing up");
         return ESP_ERR_NO_MEM;
     }
     int rc = ble_gatts_notify_custom(s_conn, handle, om);
     if (rc != 0) {
         os_mbuf_free_chain(om);
         s_dropped++;
+        if (++s_drop_streak == 10) ESP_LOGW(TAG, "audio notify failing rc=%d", rc);
         return ESP_FAIL;
     }
     s_sent++;
+    s_drop_streak = 0;
     return ESP_OK;
 }
 
