@@ -41,6 +41,7 @@ extern "C" {
 // remain reserved for Typeless state feedback.
 #define VIBE_CTRL_POWER_MODE_STANDARD 0x80U
 #define VIBE_CTRL_POWER_MODE_ECO      0x81U
+#define VIBE_CTRL_POWER_MODE_ULTRA    0x82U
 
 // Raw gesture events. The device no longer decides what a button means; it
 // reports which button was pressed and how, and the bridge maps that to an

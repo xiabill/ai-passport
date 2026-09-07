@@ -4,11 +4,13 @@ import Foundation
 public enum BridgePowerMode: String, Codable, CaseIterable {
     case standard
     case eco
+    case ultra
 
     public var title: String {
         switch self {
         case .standard: return "标准模式"
         case .eco: return "省电模式"
+        case .ultra: return "超级省电"
         }
     }
 
@@ -16,6 +18,7 @@ public enum BridgePowerMode: String, Codable, CaseIterable {
         switch self {
         case .standard: return "保持蓝牙易连接，15 分钟后深度睡眠"
         case .eco: return "闲置后暂停广播，5 分钟后深度睡眠"
+        case .ultra: return "30 秒熄屏，2 分钟后深度睡眠，适合放着不用"
         }
     }
 
@@ -23,6 +26,7 @@ public enum BridgePowerMode: String, Codable, CaseIterable {
         switch self {
         case .standard: return "bolt.fill"
         case .eco: return "leaf.fill"
+        case .ultra: return "moon.zzz.fill"
         }
     }
 }

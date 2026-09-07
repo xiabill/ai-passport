@@ -173,7 +173,14 @@ esp_err_t bsp_audio_set_format(uint32_t hz, uint8_t bits, uint8_t ch) {
 }
 
 void bsp_audio_suspend(void) {
-    if (!s_dev || !s_opened) return;
+    if (!s_dev) return;
+    if (!s_opened) {
+        // esp_codec_dev_close() 只在 codec-dev 层被 open 过时才走到
+        // es8311_suspend()。若开机后一直没出声就直接休眠,芯片会停在
+        // es8311_open 的配置态——寄存器配好了但没下电,继续吃电。
+        // 静默 open 一次(从不写 PCM),让随后的 close 真正跑完 suspend。
+        if (bsp_audio_set_format(16000, 16, 1) != ESP_OK) return;
+    }
     esp_codec_dev_close(s_dev);
     s_opened = false;
     s_i2s_enabled = false;

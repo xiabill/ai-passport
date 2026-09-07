@@ -223,6 +223,8 @@ void vibe_app_on_actions(const uint8_t *actions, size_t len)
 
 void vibe_app_on_ble_link(bool up)
 {
+    // Lets the power policy sleep early when nothing is connected.
+    vibe_power_set_linked(up);
     if (up) vibe_power_note_activity();
     apply(up ? VIBE_IN_LINK_UP : VIBE_IN_LINK_DOWN, 0);
 }
@@ -243,9 +245,12 @@ void vibe_app_on_typeless(uint8_t state)
 
 void vibe_app_on_power_mode(uint8_t mode)
 {
-    const bool eco = mode == VIBE_POWER_ECO;
-    vibe_power_set_mode(eco ? VIBE_POWER_ECO : VIBE_POWER_STANDARD);
-    vibe_ble_set_power_mode(eco);
+    const vibe_power_mode_t m = mode > VIBE_POWER_ULTRA
+        ? VIBE_POWER_STANDARD : (vibe_power_mode_t)mode;
+    vibe_power_set_mode(m);
+    // The radio only distinguishes "keep it easy to reach" from "wind down";
+    // ultra shares eco's radio behaviour and differs in the timeouts.
+    vibe_ble_set_power_mode(m != VIBE_POWER_STANDARD);
     // Mode changes arrive from the BLE control channel and otherwise would
     // only become visible on the next state transition.
     xSemaphoreTake(s_mu, portMAX_DELAY);

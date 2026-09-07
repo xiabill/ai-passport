@@ -1,6 +1,7 @@
 #include "vibe_power.h"
 
 #ifndef VIBE_POWER_HOST_TEST
+#include "bsp_battery.h"
 #include "bsp_display.h"
 #include "bsp_audio.h"
 #include "esp_log.h"
@@ -17,13 +18,31 @@
 #define BACKLIGHT_DIM 15
 #define BACKLIGHT_ECO_DIM 8
 
+static uint32_t dim_ms_for(vibe_power_mode_t mode)
+{
+    switch (mode) {
+    case VIBE_POWER_ULTRA: return VIBE_PWR_ULTRA_DIM_MS;
+    case VIBE_POWER_ECO: return VIBE_PWR_ECO_DIM_MS;
+    default: return VIBE_PWR_DIM_MS;
+    }
+}
+
+static uint32_t standby_ms_for(vibe_power_mode_t mode)
+{
+    switch (mode) {
+    case VIBE_POWER_ULTRA: return VIBE_PWR_ULTRA_STANDBY_MS;
+    case VIBE_POWER_ECO: return VIBE_PWR_ECO_STANDBY_MS;
+    default: return VIBE_PWR_STANDBY_MS;
+    }
+}
+
 vibe_screen_t vibe_power_next_mode(vibe_screen_t cur, uint32_t idle_ms, bool busy,
                                    vibe_power_mode_t mode)
 {
     (void)cur;
     if (busy) return VIBE_SCREEN_BRIGHT;
-    const uint32_t dim_ms = mode == VIBE_POWER_ECO ? VIBE_PWR_ECO_DIM_MS : VIBE_PWR_DIM_MS;
-    const uint32_t standby_ms = mode == VIBE_POWER_ECO ? VIBE_PWR_ECO_STANDBY_MS : VIBE_PWR_STANDBY_MS;
+    const uint32_t dim_ms = dim_ms_for(mode);
+    const uint32_t standby_ms = standby_ms_for(mode);
     if (idle_ms >= standby_ms) return VIBE_SCREEN_OFF;
     if (idle_ms >= dim_ms) return VIBE_SCREEN_DIM;
     return VIBE_SCREEN_BRIGHT;
@@ -34,12 +53,36 @@ vibe_screen_t vibe_power_next(vibe_screen_t cur, uint32_t idle_ms, bool busy)
     return vibe_power_next_mode(cur, idle_ms, busy, VIBE_POWER_STANDARD);
 }
 
+static uint32_t deep_sleep_ms_for(vibe_power_mode_t mode)
+{
+    switch (mode) {
+    case VIBE_POWER_ULTRA: return VIBE_PWR_ULTRA_DEEP_SLEEP_MS;
+    case VIBE_POWER_ECO: return VIBE_PWR_ECO_DEEP_SLEEP_MS;
+    default: return VIBE_PWR_DEEP_SLEEP_MS;
+    }
+}
+
 bool vibe_power_should_deep_sleep_mode(uint32_t idle_ms, bool busy,
                                        vibe_power_mode_t mode)
 {
-    const uint32_t timeout = mode == VIBE_POWER_ECO
-        ? VIBE_PWR_ECO_DEEP_SLEEP_MS : VIBE_PWR_DEEP_SLEEP_MS;
-    return !busy && idle_ms >= timeout;
+    return !busy && idle_ms >= deep_sleep_ms_for(mode);
+}
+
+vibe_power_mode_t vibe_power_effective_mode(vibe_power_mode_t mode, int battery)
+{
+    if (battery < 0 || battery > VIBE_PWR_LOW_BATTERY_PCT) return mode;
+    return mode > VIBE_POWER_ECO ? mode : VIBE_POWER_ECO;
+}
+
+bool vibe_power_should_deep_sleep_full(uint32_t idle_ms, bool busy,
+                                       vibe_power_mode_t mode,
+                                       uint32_t unlinked_ms, int battery)
+{
+    if (busy) return false;
+    // A nearly flat cell outranks every other consideration.
+    if (battery >= 0 && battery <= VIBE_PWR_CRITICAL_BATTERY_PCT) return true;
+    if (unlinked_ms >= VIBE_PWR_UNLINKED_DEEP_SLEEP_MS) return true;
+    return idle_ms >= deep_sleep_ms_for(vibe_power_effective_mode(mode, battery));
 }
 
 bool vibe_power_should_deep_sleep(uint32_t idle_ms, bool busy)
@@ -58,6 +101,8 @@ static bool s_deep_sleep_failed;
 static bool s_light_sleep_failed;
 static vibe_power_mode_t s_mode = VIBE_POWER_STANDARD;
 static bool s_usb_host_powered;
+static bool s_linked;
+static uint32_t s_unlinked_since_ms;
 
 static uint32_t now_ms(void)
 {
@@ -125,11 +170,17 @@ static void enter_deep_sleep(void)
     vibe_ble_prepare_light_sleep();
     esp_lcd_panel_handle_t panel = bsp_display_panel();
     if (panel) {
-        // Backlight PWM alone does not stop the ST7789 controller. DISP OFF
-        // removes its active scan current; the normal boot path sends DISP ON.
+        // A dark screen is not a powered-down one. Backlight PWM alone leaves
+        // the ST7789 running; DISP OFF stops its scan, and sleep-in puts the
+        // controller itself down. The boot path turns both back on.
         esp_lcd_panel_disp_on_off(panel, false);
+        esp_lcd_panel_disp_sleep(panel, true);
     }
     bsp_display_backlight(0);
+    // Deep sleep only powers down the MCU core; anything on the always-on 3.3V
+    // rail keeps drawing unless it is told to stop. The fuel gauge is the last
+    // one that can still be reached from software.
+    bsp_battery_sleep();
     const uint32_t timeout = s_mode == VIBE_POWER_ECO
         ? VIBE_PWR_ECO_DEEP_SLEEP_MS : VIBE_PWR_DEEP_SLEEP_MS;
     ESP_LOGI(TAG, "idle for %u ms; entering deep sleep; wake on GPIO0",
@@ -190,7 +241,16 @@ void vibe_power_init(void)
     s_mode = VIBE_POWER_STANDARD;
     s_usb_host_powered = false;
     s_light_sleep_failed = false;
+    s_linked = false;
+    s_unlinked_since_ms = now_ms();
     bsp_display_backlight(BACKLIGHT_BRIGHT);
+}
+
+void vibe_power_set_linked(bool linked)
+{
+    if (linked == s_linked) return;
+    s_linked = linked;
+    if (!linked) s_unlinked_since_ms = now_ms();
 }
 
 void vibe_power_set_mode(vibe_power_mode_t mode)
@@ -283,7 +343,15 @@ void vibe_power_tick(void)
         }
         return;
     }
-    if (!s_deep_sleep_failed && vibe_power_should_deep_sleep_mode(idle, s_busy, s_mode)) {
+    const int battery = bsp_battery_soc();
+    const uint32_t unlinked = s_linked ? 0 : (now - s_unlinked_since_ms);
+    if (!s_deep_sleep_failed &&
+        vibe_power_should_deep_sleep_full(idle, s_busy, s_mode, unlinked, battery)) {
+        if (battery >= 0 && battery <= VIBE_PWR_CRITICAL_BATTERY_PCT) {
+            ESP_LOGW(TAG, "battery at %d%%; sleeping to protect the cell", battery);
+        } else if (unlinked >= VIBE_PWR_UNLINKED_DEEP_SLEEP_MS) {
+            ESP_LOGI(TAG, "nothing connected for %u ms; sleeping early", unlinked);
+        }
         enter_deep_sleep();
     }
 }

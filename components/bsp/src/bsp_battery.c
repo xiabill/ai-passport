@@ -59,6 +59,13 @@ esp_err_t bsp_battery_init(void) {
     return ESP_OK;
 }
 
+esp_err_t bsp_battery_sleep(void) {
+    // 先回到复位态再置睡眠位:直接写 0xF0 不一定生效。
+    if (cw_write(CW_REG_CONFIG, 0x30) != 0) return ESP_FAIL;
+    if (cw_write(CW_REG_CONFIG, 0xF0) != 0) return ESP_FAIL;
+    return ESP_OK;
+}
+
 int bsp_battery_soc(void) {
     uint8_t b[2] = { 0 };
     if (cw_read(CW_REG_SOC_H, b, 2) != 0) return -1;

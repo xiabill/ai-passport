@@ -14,3 +14,7 @@ int bsp_battery_soc(void);
 
 // 电池电压 mV;读失败返回 -1。
 int bsp_battery_mv(void);
+
+// 让电量计进入睡眠。深度睡眠只断 MCU 核心,挂在常通 3.3V 轨上的 CW2017
+// 仍会持续耗电,入睡前需要单独点名。唤醒后由 bsp_battery_init() 恢复。
+esp_err_t bsp_battery_sleep(void);

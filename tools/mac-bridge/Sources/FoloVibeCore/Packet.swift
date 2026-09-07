@@ -35,6 +35,7 @@ public enum VibeProtocol {
     public static let controlUUID = "F0100004-0000-4A6B-9E10-464F4C4F5631"
     public static let powerModeStandard: UInt8 = 0x80
     public static let powerModeEco: UInt8 = 0x81
+    public static let powerModeUltra: UInt8 = 0x82
 }
 
 public enum VibeEvent: UInt8, CaseIterable, Equatable {
