@@ -104,6 +104,7 @@ static const char *action_title(uint8_t action)
     case VIBE_ACT_SELECT_ALL: return "全选";
     case VIBE_ACT_CLEAR: return "删除";
     case VIBE_ACT_NEWLINE: return "换行";
+    case VIBE_ACT_CUSTOM: return "自定";
     default: return "--";
     }
 }

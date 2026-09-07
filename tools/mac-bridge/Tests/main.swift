@@ -166,6 +166,43 @@ do {
 }
 
 do {
+    // The device derives its mode from the command's offset, so the three
+    // codes must stay consecutive.
+    expect(VibeProtocol.powerModeEco == VibeProtocol.powerModeStandard + 1, "eco follows standard")
+    expect(VibeProtocol.powerModeUltra == VibeProtocol.powerModeStandard + 2, "ultra follows eco")
+    expect(BridgePowerMode.allCases.count == 3, "three power modes")
+    expect(BridgePowerMode.ultra.title == "超级省电", "ultra title")
+}
+
+do {
+    expect(ButtonAction.customKey.code == 9, "custom key wire code")
+    expect(!ButtonAction.customKey.isRecording, "custom key does not record")
+    expect(KeyStroke.label(keyCode: 8, modifiers: KeyStroke.command, keyName: "C") == "⌘C",
+        "label puts the symbol before the key")
+    expect(KeyStroke.label(keyCode: 8,
+        modifiers: KeyStroke.command | KeyStroke.shift | KeyStroke.option | KeyStroke.control,
+        keyName: "C") == "⌃⌥⇧⌘C", "modifiers use the conventional order")
+
+    var map = ButtonMap.default
+    map.set(.down, .double, .customKey)
+    map.setStroke(.down, .double, KeyStroke(keyCode: 8, modifiers: KeyStroke.command, label: "⌘C"))
+    expect(map.stroke(.down, .double)?.label == "⌘C", "stroke stored per slot")
+    expect(map.stroke(.up, .click) == nil, "other slots keep no stroke")
+
+    // Configurations written before custom keys existed must still decode.
+    let legacy = Data("""
+    {"bindings":{"1.0":"enter"}}
+    """.utf8)
+    let decoded = try? JSONDecoder().decode(ButtonMap.self, from: legacy)
+    expect(decoded?.action(.mid, .click) == .enter, "legacy config still decodes")
+    expect(decoded?.stroke(.mid, .click) == nil, "legacy config has no strokes")
+
+    let round = try? JSONDecoder().decode(
+        ButtonMap.self, from: JSONEncoder().encode(map))
+    expect(round?.stroke(.down, .double)?.keyCode == 8, "stroke round trips")
+}
+
+do {
     let h = VibeProtocol.otaHeader(length: 1216672)
     expect(h.count == 6, "OTA header is six bytes")
     expect(h[0] == 0x46 && h[1] == 0x57, "OTA header magic")

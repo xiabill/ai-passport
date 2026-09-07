@@ -54,6 +54,8 @@ final class AppModel: ObservableObject {
     @Published var debugNote = ""
     @Published var activeInputTitle = "—"
     @Published var captureTarget: KeyCaptureTarget?
+    /// Which grid slot is currently recording a custom shortcut.
+    @Published var strokeTarget: GestureSlot?
     @Published var firmwareVersion = "—"
     @Published var otaProgress: Double = 0
     @Published var otaNote = ""
@@ -372,14 +374,19 @@ final class AppModel: ObservableObject {
     /// what that means. Rebinding therefore never needs a firmware flash.
     func handleGesture(_ gesture: GestureEvent) {
         let action = settings.current.buttons.action(gesture.key, gesture.gesture)
-        lastAction = action == .none
-            ? "\(gesture.title)（未绑定）"
-            : "\(gesture.title) → \(action.title)"
+        let stroke = settings.current.buttons.stroke(gesture.key, gesture.gesture)
+        if action == .none {
+            lastAction = "\(gesture.title)（未绑定）"
+        } else if action == .customKey {
+            lastAction = "\(gesture.title) → \(stroke?.label ?? "自定义按键未录制")"
+        } else {
+            lastAction = "\(gesture.title) → \(action.title)"
+        }
         Log.key(lastAction)
-        perform(action)
+        perform(action, stroke: stroke)
     }
 
-    private func perform(_ action: ButtonAction) {
+    private func perform(_ action: ButtonAction, stroke: KeyStroke? = nil) {
         switch action {
         case .none:
             break
@@ -391,6 +398,12 @@ final class AppModel: ObservableObject {
             KeyTap.tapClearAll()
         case .newline:
             KeyTap.tapNewline()
+        case .customKey:
+            guard let stroke else {
+                Log.key("这个手势绑定了自定义按键，但还没录制")
+                return
+            }
+            KeyTap.tapStroke(stroke)
         case .typelessDictate, .typelessTranslate, .typelessAsk, .doubao:
             toggleRecording(action)
         }
@@ -547,4 +560,14 @@ final class AppModel: ObservableObject {
             retaps += 1
         }
     }
+}
+
+
+/// Identifies one cell of the bindings grid, so the recorder sheet knows where
+/// to write the shortcut it captures.
+struct GestureSlot: Identifiable, Equatable {
+    let key: ButtonKey
+    let gesture: ButtonGesture
+    var id: String { "\(key.rawValue).\(gesture.rawValue)" }
+    var title: String { "\(key.title)\(gesture.title)" }
 }

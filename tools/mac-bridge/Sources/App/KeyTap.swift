@@ -92,6 +92,15 @@ enum KeyTap {
         postModifier(virtualKey: 0x3A, flags: [], down: false)
     }
 
+    /// Sends an arbitrary shortcut. Modifiers ride on the event's flags rather
+    /// than as separate key presses, which is what applications watch for.
+    static func tapStroke(_ stroke: KeyStroke) {
+        Log.key("发送 \(stroke.label)")
+        let flags = CGEventFlags(rawValue: stroke.modifiers)
+        keyDown(stroke.keyCode, flags: flags)
+        keyUp(stroke.keyCode, flags: flags)
+    }
+
     static func tapSelectAll() {
         Log.key("发送 Cmd+A（全选）")
         tapCommandKey(0x00) // A

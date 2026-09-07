@@ -120,8 +120,12 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
 
     private func writePowerMode() {
         guard let p = peripheral, let c = control else { return }
-        let command: UInt8 = desiredPowerMode == .eco
-            ? VibeProtocol.powerModeEco : VibeProtocol.powerModeStandard
+        let command: UInt8
+        switch desiredPowerMode {
+        case .standard: command = VibeProtocol.powerModeStandard
+        case .eco: command = VibeProtocol.powerModeEco
+        case .ultra: command = VibeProtocol.powerModeUltra
+        }
         p.writeValue(Data([command]), for: c, type: .withoutResponse)
         Log.ble("同步功耗模式：\(desiredPowerMode.title)")
     }

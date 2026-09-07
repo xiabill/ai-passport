@@ -122,19 +122,31 @@ struct SettingsView: View {
                                         .font(.callout.weight(.medium))
                                         .gridCellUnsizedAxes(.horizontal)
                                     ForEach(ButtonGesture.allCases, id: \.self) { gesture in
-                                        Picker("", selection: actionBinding(key, gesture)) {
-                                            ForEach(ButtonAction.allCases, id: \.self) { action in
-                                                Text(action.title).tag(action)
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Picker("", selection: actionBinding(key, gesture)) {
+                                                ForEach(ButtonAction.allCases, id: \.self) { action in
+                                                    Text(action.title).tag(action)
+                                                }
+                                            }
+                                            .labelsHidden()
+                                            .pickerStyle(.menu)
+                                            .frame(minWidth: 128)
+                                            if store.current.buttons.action(key, gesture) == .customKey {
+                                                Button {
+                                                    model.strokeTarget = GestureSlot(key: key, gesture: gesture)
+                                                } label: {
+                                                    Text(store.current.buttons.stroke(key, gesture)?.label ?? "点击录制")
+                                                        .font(.caption)
+                                                        .frame(maxWidth: .infinity)
+                                                }
+                                                .controlSize(.small)
                                             }
                                         }
-                                        .labelsHidden()
-                                        .pickerStyle(.menu)
-                                        .frame(minWidth: 128)
                                     }
                                 }
                             }
                         }
-                        Text("设备屏幕显示每个键的单击动作。绑定存在 Bridge 里，换绑不用重刷固件。")
+                        Text("设备屏幕显示每个键的单击动作。绑定存在 Bridge 里，换绑不用重刷固件。选“自定义按键”可以录制任意快捷键。")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -265,6 +277,11 @@ struct SettingsView: View {
             .frame(maxWidth: 920, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
+        }
+        .sheet(item: $model.strokeTarget) { slot in
+            StrokeCaptureSheet(title: slot.title) { stroke in
+                store.current.buttons.setStroke(slot.key, slot.gesture, stroke)
+            }
         }
         .sheet(item: $model.captureTarget) { target in
             KeyCaptureSheet(title: target.title, keys: target.keys) { key in

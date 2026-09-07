@@ -42,6 +42,7 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
     case doubaoSelectAll
     case doubaoClear
     case newline
+    case customKey
 
     public var title: String {
         switch self {
@@ -54,6 +55,7 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
         case .doubaoSelectAll: return "全选"
         case .doubaoClear: return "全选并删除"
         case .newline: return "换行（不发送）"
+        case .customKey: return "自定义按键"
         }
     }
 
@@ -63,7 +65,7 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
     public var isRecording: Bool {
         switch self {
         case .typelessDictate, .typelessTranslate, .typelessAsk, .doubao: return true
-        case .none, .enter, .doubaoSelectAll, .doubaoClear, .newline: return false
+        case .none, .enter, .doubaoSelectAll, .doubaoClear, .newline, .customKey: return false
         }
     }
 
@@ -80,6 +82,7 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
         case .doubaoSelectAll: return 6
         case .doubaoClear: return 7
         case .newline: return 8
+        case .customKey: return 9
         }
     }
 
@@ -100,9 +103,33 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
 
 public struct ButtonMap: Codable, Equatable {
     private var bindings: [String: ButtonAction]
+    /// Only meaningful for slots bound to `.customKey`.
+    private var strokes: [String: KeyStroke]
 
-    public init(bindings: [String: ButtonAction] = [:]) {
+    public init(bindings: [String: ButtonAction] = [:],
+                strokes: [String: KeyStroke] = [:]) {
         self.bindings = bindings
+        self.strokes = strokes
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case bindings, strokes
+    }
+
+    /// Configurations written before custom keys existed have no `strokes`.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        bindings = try c.decodeIfPresent([String: ButtonAction].self, forKey: .bindings) ?? [:]
+        strokes = try c.decodeIfPresent([String: KeyStroke].self, forKey: .strokes) ?? [:]
+    }
+
+    public func stroke(_ key: ButtonKey, _ gesture: ButtonGesture) -> KeyStroke? {
+        strokes[Self.slot(key, gesture)]
+    }
+
+    public mutating func setStroke(_ key: ButtonKey, _ gesture: ButtonGesture,
+                                   _ stroke: KeyStroke?) {
+        strokes[Self.slot(key, gesture)] = stroke
     }
 
     private static func slot(_ key: ButtonKey, _ gesture: ButtonGesture) -> String {
