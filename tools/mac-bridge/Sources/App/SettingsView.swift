@@ -155,10 +155,10 @@ struct SettingsView: View {
 
                 SurfaceCard("输入法快捷键", subtitle: "上面的动作最终按这里的键发给输入法") {
                     VStack(alignment: .leading, spacing: 14) {
-                        keyRow("Typeless 基础键", "翻译自动加 Shift，随便问自动加 Space", talkBinding, Hotkey.talkKeys, .blue, "mic.fill", .talk)
-                        keyRow("豆包快捷键", "豆包“免按模式”的按键，Bridge 会按它要求发双击", doubaoBinding, Hotkey.doubaoKeys, .green, "mic", .doubao)
+                        keyRow("Typeless 基础键", "翻译自动加 Shift，随便问自动加 Space", talkBinding, Hotkey.talkKeys, .blue, "mic.fill", .talk, talkTapBinding)
+                        keyRow("豆包快捷键", "豆包“免按模式”默认要双击唤起", doubaoBinding, Hotkey.doubaoKeys, .green, "mic", .doubao, doubaoTapBinding)
                         keyRow("发送键", "“发送回车”动作使用的键", sendBinding, Hotkey.sendKeys, .accentColor, "return", .send)
-                        Text("可以直接从列表选择，也可以点“录入”后按实体键。")
+                        Text("可以直接从列表选择，也可以点“录入”后按实体键。右侧选择这个键是按一下还是连按两下——输入法要求哪种，就选哪种。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -303,7 +303,8 @@ struct SettingsView: View {
         _ keys: [Hotkey],
         _ tint: Color,
         _ symbol: String,
-        _ target: KeyCaptureTarget
+        _ target: KeyCaptureTarget,
+        _ tap: Binding<HotkeyTap>? = nil
     ) -> some View {
         HStack(spacing: 12) {
             Image(systemName: symbol)
@@ -320,7 +321,15 @@ struct SettingsView: View {
             }
             .labelsHidden()
             .pickerStyle(.menu)
-            .frame(width: 150, alignment: .trailing)
+            .frame(width: 124, alignment: .trailing)
+            if let tap {
+                Picker("", selection: tap) {
+                    ForEach(HotkeyTap.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                .labelsHidden()
+                .pickerStyle(.segmented)
+                .frame(width: 104)
+            }
             Button("录入") { model.captureTarget = target }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
@@ -388,6 +397,14 @@ struct SettingsView: View {
     }
     private var doubaoBinding: Binding<String> {
         Binding(get: { store.current.doubaoKey }, set: { store.current.doubaoKey = $0 })
+    }
+
+    private var talkTapBinding: Binding<HotkeyTap> {
+        Binding(get: { store.current.talkTap }, set: { store.current.talkTap = $0 })
+    }
+
+    private var doubaoTapBinding: Binding<HotkeyTap> {
+        Binding(get: { store.current.doubaoTap }, set: { store.current.doubaoTap = $0 })
     }
     private var retapOn: Binding<Bool> {
         Binding(get: { store.current.retapEnabled }, set: { store.current.retapEnabled = $0 })

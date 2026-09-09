@@ -175,6 +175,26 @@ do {
 }
 
 do {
+    // Defaults must keep today's behaviour: Typeless answers one press, Doubao
+    // hands-free wants two.
+    expect(BridgeSettings.default.talkTap == .single, "typeless defaults to a single tap")
+    expect(BridgeSettings.default.doubaoTap == .double, "doubao defaults to a double tap")
+
+    // A config written before the setting existed must still decode, and must
+    // land on those same defaults rather than nil or single-for-everything.
+    let legacy = Data(#"{"talkKey":"F13","doubaoKey":"Right Option","sendKey":"Return"}"#.utf8)
+    let decoded = try? JSONDecoder().decode(BridgeSettings.self, from: legacy)
+    expect(decoded?.talkKey == "F13", "legacy settings still decode")
+    expect(decoded?.doubaoTap == .double, "legacy settings keep the doubao double tap")
+
+    var s = BridgeSettings.default
+    s.doubaoTap = .single
+    let round = try? JSONDecoder().decode(
+        BridgeSettings.self, from: JSONEncoder().encode(s))
+    expect(round?.doubaoTap == .single, "tap style round trips")
+}
+
+do {
     expect(ButtonAction.customKey.code == 9, "custom key wire code")
     expect(!ButtonAction.customKey.isRecording, "custom key does not record")
     expect(KeyStroke.label(keyCode: 8, modifiers: KeyStroke.command, keyName: "C") == "⌘C",

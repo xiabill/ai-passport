@@ -42,11 +42,19 @@ enum KeyTap {
     /// press, hold briefly, release, pause, repeat. Runs off the main thread
     /// because it sleeps between events.
     static func tapDouble(_ key: Hotkey) {
-        Log.key("双击 \(key.name)（豆包免按模式）")
+        Log.key("双击 \(key.name)")
         DispatchQueue.global(qos: .userInteractive).async {
             holdTap(key, holdMs: 45)
             usleep(140_000)
             holdTap(key, holdMs: 45)
+        }
+    }
+
+    /// Sends a hotkey the way the user configured it for that input method.
+    static func tap(_ key: Hotkey, _ style: HotkeyTap) {
+        switch style {
+        case .single: tap(key)
+        case .double: tapDouble(key)
         }
     }
 

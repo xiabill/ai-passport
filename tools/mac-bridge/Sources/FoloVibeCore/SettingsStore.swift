@@ -37,6 +37,8 @@ public struct BridgeSettings: Equatable, Codable {
     public var talkKey: String
     public var doubaoKey: String
     public var sendKey: String
+    public var talkTap: HotkeyTap
+    public var doubaoTap: HotkeyTap
     public var buttons: ButtonMap
     public var retapEnabled: Bool
     public var retapFromSec: Double
@@ -54,6 +56,8 @@ public struct BridgeSettings: Equatable, Codable {
         talkKey: String,
         doubaoKey: String,
         sendKey: String,
+        talkTap: HotkeyTap = .single,
+        doubaoTap: HotkeyTap = .double,
         buttons: ButtonMap = .default,
         retapEnabled: Bool,
         retapFromSec: Double,
@@ -70,6 +74,8 @@ public struct BridgeSettings: Equatable, Codable {
         self.talkKey = talkKey
         self.doubaoKey = doubaoKey
         self.sendKey = sendKey
+        self.talkTap = talkTap
+        self.doubaoTap = doubaoTap
         self.buttons = buttons
         self.retapEnabled = retapEnabled
         self.retapFromSec = retapFromSec
@@ -88,6 +94,8 @@ public struct BridgeSettings: Equatable, Codable {
         talkKey: "Fn",
         doubaoKey: "Right Option",
         sendKey: "Return",
+        talkTap: .single,
+        doubaoTap: .double,
         buttons: .default,
         retapEnabled: true,
         retapFromSec: 2,
@@ -112,6 +120,7 @@ public struct BridgeSettings: Equatable, Codable {
 
     private enum CodingKeys: String, CodingKey {
         case devicePrefix, outputDevice, talkKey, doubaoKey, sendKey, buttons
+        case talkTap, doubaoTap
         case retapEnabled, retapFromSec, retapToSec, retapMax, typelessPollSec
         case launchAtLogin, startHidden, autoReconnect, powerMode
     }
@@ -122,6 +131,8 @@ public struct BridgeSettings: Equatable, Codable {
         let d = BridgeSettings.default
         devicePrefix = try c.decodeIfPresent(String.self, forKey: .devicePrefix) ?? d.devicePrefix
         outputDevice = try c.decodeIfPresent(String.self, forKey: .outputDevice) ?? d.outputDevice
+talkTap = try c.decodeIfPresent(HotkeyTap.self, forKey: .talkTap) ?? d.talkTap
+        doubaoTap = try c.decodeIfPresent(HotkeyTap.self, forKey: .doubaoTap) ?? d.doubaoTap
         talkKey = try c.decodeIfPresent(String.self, forKey: .talkKey) ?? d.talkKey
         doubaoKey = try c.decodeIfPresent(String.self, forKey: .doubaoKey) ?? d.doubaoKey
         sendKey = try c.decodeIfPresent(String.self, forKey: .sendKey) ?? d.sendKey

@@ -315,7 +315,7 @@ final class AppModel: ObservableObject {
         let s = settings.current
         switch ev {
         case .start:
-            KeyTap.tap(s.talk)
+            KeyTap.tap(s.talk, s.talkTap)
             setActiveInput(.typelessDictate)
             expect = .recording
             lastHotkey = Date()
@@ -333,7 +333,7 @@ final class AppModel: ObservableObject {
             lastHotkey = Date()
             retaps = 0
         case .stop:
-            KeyTap.tap(s.talk)
+            KeyTap.tap(s.talk, s.talkTap)
             setActiveInput(.typelessDictate)
             expect = .idle
             lastHotkey = Date()
@@ -342,13 +342,13 @@ final class AppModel: ObservableObject {
         case .enter:
             KeyTap.tap(s.send)
         case .doubaoStart:
-            KeyTap.tapDouble(s.doubao)
+            KeyTap.tap(s.doubao, s.doubaoTap)
             setActiveInput(.doubao)
         case .doubaoStop:
-            KeyTap.tapDouble(s.doubao)
+            KeyTap.tap(s.doubao, s.doubaoTap)
             setActiveInput(nil)
         case .doubaoStopAndSend:
-            KeyTap.tapDouble(s.doubao)
+            KeyTap.tap(s.doubao, s.doubaoTap)
             setActiveInput(nil)
             Log.key("豆包停止后延迟发送回车")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
@@ -422,8 +422,8 @@ final class AppModel: ObservableObject {
                 return
             }
             switch current {
-            case .doubao: KeyTap.tapDouble(s.doubao)
-            default: KeyTap.tap(s.talk)  // Typeless always stops on its base key
+            case .doubao: KeyTap.tap(s.doubao, s.doubaoTap)
+            default: KeyTap.tap(s.talk, s.talkTap)  // Typeless always stops on its base key
             }
             expect = .idle
             lastHotkey = Date()
@@ -433,10 +433,10 @@ final class AppModel: ObservableObject {
             return
         }
         switch action {
-        case .typelessDictate: KeyTap.tap(s.talk)
+        case .typelessDictate: KeyTap.tap(s.talk, s.talkTap)
         case .typelessTranslate: KeyTap.tapTypelessTranslate(s.talk)
         case .typelessAsk: KeyTap.tapTypelessAsk(s.talk)
-        case .doubao: KeyTap.tapDouble(s.doubao)
+        case .doubao: KeyTap.tap(s.doubao, s.doubaoTap)
         default: return
         }
         setActiveInput(action)
@@ -550,12 +550,12 @@ final class AppModel: ObservableObject {
         guard dt >= s.retapFromSec, dt <= s.retapToSec else { return }
         if expect == .recording && st != .recording {
             Log.typeless("补按开始键，Typeless 仍是 \(st.title)")
-            KeyTap.tap(s.talk)
+            KeyTap.tap(s.talk, s.talkTap)
             lastHotkey = Date()
             retaps += 1
         } else if expect == .idle && st == .recording {
             Log.typeless("补按停止键")
-            KeyTap.tap(s.talk)
+            KeyTap.tap(s.talk, s.talkTap)
             lastHotkey = Date()
             retaps += 1
         }
