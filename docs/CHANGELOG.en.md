@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- Fixed a device left on USB becoming unreachable after idling: a refused deep sleep left the radio down and the device stopped advertising while still running; the radio is now restored.
 - Fixed the link dropping when the screen blanks: screen-off disconnected the Mac and sixty seconds unconnected then triggered deep sleep, so waking the device by hand never helped; screen-off now only blanks the display and the unconnected window is five minutes. Light sleep is removed — it left the device unreachable while still drawing current, and deep sleep is equally unreachable but actually saves power.
 - Fixed the Bridge stalling on "connecting": CoreBluetooth's connect has no timeout and a stale connection record froze the state machine silently; every attempt now has an eight-second deadline.
 - Hotkeys can be sent as a single or a double tap, chosen per input method, defaulting to the previous behaviour.

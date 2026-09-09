@@ -10,7 +10,7 @@ Use this page to discover repository documentation. `authoritative` documents de
 | --- | --- | --- |
 | [README.en.md](README.en.md) | Project overview and capability contract | authoritative |
 | [CHANGELOG.en.md](CHANGELOG.en.md) | User-visible behavior, compatibility, and release history | authoritative |
-| [releases/v0.3.6-vibe-typeless.en.md](releases/v0.3.6-vibe-typeless.en.md) | Download, install, configure, flash, and troubleshoot the Vibe Typeless release | authoritative |
+| [releases/v0.3.7-vibe-typeless.en.md](releases/v0.3.7-vibe-typeless.en.md) | Download, install, configure, flash, and troubleshoot the Vibe Typeless release | authoritative |
 | [brand-and-product.en.md](brand-and-product.en.md) | Brand, positioning, official links, and product facts | authoritative |
 | [contribution/README.en.md](contribution/README.en.md) | Contribution-document index | authoritative |
 | [contribution/doc-conventions.en.md](contribution/doc-conventions.en.md) | Documentation language, ownership, safety, and maintenance | authoritative |
