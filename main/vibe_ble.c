@@ -63,7 +63,7 @@ static esp_timer_handle_t s_idle_timer;
 static esp_timer_handle_t s_eco_adv_timer;
 static bool s_eco_mode;
 static bool s_adv_paused;
-static bool s_light_sleeping;
+static bool s_radio_down;
 
 #define ECO_ADV_GRACE_US (60 * 1000000LL)
 
@@ -280,9 +280,9 @@ void vibe_ble_note_activity(void)
     arm_eco_adv_timer();
 }
 
-void vibe_ble_prepare_light_sleep(void)
+void vibe_ble_prepare_sleep(void)
 {
-    s_light_sleeping = true;
+    s_radio_down = true;
     if (s_idle_timer) esp_timer_stop(s_idle_timer);
     if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
     // A connected Mac is deliberately released before sleeping. ble_gap_terminate
@@ -318,9 +318,9 @@ void vibe_ble_prepare_light_sleep(void)
     ble_gap_adv_stop();
 }
 
-void vibe_ble_resume_after_light_sleep(void)
+void vibe_ble_resume_radio(void)
 {
-    s_light_sleeping = false;
+    s_radio_down = false;
     if (s_conn == BLE_HS_CONN_HANDLE_NONE) {
         s_adv_paused = false;
         advertise();
@@ -335,10 +335,10 @@ static int gap_event(struct ble_gap_event *event, void *arg)
     case BLE_GAP_EVENT_CONNECT:
         if (event->connect.status != 0) {
             s_conn = BLE_HS_CONN_HANDLE_NONE;
-            if (!s_light_sleeping) advertise();
+            if (!s_radio_down) advertise();
             return 0;
         }
-        if (s_light_sleeping) {
+        if (s_radio_down) {
             ble_gap_terminate(event->connect.conn_handle, BLE_ERR_REM_USER_CONN_TERM);
             return 0;
         }
@@ -364,7 +364,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
         vibe_app_on_audio_sub(false);
         vibe_app_on_ble_link(false);
-        if (!s_light_sleeping) {
+        if (!s_radio_down) {
             advertise();
             arm_eco_adv_timer();
         }
@@ -386,7 +386,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         return 0;
 
     case BLE_GAP_EVENT_ADV_COMPLETE:
-        if (s_conn == BLE_HS_CONN_HANDLE_NONE && !s_adv_paused && !s_light_sleeping) advertise();
+        if (s_conn == BLE_HS_CONN_HANDLE_NONE && !s_adv_paused && !s_radio_down) advertise();
         return 0;
 
     default:

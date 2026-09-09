@@ -158,7 +158,7 @@ static void enter_deep_sleep(void)
     // not have a wake-time resume path. This also covers the fallback path
     // when light sleep setup was unavailable.
     bsp_audio_suspend();
-    vibe_ble_prepare_light_sleep();
+    vibe_ble_prepare_sleep();
     esp_lcd_panel_handle_t panel = bsp_display_panel();
     if (panel) {
         // A dark screen is not a powered-down one. Backlight PWM alone leaves
@@ -177,6 +177,14 @@ static void enter_deep_sleep(void)
     ESP_LOGI(TAG, "idle for %u ms; entering deep sleep; wake on GPIO0",
              timeout);
     esp_deep_sleep_start();
+
+    // Only reached when the chip refused to sleep — an attached USB host is
+    // enough to hold it awake. The teardown above already took the radio down,
+    // and without putting it back the device stays awake and unreachable: it
+    // never advertises again, so the Mac can only ever scan for it in vain.
+    ESP_LOGW(TAG, "deep sleep refused; restoring the radio");
+    s_deep_sleep_failed = true;
+    vibe_ble_resume_radio();
 }
 
 // Enter a real idle state after the screen has gone dark. A timer wake keeps
