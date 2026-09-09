@@ -21,7 +21,7 @@ extern "C" {
 
 // Nothing connected means nobody is nearby, so there is no point waiting out
 // the full idle timeout before sleeping.
-#define VIBE_PWR_UNLINKED_DEEP_SLEEP_MS (60U * 1000U)
+#define VIBE_PWR_UNLINKED_DEEP_SLEEP_MS (5U * 60U * 1000U)
 
 // Draining a lithium cell flat costs it capacity permanently, so the policy
 // tightens on its own well before that point.

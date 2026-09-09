@@ -98,7 +98,6 @@ static bool s_busy;
 static uint32_t s_busy_since_ms;
 static uint32_t s_last_ms;
 static bool s_deep_sleep_failed;
-static bool s_light_sleep_failed;
 static vibe_power_mode_t s_mode = VIBE_POWER_STANDARD;
 static bool s_usb_host_powered;
 static bool s_linked;
@@ -109,15 +108,7 @@ static uint32_t now_ms(void)
     return (uint32_t)(esp_timer_get_time() / 1000);
 }
 
-static uint32_t standby_timeout_ms(void)
-{
-    return s_mode == VIBE_POWER_ECO ? VIBE_PWR_ECO_STANDBY_MS : VIBE_PWR_STANDBY_MS;
-}
 
-static uint32_t deep_sleep_timeout_ms(void)
-{
-    return s_mode == VIBE_POWER_ECO ? VIBE_PWR_ECO_DEEP_SLEEP_MS : VIBE_PWR_DEEP_SLEEP_MS;
-}
 
 static void apply_screen(vibe_screen_t next)
 {
@@ -191,47 +182,6 @@ static void enter_deep_sleep(void)
 // Enter a real idle state after the screen has gone dark. A timer wake keeps
 // the existing 15-minute/5-minute deep-sleep policy, while GPIO0 wakes the
 // device immediately on a function-key press.
-static esp_sleep_wakeup_cause_t enter_light_sleep(uint32_t duration_ms)
-{
-    gpio_config_t wake_cfg = {
-        .pin_bit_mask = 1ULL << GPIO_NUM_0,
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_ENABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    esp_err_t err = gpio_config(&wake_cfg);
-    if (err == ESP_OK) err = gpio_wakeup_enable(GPIO_NUM_0, GPIO_INTR_LOW_LEVEL);
-    if (err == ESP_OK) err = esp_sleep_enable_gpio_wakeup();
-    if (err == ESP_OK) {
-        err = esp_sleep_enable_timer_wakeup((uint64_t)duration_ms * 1000ULL);
-    }
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "light sleep wake setup failed: %s", esp_err_to_name(err));
-        s_light_sleep_failed = true;
-        return ESP_SLEEP_WAKEUP_UNDEFINED;
-    }
-
-    // The capture path is already idle here, but explicitly close the codec
-    // so its I2S/DAC/PA state cannot keep the board awake.
-    bsp_audio_suspend();
-    vibe_ble_prepare_light_sleep();
-    bsp_display_backlight(0);
-    ESP_LOGI(TAG, "idle standby; entering light sleep for %u ms", duration_ms);
-    err = esp_light_sleep_start();
-    const esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
-    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
-    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "light sleep failed: %s", esp_err_to_name(err));
-        s_light_sleep_failed = true;
-        vibe_ble_resume_after_light_sleep();
-        return ESP_SLEEP_WAKEUP_UNDEFINED;
-    }
-    ESP_LOGI(TAG, "light sleep wake cause=%d", cause);
-    return cause;
-}
-
 void vibe_power_init(void)
 {
     s_busy = false;
@@ -240,7 +190,6 @@ void vibe_power_init(void)
     s_screen = VIBE_SCREEN_BRIGHT;
     s_mode = VIBE_POWER_STANDARD;
     s_usb_host_powered = false;
-    s_light_sleep_failed = false;
     s_linked = false;
     s_unlinked_since_ms = now_ms();
     bsp_display_backlight(BACKLIGHT_BRIGHT);
@@ -273,7 +222,6 @@ void vibe_power_note_activity(void)
 {
     s_last_ms = now_ms();
     s_deep_sleep_failed = false;
-    s_light_sleep_failed = false;
     apply_screen(VIBE_SCREEN_BRIGHT);
 }
 
@@ -325,24 +273,11 @@ void vibe_power_tick(void)
     }
     apply_screen(next);
 
-    if (!s_light_sleep_failed && next == VIBE_SCREEN_OFF && idle < deep_sleep_timeout_ms()) {
-        const uint32_t remaining = deep_sleep_timeout_ms() - idle;
-        const esp_sleep_wakeup_cause_t cause = enter_light_sleep(remaining);
-        if (cause == ESP_SLEEP_WAKEUP_TIMER) {
-            // The light-sleep timer marks the original deep-sleep deadline.
-            enter_deep_sleep();
-            return;
-        }
-        if (cause != ESP_SLEEP_WAKEUP_TIMER) {
-            vibe_ble_resume_after_light_sleep();
-        }
-        if (cause == ESP_SLEEP_WAKEUP_GPIO) {
-            // Keep the screen dark until the button task consumes the wake;
-            // its normal first-press behavior will restore brightness.
-            s_last_ms = now_ms() - standby_timeout_ms();
-        }
-        return;
-    }
+    // Light sleep used to bridge screen-off and deep sleep, but it stopped the
+    // radio: the device was unreachable for the whole stretch and still burning
+    // current. Deep sleep is equally unreachable and actually saves power, so the
+    // middle state earned nothing. Blank the screen, keep the radio up, and wait
+    // for the deep-sleep deadline.
     const int battery = bsp_battery_soc();
     const uint32_t unlinked = s_linked ? 0 : (now - s_unlinked_since_ms);
     if (!s_deep_sleep_failed &&

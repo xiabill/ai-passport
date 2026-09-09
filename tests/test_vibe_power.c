@@ -64,5 +64,12 @@ int main(void)
     // Unknown battery must not trigger the protection path.
     assert(!vibe_power_should_deep_sleep_full(0, false, VIBE_POWER_STANDARD, 0, -1));
 
+    // The unlinked window has to outlast a reconnection attempt. At one minute
+    // the device slept before the Bridge finished scanning, so waking it by hand
+    // never helped: it was asleep again by the time the scan came round.
+    assert(VIBE_PWR_UNLINKED_DEEP_SLEEP_MS >= 3U * 60U * 1000U);
+    assert(!vibe_power_should_deep_sleep_full(1000, false, VIBE_POWER_STANDARD,
+                                              90U * 1000U, 80));
+
     return 0;
 }
