@@ -47,6 +47,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     var onOTAFinished: ((String?) -> Void)?
     private var desiredActions = [UInt8]()
     private var reclaimTimer: DispatchSourceTimer?
+    private var connectTimer: DispatchSourceTimer?
     var onPCM: (([Int16]) -> Void)?
 
     var snapshot: Snapshot {
@@ -200,6 +201,32 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     /// the app. The device then stops advertising, so scanning alone never finds
     /// it again and the link looks stuck until something power-cycles it. Poll
     /// for a system-held connection while scanning and take it over.
+
+    /// `central.connect` never times out. When the stored connection record is
+    /// stale — the device rebooted, or the system released the link without
+    /// telling us — no callback ever arrives and the state machine sits in
+    /// "connecting" forever: no scan, no reclaim, no log. Give every attempt a
+    /// deadline and fall back to scanning.
+    private func armConnectWatchdog(_ p: CBPeripheral) {
+        connectTimer?.cancel()
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + 8)
+        timer.setEventHandler { [weak self] in
+            guard let self, self.peripheral === p, !self.snap.connected else { return }
+            Log.ble("连接超时，回到扫描")
+            self.central.cancelPeripheralConnection(p)
+            self.peripheral = nil
+            self.scan()
+        }
+        timer.resume()
+        connectTimer = timer
+    }
+
+    private func stopConnectWatchdog() {
+        connectTimer?.cancel()
+        connectTimer = nil
+    }
+
     private func startReclaim() {
         reclaimTimer?.cancel()
         let timer = DispatchSource.makeTimerSource(queue: queue)
@@ -215,6 +242,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             held.delegate = self
             self.update { $0.phase = "连接中"; $0.deviceName = held.name ?? $0.deviceName }
             self.central.connect(held)
+            self.armConnectWatchdog(held)
         }
         timer.resume()
         reclaimTimer = timer
@@ -243,6 +271,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             p.delegate = self
             update { $0.phase = "连接中"; $0.deviceName = p.name ?? $0.deviceName }
             central.connect(p)
+            armConnectWatchdog(p)
             return
         }
         update { $0.phase = "扫描中" }
@@ -278,6 +307,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         stopReclaim()
+        stopConnectWatchdog()
         if isHandoffPaused {
             central.cancelPeripheralConnection(peripheral)
             return
@@ -295,6 +325,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     func centralManager(
         _ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?
     ) {
+        stopConnectWatchdog()
         update { $0.connected = false; $0.phase = "连接失败" }
         Log.ble("连接失败 \(error?.localizedDescription ?? "")")
         if autoReconnect && !isHandoffPaused { scan() }
