@@ -74,6 +74,50 @@ vibe_power_mode_t vibe_power_effective_mode(vibe_power_mode_t mode, int battery)
     return mode > VIBE_POWER_ECO ? mode : VIBE_POWER_ECO;
 }
 
+void vibe_charge_reset(vibe_charge_t *c)
+{
+    c->last_fine = -1;
+    c->last_ms = 0;
+    c->rate = 0;
+    c->charging = false;
+}
+
+void vibe_charge_sample(vibe_charge_t *c, int soc_fine, uint32_t now_ms)
+{
+    if (soc_fine < 0) return;
+    if (c->last_fine < 0) {
+        c->last_fine = soc_fine;
+        c->last_ms = now_ms;
+        return;
+    }
+    const uint32_t dt = now_ms - c->last_ms;
+    if (dt < VIBE_CHARGE_SAMPLE_MS) return;
+
+    // Rate over this interval, in gauge units per minute.
+    const int32_t d = soc_fine - c->last_fine;
+    const int32_t per_min = (int32_t)((int64_t)d * 60000 / (int64_t)dt);
+    // Smooth it: a single I2C read carries a unit or two of noise, and one
+    // stray sample should not flip the icon.
+    c->rate = c->rate == 0 ? per_min : (c->rate * 3 + per_min) / 4;
+    c->last_fine = soc_fine;
+    c->last_ms = now_ms;
+
+    // Hysteresis: it takes a clear rise to call it charging, and a clear fall
+    // to take it back, so a cell hovering at the threshold does not flicker.
+    if (!c->charging && c->rate >= VIBE_CHARGE_MIN_RATE) c->charging = true;
+    else if (c->charging && c->rate <= -VIBE_CHARGE_MIN_RATE) c->charging = false;
+}
+
+int vibe_charge_minutes_to_full(const vibe_charge_t *c)
+{
+    if (!c->charging || c->rate < VIBE_CHARGE_MIN_RATE) return -1;
+    if (c->last_fine >= VIBE_CHARGE_TAPER_FINE) return -1;
+    const int32_t left = VIBE_CHARGE_FULL_FINE - c->last_fine;
+    if (left <= 0) return -1;
+    const int32_t mins = left / c->rate;
+    return mins > 0 ? (int)mins : 1;
+}
+
 bool vibe_power_should_deep_sleep_full(uint32_t idle_ms, bool busy,
                                        vibe_power_mode_t mode,
                                        uint32_t unlinked_ms, int battery)

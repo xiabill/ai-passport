@@ -13,6 +13,10 @@ esp_err_t bsp_battery_init(void);
 int bsp_battery_soc(void);
 
 // 电池电压 mV;读失败返回 -1。
+// 与 bsp_battery_soc() 同一个寄存器,但带上低字节:分辨率 1/256 %。
+// 充电时每几秒就会变化,足以判断电流方向;整数百分比要几分钟才动一格。
+int bsp_battery_soc_fine(void);
+
 int bsp_battery_mv(void);
 
 // 让电量计进入睡眠。深度睡眠只断 MCU 核心,挂在常通 3.3V 轨上的 CW2017

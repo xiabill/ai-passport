@@ -71,5 +71,62 @@ int main(void)
     assert(!vibe_power_should_deep_sleep_full(1000, false, VIBE_POWER_STANDARD,
                                               90U * 1000U, 80));
 
+
+    // --- charging inference -------------------------------------------------
+    {
+        vibe_charge_t c;
+        vibe_charge_reset(&c);
+        // A resting cell is not charging, however long it sits there.
+        uint32_t now = 0;
+        int fine = 50 * 256;
+        for (int i = 0; i < 10; i++) {
+            now += VIBE_CHARGE_SAMPLE_MS;
+            vibe_charge_sample(&c, fine, now);
+        }
+        assert(!c.charging);
+        assert(vibe_charge_minutes_to_full(&c) == -1);
+
+        // Climbing 1%/min reads as charging, and 50% left at 1%/min is ~50 min.
+        vibe_charge_reset(&c);
+        now = 0;
+        fine = 50 * 256;
+        vibe_charge_sample(&c, fine, now);
+        for (int i = 0; i < 6; i++) {
+            now += 60000;
+            fine += 256;
+            vibe_charge_sample(&c, fine, now);
+        }
+        assert(c.charging);
+        int mins = vibe_charge_minutes_to_full(&c);
+        assert(mins > 35 && mins < 60);
+
+        // Past the taper the estimate is withheld rather than guessed.
+        vibe_charge_reset(&c);
+        now = 0;
+        fine = 95 * 256;
+        vibe_charge_sample(&c, fine, now);
+        for (int i = 0; i < 4; i++) {
+            now += 60000;
+            fine += 128;
+            vibe_charge_sample(&c, fine, now);
+        }
+        assert(c.charging);
+        assert(vibe_charge_minutes_to_full(&c) == -1);
+
+        // Draining clears it again.
+        for (int i = 0; i < 6; i++) {
+            now += 60000;
+            fine -= 256;
+            vibe_charge_sample(&c, fine, now);
+        }
+        assert(!c.charging);
+
+        // Samples that arrive too close together carry no usable slope.
+        vibe_charge_reset(&c);
+        vibe_charge_sample(&c, 50 * 256, 0);
+        vibe_charge_sample(&c, 90 * 256, 100);
+        assert(!c.charging);
+    }
+
     return 0;
 }
