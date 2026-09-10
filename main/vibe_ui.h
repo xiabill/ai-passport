@@ -19,6 +19,8 @@ typedef struct {
     uint8_t active_gesture;               // VIBE_GESTURE_NONE when idle
     int battery;          // 0..100, or -1
     int battery_mv;       // or -1
+    bool charging;        // inferred from the gauge, not a hardware line
+    int charge_minutes;   // until full, or -1 when it cannot be stated honestly
     uint8_t typeless;
     vibe_power_mode_t power_mode;
     uint8_t last_event;   // 0 if none

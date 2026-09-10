@@ -4,6 +4,8 @@
 #include "vibe_ble.h"
 #include "vibe_power.h"
 #include "vibe_protocol.h"
+#include "esp_app_desc.h"
+#include "esp_timer.h"
 #include "lvgl.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -37,6 +39,7 @@ static lv_obj_t *s_phase;
 static lv_obj_t *s_batt;
 static lv_obj_t *s_meter_hint;
 static lv_obj_t *s_foot;
+static vibe_charge_t s_charge;
 static lv_obj_t *s_key_box[3];
 static lv_obj_t *s_key_name[3];
 static lv_obj_t *s_key_act[3];
@@ -109,6 +112,24 @@ static const char *action_title(uint8_t action)
     }
 }
 
+// The full version string is far too long for a 224px line, and the suffix is
+// the same on every build anyway. A dirty build gets a star so a hand-flashed
+// device is never mistaken for a release.
+static const char *short_version(void)
+{
+    static char buf[12];
+    if (buf[0]) return buf;
+    const esp_app_desc_t *d = esp_app_get_description();
+    const char *v = d->version;
+    if (*v == 'v') v++;
+    size_t n = 0;
+    while (v[n] && v[n] != '-' && n + 2 < sizeof(buf)) n++;
+    memcpy(buf, v, n);
+    buf[n] = strstr(d->version, "dirty") ? '*' : '\0';
+    buf[n + 1] = '\0';
+    return buf;
+}
+
 static const char *power_mode_title(vibe_power_mode_t mode)
 {
     return mode == VIBE_POWER_ECO ? "省电模式" : "正常模式";
@@ -159,13 +180,14 @@ static void paint(const vibe_ui_model_t *m)
 
     char line[64];
     if (m->battery >= 0) {
-        snprintf(line, sizeof(line), "%d%%", m->battery);
+        snprintf(line, sizeof(line), "%s%d%%", m->charging ? "+" : "", m->battery);
     } else {
         snprintf(line, sizeof(line), "--");
     }
     lv_label_set_text(s_batt, line);
     uint32_t batt_color = VU_DIM;
-    if (m->battery >= 0 && m->battery <= 15) batt_color = VU_RED;
+    if (m->charging) batt_color = VU_GREEN;
+    else if (m->battery >= 0 && m->battery <= 15) batt_color = VU_RED;
     else if (m->battery >= 0 && m->battery <= 30) batt_color = VU_ORANGE;
     lv_obj_set_style_text_color(s_batt, lv_color_hex(batt_color), 0);
 
@@ -173,8 +195,13 @@ static void paint(const vibe_ui_model_t *m)
     // packet counters and last-gesture line were debug output and are gone.
     // Only CJK and ASCII are in the font, so a separator like U+00B7 renders
     // as a box. Two spaces read the same and always exist.
-    snprintf(line, sizeof(line), "%s  %s", vibe_ble_name(),
-             power_mode_title(m->power_mode));
+    if (m->charging && m->charge_minutes > 0) {
+        snprintf(line, sizeof(line), "%s  充满 %d:%02d  %s", vibe_ble_name(),
+                 m->charge_minutes / 60, m->charge_minutes % 60, short_version());
+    } else {
+        snprintf(line, sizeof(line), "%s  %s  %s", vibe_ble_name(),
+                 power_mode_title(m->power_mode), short_version());
+    }
     lv_label_set_text(s_foot, line);
 
     const bool recording = m->phase == VIBE_PHASE_RECORDING && m->audio_sub;
@@ -271,11 +298,17 @@ static void on_tick(lv_timer_t *timer)
     xSemaphoreTake(s_mu, portMAX_DELAY);
     m = s_live;
     xSemaphoreGive(s_mu);
-    m.battery = bsp_battery_soc();
+    const int fine = bsp_battery_soc_fine();
+    vibe_charge_sample(&s_charge, fine, (uint32_t)(esp_timer_get_time() / 1000));
+    m.battery = fine >= 0 ? fine >> 8 : -1;
     m.battery_mv = bsp_battery_mv();
+    m.charging = s_charge.charging;
+    m.charge_minutes = vibe_charge_minutes_to_full(&s_charge);
     xSemaphoreTake(s_mu, portMAX_DELAY);
     s_live.battery = m.battery;
     s_live.battery_mv = m.battery_mv;
+    s_live.charging = m.charging;
+    s_live.charge_minutes = m.charge_minutes;
     xSemaphoreGive(s_mu);
     paint(&m);
 
@@ -362,6 +395,9 @@ void vibe_ui_start(void)
     memset(&s_live, 0, sizeof(s_live));
     s_live.battery = -1;
     s_live.battery_mv = -1;
+    s_live.charging = false;
+    s_live.charge_minutes = -1;
+    vibe_charge_reset(&s_charge);
     s_timer = lv_timer_create(on_tick, 200, NULL);
     lv_screen_load(s_scr);
     paint(&s_live);
