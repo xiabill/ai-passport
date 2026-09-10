@@ -11,7 +11,7 @@
 | 文档 | 类型 | 状态 | 说明 |
 | --- | --- | --- | --- |
 | [CHANGELOG.md](./CHANGELOG.md) | 变更记录 | authoritative | 用户可见行为、兼容性与发布流程历史 |
-| [releases/v0.3.7-vibe-typeless.md](./releases/v0.3.7-vibe-typeless.md) | Release 使用说明 | authoritative | 下载、安装、配置、刷机和排错 |
+| [releases/v0.3.8-vibe-typeless.md](./releases/v0.3.8-vibe-typeless.md) | Release 使用说明 | authoritative | 下载、安装、配置、刷机和排错 |
 | [brand-and-product.md](./brand-and-product.md) | 品牌与产品说明 | authoritative | 品牌与产品定位、官方入口、开源与授权、产品规格引用 |
 | [contribution/README.md](./contribution/README.md) | 协作规范索引 | authoritative | 通用协作规范（文档规范、提交与 PR 约定） |
 | [contribution/doc-conventions.md](./contribution/doc-conventions.md) | 文档规范 | authoritative | 按任务加载上下文、文档职责、写作维护和内容安全 |

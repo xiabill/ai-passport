@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+- Fixed the app not reopening after a self-update: the helper doing the swap was a child process and died with the app, between replacing the bundle and relaunching it; it now runs detached and logs to `~/Library/Logs/folovibe-update.log`.
+- The device footer shows the firmware version, starred when the build carries uncommitted changes.
+- The device shows charging state and time to full, inferred from the direction of the fuel gauge's 1/256% reading; the estimate is withheld above 92%.
 - Fixed a device left on USB becoming unreachable after idling: a refused deep sleep left the radio down and the device stopped advertising while still running; the radio is now restored.
 - Fixed the link dropping when the screen blanks: screen-off disconnected the Mac and sixty seconds unconnected then triggered deep sleep, so waking the device by hand never helped; screen-off now only blanks the display and the unconnected window is five minutes. Light sleep is removed — it left the device unreachable while still drawing current, and deep sleep is equally unreachable but actually saves power.
 - Fixed the Bridge stalling on "connecting": CoreBluetooth's connect has no timeout and a stale connection record froze the state machine silently; every attempt now has an eight-second deadline.
