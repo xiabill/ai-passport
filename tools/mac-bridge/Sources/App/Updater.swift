@@ -92,27 +92,40 @@ final class Updater: ObservableObject {
             ])
         }
 
-        // Re-sign so the permission grants carry over. Without a local identity
-        // the upgrade still installs; macOS will just ask for permissions again.
         let identity = ProcessInfo.processInfo.environment["FOLO_VIBE_SIGN_IDENTITY"]
             ?? "FoloVibe Bridge Local"
-        if hasSigningIdentity(identity) {
-            try? run("/usr/bin/codesign", [
-                "--force", "--sign", identity,
-                "--identifier", "dev.folovibe.bridge", unpacked.path,
-            ])
-        }
-
         let installed = Bundle.main.bundleURL.path
-        // The app cannot replace itself while running, so hand the swap to a
-        // helper that waits for this process to exit first.
+        let log = NSHomeDirectory() + "/Library/Logs/folovibe-update.log"
+
+        // Everything happens in the helper: the app cannot replace itself while
+        // running, and signing from here used to fail silently, leaving an
+        // ad-hoc signature that costs the user their permission grants.
+        //
+        // The helper must outlive us. Launched as a plain child it shared our
+        // process group and died partway through the last upgrade — after ditto,
+        // before the relaunch — which is why the app seemed to vanish. nohup in a
+        // detached subshell keeps it alive.
         let script = work.appendingPathComponent("install.sh")
         let body = """
             #!/bin/sh
-            while kill -0 \(ProcessInfo.processInfo.processIdentifier) 2>/dev/null; do sleep 0.2; done
-            rm -rf "\(installed)"
-            /usr/bin/ditto "\(unpacked.path)" "\(installed)"
-            open "\(installed)"
+            exec >> "\(log)" 2>&1
+            echo "=== $(date '+%F %T') installing \(latest?.version ?? "?") ==="
+            while kill -0 \(ProcessInfo.processInfo.processIdentifier) 2>/dev/null; do
+                sleep 0.2
+            done
+            if security find-identity -p codesigning | grep -q "\(identity)"; then
+                codesign --force --sign "\(identity)" \
+                    --identifier dev.folovibe.bridge "\(unpacked.path)" \
+                    || echo "WARN: re-signing failed; permissions will be asked for again"
+            else
+                echo "WARN: no local signing identity; permissions will be asked for again"
+            fi
+            rm -rf "\(installed)" || { echo "FATAL: could not remove the old app"; exit 1; }
+            /usr/bin/ditto "\(unpacked.path)" "\(installed)" \
+                || { echo "FATAL: install failed; the app is gone from \(installed)"; exit 1; }
+            codesign -dv "\(installed)" 2>&1 | grep -E "Identifier|Authority" || true
+            open "\(installed)" || echo "WARN: could not reopen the app"
+            echo "=== $(date '+%F %T') done ==="
             """
         try body.write(to: script, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes(
@@ -122,8 +135,9 @@ final class Updater: ObservableObject {
             self.status = "正在安装并重启…"
             let task = Process()
             task.executableURL = URL(fileURLWithPath: "/bin/sh")
-            task.arguments = [script.path]
+            task.arguments = ["-c", "nohup /bin/sh '\(script.path)' >/dev/null 2>&1 &"]
             try? task.run()
+            task.waitUntilExit()
             NSApp.terminate(nil)
         }
     }
