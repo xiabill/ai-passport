@@ -6,6 +6,12 @@
 
 ## Unreleased
 
+- Rebuilt the device screen: a layered layout whose centre changes with state (ring, spinner, Bluetooth glyph, or a full-width waveform with a timer), and key cards that state click, double click and long press; adds a 24px hero font, raises the LVGL pool to 64KB and the screenshot task stack to 8KB.
+- One Mac can connect to several devices at once and use any of them; audio belongs to whichever started talking first. Settings lists every device in range and which one is in use.
+- Handover is now deliberate: a connected device keeps advertising flagged as in use, and a new connection must claim it within three seconds or be dropped.
+- Device names come from the low bytes of the address, so every device is distinct (they were all named after the vendor prefix).
+- Key labels shown on the device can be set in the app; the Mac renders them to a bitmap, so the device font subset no longer limits them.
+- Fixed charging state sticking after unplugging: a fading rise ends it, and a sharp voltage drop ends it at once.
 - Fixed the app not reopening after a self-update: the helper doing the swap was a child process and died with the app, between replacing the bundle and relaunching it; it now runs detached and logs to `~/Library/Logs/folovibe-update.log`.
 - The device footer shows the firmware version, starred when the build carries uncommitted changes.
 - The device shows charging state and time to full, inferred from the direction of the fuel gauge's 1/256% reading; the estimate is withheld above 92%.
