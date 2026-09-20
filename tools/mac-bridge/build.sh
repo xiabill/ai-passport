@@ -26,16 +26,28 @@ fi
 sign_identity="${FOLO_VIBE_SIGN_IDENTITY:-FoloVibe Bridge Local}"
 
 sign_app() {
+    local identity="$sign_identity"
     if ! security find-identity -p codesigning 2>/dev/null | grep -qF "$sign_identity"; then
         echo "note: no stable signing identity, so macOS will ask for permissions"
         echo "      again after each upgrade. Run ./create-signing-identity.sh once."
-        return
+        # Ad-hoc, but still a signature over the bundle. Skipping this left the
+        # app carrying only the linker's signature of the executable, with no
+        # CodeResources beside it -- which every other Mac reports as "the app
+        # is damaged" rather than as an unsigned app.
+        identity="-"
     fi
-    if codesign --force --sign "$sign_identity" \
+    if codesign --force --sign "$identity" \
         --identifier "dev.folovibe.bridge" "$1" >/dev/null 2>&1; then
-        echo "signed with $sign_identity"
+        echo "signed with ${identity/#-/ad-hoc}"
     else
-        echo "warning: signing failed; keeping the ad-hoc signature" >&2
+        echo "error: could not sign $1" >&2
+        exit 1
+    fi
+    # A bundle that fails its own check is the damaged-app report waiting to
+    # happen on someone else's Mac, so fail here instead.
+    if ! codesign --verify --strict "$1" 2>/dev/null; then
+        echo "error: $1 does not pass its own signature check" >&2
+        exit 1
     fi
 }
 
