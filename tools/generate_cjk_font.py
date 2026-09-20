@@ -30,6 +30,11 @@ OUTPUT = ROOT / "main" / "ui_font_cjk.c"
 # will be missing from the font and show up as a box on the device.
 CJK_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff]")
 GLYPH_RE = re.compile(r'/\* U\+([0-9A-F]+) "([^"].*?)" \*/')
+# Large type is only for the few words in the centre of the screen. Those
+# strings are wrapped in HERO("...") so the 24px font carries a handful of
+# glyphs instead of the whole subset.
+HERO_RE = re.compile(r'HERO\("([^"]*)"\)')
+HERO_SECTION = "ui_font_cjk_24_glyph_dsc"
 
 
 def glyph_chars():
@@ -39,6 +44,16 @@ def glyph_chars():
         if path.name == OUTPUT.name:
             continue
         chars.update(CJK_RE.findall(path.read_text(encoding="utf-8")))
+    return sorted(chars)
+
+
+def hero_chars():
+    chars = set()
+    for path in sorted((ROOT / "main").glob("*.c")):
+        if path.name == OUTPUT.name:
+            continue
+        for s in HERO_RE.findall(path.read_text(encoding="utf-8")):
+            chars.update(CJK_RE.findall(s))
     return sorted(chars)
 
 
@@ -151,6 +166,12 @@ def check_coverage(chars):
     missing = sorted(set(chars) - generated_chars())
     if missing:
         raise SystemExit("CJK font coverage missing: " + " ".join(missing))
+    text = OUTPUT.read_text(encoding="utf-8")
+    hero = text[text.find(HERO_SECTION):] if HERO_SECTION in text else ""
+    have = {m.group(2) for m in GLYPH_RE.finditer(hero)}
+    missing = sorted(set(hero_chars()) - have)
+    if missing:
+        raise SystemExit("CJK 24px font coverage missing: " + " ".join(missing))
     print(f"CJK font coverage: PASS ({len(chars)} source glyphs present)")
 
 
@@ -177,6 +198,13 @@ def main():
     # The 16px title font is baseline-compatible with Montserrat 16.
     content += make_font(16, "ui_font_cjk_16", "&lv_font_montserrat_16", chars,
                          line_height=18, base_line=3, glyph_ofs_y=-1)
+    big = hero_chars()
+    if big:
+        content += "\n"
+        # Montserrat 20 is the closest built-in Latin fallback; the digits in a
+        # hero line are rare and sit a touch small, which reads fine.
+        content += make_font(24, "ui_font_cjk_24", "&lv_font_montserrat_20", big,
+                             line_height=28, base_line=4, glyph_ofs_y=-2)
     OUTPUT.write_text(content, encoding="utf-8")
     check_coverage(chars)
     print(f"generated {OUTPUT} with {len(chars)} CJK glyphs")

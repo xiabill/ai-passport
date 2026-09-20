@@ -162,6 +162,8 @@ esp_err_t vibe_shot_start(void)
     esp_err_t err = usb_serial_jtag_driver_install(&cfg);
     if (err != ESP_OK && err != ESP_ERR_INVALID_STATE) return err;
 
-    BaseType_t ok = xTaskCreate(shot_task, "vibe_shot", 4096, NULL, 3, NULL);
+    // This task renders through LVGL itself, so it needs the same depth as the
+    // LVGL task: arc masks overflowed 4 KB and faulted mid-capture.
+    BaseType_t ok = xTaskCreate(shot_task, "vibe_shot", 8192, NULL, 3, NULL);
     return ok == pdPASS ? ESP_OK : ESP_ERR_NO_MEM;
 }

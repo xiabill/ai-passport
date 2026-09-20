@@ -32,6 +32,13 @@ typedef struct {
 void vibe_ui_start(void);
 void vibe_ui_set(const vibe_ui_model_t *model);
 
+// Called from the BLE task. A chunk that reaches the end of the slot's bitmap
+// makes it visible; a chunk at offset 0 hides it until then.
+void vibe_ui_label_chunk(uint8_t slot, uint16_t off, const uint8_t *data, uint16_t len);
+void vibe_ui_label_clear(uint8_t slot);
+// Labels belong to the Mac that sent them; a new link starts from the defaults.
+void vibe_ui_labels_reset(void);
+
 #ifdef __cplusplus
 }
 #endif

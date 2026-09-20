@@ -43,6 +43,25 @@ extern "C" {
 #define VIBE_CTRL_POWER_MODE_ECO      0x81U
 #define VIBE_CTRL_POWER_MODE_ULTRA    0x82U
 
+// Custom key labels, drawn by the Mac and sent as 8-bit alpha bitmaps so any
+// text renders, not just the characters in the device's font subset.
+//   0x93 slot off_lo off_hi data...   a chunk of the bitmap for one gesture
+//   0x94 slot                          drop it and show the built-in name
+// Slot is the gesture index (button * 3 + gesture). The size is fixed by the
+// kind of slot, so it never travels on the wire.
+#define VIBE_CTRL_LABEL       0x93U
+#define VIBE_CTRL_LABEL_CLEAR 0x94U
+// Sent by a Bridge right after it connects: "I mean to use this device".
+// A second connection only takes the device over once it says so; anything
+// that connects without asking (an old Bridge, a phone, the OS reconnecting
+// on its own) is dropped instead of silently stealing the device.
+#define VIBE_CTRL_CLAIM       0x95U
+#define VIBE_CLAIM_WINDOW_MS  3000U
+#define VIBE_LABEL_MAIN_W 64U
+#define VIBE_LABEL_MAIN_H 20U
+#define VIBE_LABEL_ALT_W  44U
+#define VIBE_LABEL_ALT_H  16U
+
 // Raw gesture events. The device no longer decides what a button means; it
 // reports which button was pressed and how, and the bridge maps that to an
 // action. Encoding: 0x20 | (button << 2) | gesture, i.e. 0x20..0x2A.
@@ -75,7 +94,8 @@ extern "C" {
 #define VIBE_ACT_CLEAR      7U
 #define VIBE_ACT_NEWLINE    8U
 #define VIBE_ACT_CUSTOM     9U
-#define VIBE_ACT_COUNT      10U
+#define VIBE_ACT_HANDOFF    10U
+#define VIBE_ACT_COUNT      11U
 
 // Actions that must arm the microphone on the device itself.
 #define VIBE_ACT_RECORDS(a) \

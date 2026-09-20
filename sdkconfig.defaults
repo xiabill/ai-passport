@@ -36,7 +36,10 @@ CONFIG_LV_FONT_MONTSERRAT_20=y
 # tools/generate_cjk_font.py, so the small LVGL demo subset is not enabled.
 # LVGL 内置 malloc 池大小(KB)。它是独立静态区、不与系统堆共享,配大了会白白占用 RAM。
 # 本 demo UI 简单,24KB 足够;若自建复杂界面出现绘制卡死/看门狗,调大此值。
-CONFIG_LV_MEM_SIZE_KILOBYTES=32
+# 64, not 32: the redesigned screen holds roughly twice as many objects
+# (waveform bars, three gestures per key, arcs), and the 24px glyph draw
+# buffer on top of that ran the 32 KB pool dry and hung the LVGL task.
+CONFIG_LV_MEM_SIZE_KILOBYTES=64
 
 # --- 系统 ---
 CONFIG_FREERTOS_HZ=1000

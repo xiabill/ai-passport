@@ -10,6 +10,7 @@ extern "C" {
 // source is antialiased 4bpp data with a Montserrat fallback for Latin text.
 extern const lv_font_t ui_font_cjk_14;
 extern const lv_font_t ui_font_cjk_16;
+extern const lv_font_t ui_font_cjk_24;
 
 #ifdef __cplusplus
 }
