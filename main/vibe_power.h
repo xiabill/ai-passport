@@ -35,9 +35,14 @@ extern "C" {
 // Past this point the charger tapers off and a linear estimate turns into a
 // lie, so the remaining time is withheld rather than guessed.
 #define VIBE_CHARGE_TAPER_FINE (92 * 256)
+// Unplugging drops the cell voltage by tens of millivolts within seconds, well
+// before the gauge's smoothed percentage says anything. A fall this size
+// between two samples means the charger is gone.
+#define VIBE_CHARGE_UNPLUG_MV 40
 
 typedef struct {
     int32_t last_fine;   // most recent reading, -1 before the first sample
+    int32_t last_mv;     // cell voltage at that reading, -1 if unknown
     uint32_t last_ms;
     int32_t rate;        // 1/256 %% per minute, smoothed; positive when charging
     bool charging;
@@ -47,7 +52,7 @@ void vibe_charge_reset(vibe_charge_t *c);
 
 // Feeds one gauge reading. Ignores samples that arrive too close together to
 // carry a usable slope.
-void vibe_charge_sample(vibe_charge_t *c, int soc_fine, uint32_t now_ms);
+void vibe_charge_sample(vibe_charge_t *c, int soc_fine, int mv, uint32_t now_ms);
 
 // Minutes until full, or -1 when that cannot be stated honestly: not charging,
 // no rate yet, or already into the taper where a linear estimate misleads.

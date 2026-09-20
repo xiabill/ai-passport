@@ -81,7 +81,7 @@ int main(void)
         int fine = 50 * 256;
         for (int i = 0; i < 10; i++) {
             now += VIBE_CHARGE_SAMPLE_MS;
-            vibe_charge_sample(&c, fine, now);
+            vibe_charge_sample(&c, fine, 4000, now);
         }
         assert(!c.charging);
         assert(vibe_charge_minutes_to_full(&c) == -1);
@@ -90,11 +90,11 @@ int main(void)
         vibe_charge_reset(&c);
         now = 0;
         fine = 50 * 256;
-        vibe_charge_sample(&c, fine, now);
+        vibe_charge_sample(&c, fine, 4000, now);
         for (int i = 0; i < 6; i++) {
             now += 60000;
             fine += 256;
-            vibe_charge_sample(&c, fine, now);
+            vibe_charge_sample(&c, fine, 4000, now);
         }
         assert(c.charging);
         int mins = vibe_charge_minutes_to_full(&c);
@@ -104,11 +104,11 @@ int main(void)
         vibe_charge_reset(&c);
         now = 0;
         fine = 95 * 256;
-        vibe_charge_sample(&c, fine, now);
+        vibe_charge_sample(&c, fine, 4000, now);
         for (int i = 0; i < 4; i++) {
             now += 60000;
             fine += 128;
-            vibe_charge_sample(&c, fine, now);
+            vibe_charge_sample(&c, fine, 4000, now);
         }
         assert(c.charging);
         assert(vibe_charge_minutes_to_full(&c) == -1);
@@ -117,14 +117,47 @@ int main(void)
         for (int i = 0; i < 6; i++) {
             now += 60000;
             fine -= 256;
-            vibe_charge_sample(&c, fine, now);
+            vibe_charge_sample(&c, fine, 4000, now);
         }
+        assert(!c.charging);
+
+        // Unplugged: the gauge holds its percentage flat. That alone must end
+        // "charging" rather than waiting for a fall that may take an hour.
+        vibe_charge_reset(&c);
+        now = 0;
+        fine = 50 * 256;
+        vibe_charge_sample(&c, fine, 4150, now);
+        for (int i = 0; i < 6; i++) {
+            now += 60000;
+            fine += 256;
+            vibe_charge_sample(&c, fine, 4150, now);
+        }
+        assert(c.charging);
+        for (int i = 0; i < 15; i++) {
+            now += VIBE_CHARGE_SAMPLE_MS;
+            vibe_charge_sample(&c, fine, 4150, now);
+        }
+        assert(!c.charging);
+
+        // A sharp voltage fall means the cable came out; that ends it at once.
+        vibe_charge_reset(&c);
+        now = 0;
+        fine = 50 * 256;
+        vibe_charge_sample(&c, fine, 4150, now);
+        for (int i = 0; i < 6; i++) {
+            now += 60000;
+            fine += 256;
+            vibe_charge_sample(&c, fine, 4150, now);
+        }
+        assert(c.charging);
+        now += VIBE_CHARGE_SAMPLE_MS;
+        vibe_charge_sample(&c, fine, 4090, now);
         assert(!c.charging);
 
         // Samples that arrive too close together carry no usable slope.
         vibe_charge_reset(&c);
-        vibe_charge_sample(&c, 50 * 256, 0);
-        vibe_charge_sample(&c, 90 * 256, 100);
+        vibe_charge_sample(&c, 50 * 256, 4000, 0);
+        vibe_charge_sample(&c, 90 * 256, 4000, 100);
         assert(!c.charging);
     }
 

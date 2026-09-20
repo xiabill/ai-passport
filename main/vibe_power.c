@@ -77,16 +77,18 @@ vibe_power_mode_t vibe_power_effective_mode(vibe_power_mode_t mode, int battery)
 void vibe_charge_reset(vibe_charge_t *c)
 {
     c->last_fine = -1;
+    c->last_mv = -1;
     c->last_ms = 0;
     c->rate = 0;
     c->charging = false;
 }
 
-void vibe_charge_sample(vibe_charge_t *c, int soc_fine, uint32_t now_ms)
+void vibe_charge_sample(vibe_charge_t *c, int soc_fine, int mv, uint32_t now_ms)
 {
     if (soc_fine < 0) return;
     if (c->last_fine < 0) {
         c->last_fine = soc_fine;
+        c->last_mv = mv;
         c->last_ms = now_ms;
         return;
     }
@@ -99,13 +101,23 @@ void vibe_charge_sample(vibe_charge_t *c, int soc_fine, uint32_t now_ms)
     // Smooth it: a single I2C read carries a unit or two of noise, and one
     // stray sample should not flip the icon.
     c->rate = c->rate == 0 ? per_min : (c->rate * 3 + per_min) / 4;
+    const int32_t prev_mv = c->last_mv;
     c->last_fine = soc_fine;
+    c->last_mv = mv;
     c->last_ms = now_ms;
 
-    // Hysteresis: it takes a clear rise to call it charging, and a clear fall
-    // to take it back, so a cell hovering at the threshold does not flicker.
+    // The fast path: the charger went away.
+    if (c->charging && mv >= 0 && prev_mv >= 0 && prev_mv - mv >= VIBE_CHARGE_UNPLUG_MV) {
+        c->charging = false;
+        c->rate = 0;
+        return;
+    }
+    // Hysteresis, but only a narrow band: a clear rise starts it, and the rise
+    // fading to half that ends it. Waiting for an outright fall kept "charging"
+    // up after the cable was pulled, because the gauge holds its percentage
+    // flat for a long while once current stops.
     if (!c->charging && c->rate >= VIBE_CHARGE_MIN_RATE) c->charging = true;
-    else if (c->charging && c->rate <= -VIBE_CHARGE_MIN_RATE) c->charging = false;
+    else if (c->charging && c->rate < VIBE_CHARGE_MIN_RATE / 2) c->charging = false;
 }
 
 int vibe_charge_minutes_to_full(const vibe_charge_t *c)
