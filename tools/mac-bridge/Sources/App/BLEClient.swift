@@ -3,6 +3,21 @@ import FoloVibeCore
 import Foundation
 
 final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
+    /// One connected Passport, as the UI sees it.
+    struct Device: Equatable {
+        var id: UUID
+        var name: String
+        var rssi: Int?
+        var firmwareVersion: String
+        var ready: Bool
+        var connected: Bool
+        /// The device says another Mac is using it. Only a click takes it over.
+        var busyElsewhere: Bool
+    }
+
+    /// The aggregate fields keep their old meaning with more than one device:
+    /// "connected" is true when any device is, the name lists them all. The
+    /// per-device detail lives in `devices`.
     struct Snapshot {
         var phase = "未启动"
         var bluetoothOn = false
@@ -18,18 +33,46 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         var lastEvent: String = "—"
         var handoffPaused = false
         var firmwareVersion = ""
+        var devices: [Device] = []
+    }
+
+    /// Everything that used to be a single property on this class, per device.
+    private final class Link {
+        let peripheral: CBPeripheral
+        var name: String
+        var connected = false
+        var connectDeadline: Date
+        var control: CBCharacteristic?
+        var audio: CBCharacteristic?
+        var event: CBCharacteristic?
+        var ota: CBCharacteristic?
+        var audioReady = false
+        var eventReady = false
+        var ready = false
+        var rssi: Int?
+        var firmware = ""
+        var lastSeq: UInt16?
+
+        init(_ peripheral: CBPeripheral, name: String) {
+            self.peripheral = peripheral
+            self.name = name
+            // `central.connect` never times out on its own. A stale connection
+            // record leaves it waiting forever, so every attempt gets a deadline.
+            connectDeadline = Date().addingTimeInterval(8)
+        }
     }
 
     private var central: CBCentralManager!
-    private var peripheral: CBPeripheral?
-    private var control: CBCharacteristic?
-    private var audioCharacteristic: CBCharacteristic?
-    private var eventCharacteristic: CBCharacteristic?
-    private var otaCharacteristic: CBCharacteristic?
-    private var versionCharacteristic: CBCharacteristic?
-    private var audioNotifyReady = false
-    private var eventNotifyReady = false
-    private var lastSeq: UInt16?
+    private var links: [UUID: Link] = [:]
+    /// Devices handed to another Mac, ignored until the date passes.
+    private var releasedUntil: [UUID: Date] = [:]
+    /// Everything advertising nearby, connected or not, so the user can pick.
+    private var seen: [UUID: (name: String, rssi: Int, busy: Bool, at: Date)] = [:]
+    /// Devices seen during this run, so a busy one can be connected on request.
+    private var peripherals: [UUID: CBPeripheral] = [:]
+    /// Two devices streaming at once would interleave into one garbled input,
+    /// so the first one to start talking owns the audio path until it stops.
+    private var audioOwner: UUID?
     private let queue = DispatchQueue(label: "folovibe.ble")
     private let audio: AudioOutput
     private let mic: MicTest
@@ -37,17 +80,18 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     private var snap = Snapshot()
     private var desiredPowerMode: BridgePowerMode = .standard
     private var handoffUntil = Date.distantPast
+    private var desiredActions = [UInt8]()
+    /// Rendered custom labels by wire slot; nil means "use the built-in name".
+    private var desiredLabels = [UInt8: Data?]()
+    private var maintenance: DispatchSourceTimer?
     var prefix = "FoloVibe"
     var autoReconnect = true
 
     var onEvent: ((VibeEvent) -> Void)?
-    var onGesture: ((GestureEvent) -> Void)?
+    var onGesture: ((GestureEvent, UUID) -> Void)?
     var onFirmwareVersion: ((String) -> Void)?
     var onOTAProgress: ((Double) -> Void)?
     var onOTAFinished: ((String?) -> Void)?
-    private var desiredActions = [UInt8]()
-    private var reclaimTimer: DispatchSourceTimer?
-    private var connectTimer: DispatchSourceTimer?
     var onPCM: (([Int16]) -> Void)?
 
     var snapshot: Snapshot {
@@ -63,194 +107,290 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         central = CBCentralManager(delegate: self, queue: queue)
     }
 
+    // MARK: - Writes, broadcast to every ready device
+
+    private var readyLinks: [Link] { links.values.filter(\.ready) }
+
     func writeTypeless(_ state: UInt8) {
         queue.async { [self] in
-            guard let p = peripheral, let c = control else { return }
-            p.writeValue(Data([state]), for: c, type: .withoutResponse)
+            for l in readyLinks {
+                guard let c = l.control else { continue }
+                l.peripheral.writeValue(Data([state]), for: c, type: .withoutResponse)
+            }
         }
     }
 
     func setPowerMode(_ mode: BridgePowerMode) {
         queue.async { [self] in
-            self.desiredPowerMode = mode
-            self.writePowerMode()
+            desiredPowerMode = mode
+            readyLinks.forEach(writePowerMode)
         }
     }
 
-    /// Streams a firmware image to the device. Chunks are paced to the
-    /// negotiated MTU and written without response; the device reboots itself
-    /// once the image verifies, so success looks like a disconnect.
-    func sendFirmware(_ image: Data) {
-        queue.async { [self] in
-            guard let p = peripheral, let c = otaCharacteristic else {
-                DispatchQueue.main.async { self.onOTAFinished?("设备未连接或不支持 OTA") }
-                return
-            }
-            let chunk = max(20, p.maximumWriteValueLength(for: .withoutResponse))
-            p.writeValue(VibeProtocol.otaHeader(length: image.count), for: c, type: .withoutResponse)
-            var sent = 0
-            while sent < image.count {
-                let end = min(sent + chunk, image.count)
-                p.writeValue(image.subdata(in: sent..<end), for: c, type: .withoutResponse)
-                sent = end
-                let done = Double(sent) / Double(image.count)
-                DispatchQueue.main.async { self.onOTAProgress?(done) }
-                // Without response there is no flow control, so pace the writes
-                // to stay inside the controller's buffer.
-                Thread.sleep(forTimeInterval: 0.006)
-            }
-            DispatchQueue.main.async { self.onOTAFinished?(nil) }
-        }
-    }
-
-    /// Pushes the gesture-to-action bindings so the device knows which gestures
-    /// arm the microphone and what to print under each key hint.
+    /// Pushes the gesture-to-action bindings so each device knows which
+    /// gestures arm the microphone and what to print under each key hint.
     func writeActions(_ codes: [UInt8]) {
         queue.async { [self] in
             desiredActions = codes
-            writeActionsLocked()
+            readyLinks.forEach(writeActions)
         }
     }
 
-    private func writeActionsLocked() {
-        guard let p = peripheral, let c = control, !desiredActions.isEmpty else { return }
-        p.writeValue(
-            Data([VibeProtocol.ctrlActions] + desiredActions), for: c, type: .withoutResponse)
-        Log.ble("同步按键绑定")
+    /// Sends only the slots whose bitmap changed: typing a label edits one
+    /// slot at a time, and resending all nine on every keystroke is waste.
+    func writeLabels(_ labels: [UInt8: Data?]) {
+        queue.async { [self] in
+            let changed = Set(labels.keys.filter { desiredLabels[$0] != labels[$0] })
+            desiredLabels = labels
+            guard !changed.isEmpty else { return }
+            for l in readyLinks { writeLabels(l, only: changed) }
+        }
     }
 
-    private func writePowerMode() {
-        guard let p = peripheral, let c = control else { return }
+    private func writeLabels(_ l: Link, only: Set<UInt8>? = nil) {
+        guard let c = l.control, !desiredLabels.isEmpty else { return }
+        let p = l.peripheral
+        let room = max(20, p.maximumWriteValueLength(for: .withoutResponse) - 4)
+        var custom = 0
+        for (slot, bitmap) in desiredLabels.sorted(by: { $0.key < $1.key })
+        where only?.contains(slot) ?? true {
+            guard let bitmap else {
+                p.writeValue(Data([VibeProtocol.ctrlLabelClear, slot]), for: c, type: .withoutResponse)
+                continue
+            }
+            custom += 1
+            var off = 0
+            while off < bitmap.count {
+                let end = min(off + room, bitmap.count)
+                var packet = Data([VibeProtocol.ctrlLabel, slot, UInt8(off & 0xFF), UInt8(off >> 8)])
+                packet.append(bitmap.subdata(in: off..<end))
+                p.writeValue(packet, for: c, type: .withoutResponse)
+                off = end
+                // No flow control without response; stay inside the buffer.
+                Thread.sleep(forTimeInterval: 0.005)
+            }
+        }
+        Log.ble("同步按键显示名 → \(l.name)（自定义 \(custom) 个）")
+    }
+
+    private func writeActions(_ l: Link) {
+        guard let c = l.control, !desiredActions.isEmpty else { return }
+        l.peripheral.writeValue(
+            Data([VibeProtocol.ctrlActions] + desiredActions), for: c, type: .withoutResponse)
+        Log.ble("同步按键绑定 → \(l.name)")
+    }
+
+    private func writePowerMode(_ l: Link) {
+        guard let c = l.control else { return }
         let command: UInt8
         switch desiredPowerMode {
         case .standard: command = VibeProtocol.powerModeStandard
         case .eco: command = VibeProtocol.powerModeEco
         case .ultra: command = VibeProtocol.powerModeUltra
         }
-        p.writeValue(Data([command]), for: c, type: .withoutResponse)
-        Log.ble("同步功耗模式：\(desiredPowerMode.title)")
+        l.peripheral.writeValue(Data([command]), for: c, type: .withoutResponse)
+        Log.ble("同步功耗模式 → \(l.name)：\(desiredPowerMode.title)")
     }
+
+    /// Streams a firmware image to every connected device in turn. Chunks are
+    /// paced to the negotiated MTU and written without response; each device
+    /// reboots itself once its image verifies, so success looks like a
+    /// disconnect.
+    func sendFirmware(_ image: Data) {
+        queue.async { [self] in
+            let targets = readyLinks.filter { $0.ota != nil }
+            guard !targets.isEmpty else {
+                DispatchQueue.main.async { self.onOTAFinished?("设备未连接或不支持 OTA") }
+                return
+            }
+            let total = Double(image.count * targets.count)
+            var done = 0
+            for l in targets {
+                guard let c = l.ota else { continue }
+                Log.ble("推送固件 → \(l.name)")
+                let p = l.peripheral
+                let chunk = max(20, p.maximumWriteValueLength(for: .withoutResponse))
+                p.writeValue(VibeProtocol.otaHeader(length: image.count), for: c, type: .withoutResponse)
+                var sent = 0
+                while sent < image.count {
+                    let end = min(sent + chunk, image.count)
+                    p.writeValue(image.subdata(in: sent..<end), for: c, type: .withoutResponse)
+                    done += end - sent
+                    sent = end
+                    let progress = Double(done) / total
+                    DispatchQueue.main.async { self.onOTAProgress?(progress) }
+                    // Without response there is no flow control, so pace the
+                    // writes to stay inside the controller's buffer.
+                    Thread.sleep(forTimeInterval: 0.006)
+                }
+            }
+            DispatchQueue.main.async { self.onOTAFinished?(nil) }
+        }
+    }
+
+    // MARK: - Connection management
 
     func reconnect() {
         queue.async { [self] in
             handoffUntil = .distantPast
-            if let p = peripheral { central.cancelPeripheralConnection(p) }
-            peripheral = nil
-            control = nil
-            audioCharacteristic = nil
-            eventCharacteristic = nil
-            audioNotifyReady = false
-            eventNotifyReady = false
-            lastSeq = nil
-            update {
-                $0.connected = false
-                $0.subscribed = false
-                $0.streaming = false
-                $0.handoffPaused = false
-            }
+            releasedUntil.removeAll()
+            for l in links.values { central.cancelPeripheralConnection(l.peripheral) }
+            links.removeAll()
+            endAudio()
+            publish()
             scan()
         }
     }
 
-    /// Release the device so another Mac running Bridge can take over.
-    /// The short pause prevents this Mac from immediately winning the scan
-    /// race again while the user changes computers.
+    /// Release every device so another Mac running Bridge can take over.
+    /// The pause keeps this Mac from immediately winning the scan race again
+    /// while the user changes computers.
     func releaseForHandoff(seconds: TimeInterval = 45) {
         queue.async { [self] in
             let pause = max(10, seconds)
             handoffUntil = Date().addingTimeInterval(pause)
-            let releaseUntil = handoffUntil
+            let until = handoffUntil
             central.stopScan()
-            if let p = peripheral { central.cancelPeripheralConnection(p) }
-            peripheral = nil
-            control = nil
-            audioCharacteristic = nil
-            eventCharacteristic = nil
-            audioNotifyReady = false
-            eventNotifyReady = false
-            lastSeq = nil
-            update {
-                $0.connected = false
-                $0.subscribed = false
-                $0.streaming = false
-                $0.handoffPaused = true
-                $0.phase = "已释放，等待另一台 Mac"
-            }
-            Log.ble("已释放设备，\(Int(pause)) 秒内等待另一台 Mac 接管")
+            for l in links.values { central.cancelPeripheralConnection(l.peripheral) }
+            links.removeAll()
+            endAudio()
+            publish()
+            Log.ble("已释放全部设备，\(Int(pause)) 秒内等待另一台 Mac 接管")
             queue.asyncAfter(deadline: .now() + pause) { [weak self] in
-                guard let self, self.handoffUntil == releaseUntil else { return }
+                guard let self, self.handoffUntil == until else { return }
                 self.handoffUntil = .distantPast
-                self.update { $0.handoffPaused = false; $0.phase = "准备自动连接" }
+                self.publish()
                 if self.autoReconnect { self.scan() }
                 Log.ble("切换等待结束，恢复自动连接")
             }
         }
     }
 
+    /// Hands one device to another Mac: the one whose button asked for it.
+    /// Every other device stays connected here.
+    func release(_ id: UUID, seconds: TimeInterval = 45) {
+        queue.async { [self] in
+            guard let l = links[id] else { return }
+            releasedUntil[id] = Date().addingTimeInterval(seconds)
+            central.cancelPeripheralConnection(l.peripheral)
+            drop(id)
+            Log.ble("已把 \(l.name) 交给另一台 Mac，\(Int(seconds)) 秒内不再连接它")
+            queue.asyncAfter(deadline: .now() + seconds) { [weak self] in
+                guard let self else { return }
+                self.releasedUntil[id] = nil
+                // Discovery reports a peripheral once per scan, so restart it
+                // or the device would never be seen again.
+                if self.autoReconnect { self.scan() }
+            }
+        }
+    }
+
+    /// Use this device now. If another Mac has it, the device drops that Mac
+    /// and follows this one — whoever connects last gets it.
+    func use(_ id: UUID) {
+        queue.async { [self] in
+            guard links[id] == nil, let p = peripherals[id] else { return }
+            releasedUntil[id] = nil
+            Log.ble("选择使用 \(seen[id]?.name ?? p.name ?? "?")")
+            adopt(p, name: seen[id]?.name ?? p.name ?? "FoloVibe", force: true)
+        }
+    }
+
     func resumeAfterHandoff() {
         queue.async { [self] in
             handoffUntil = .distantPast
-            update { $0.handoffPaused = false; $0.phase = "准备连接" }
+            releasedUntil.removeAll()
+            publish()
             scan()
         }
     }
 
     private var isHandoffPaused: Bool { Date() < handoffUntil }
 
-    /// macOS can restore a previous BLE connection on its own without telling
-    /// the app. The device then stops advertising, so scanning alone never finds
-    /// it again and the link looks stuck until something power-cycles it. Poll
-    /// for a system-held connection while scanning and take it over.
+    private func isReleased(_ id: UUID) -> Bool {
+        if let until = releasedUntil[id], Date() < until { return true }
+        return false
+    }
 
-    /// `central.connect` never times out. When the stored connection record is
-    /// stale — the device rebooted, or the system released the link without
-    /// telling us — no callback ever arrives and the state machine sits in
-    /// "connecting" forever: no scan, no reclaim, no log. Give every attempt a
-    /// deadline and fall back to scanning.
-    private func armConnectWatchdog(_ p: CBPeripheral) {
-        connectTimer?.cancel()
-        let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now() + 8)
-        timer.setEventHandler { [weak self] in
-            guard let self, self.peripheral === p, !self.snap.connected else { return }
-            Log.ble("连接超时，回到扫描")
-            self.central.cancelPeripheralConnection(p)
-            self.peripheral = nil
-            self.scan()
+    private func matches(_ name: String?) -> Bool {
+        // A connection the system restored on its own may come back nameless.
+        guard let name else { return true }
+        return name.hasPrefix(prefix)
+    }
+
+    private func adopt(_ p: CBPeripheral, name: String, force: Bool = false) {
+        guard links[p.identifier] == nil else { return }
+        guard force || (!isReleased(p.identifier) && !isHandoffPaused) else { return }
+        let l = Link(p, name: name)
+        links[p.identifier] = l
+        p.delegate = self
+        central.connect(p)
+        publish()
+    }
+
+    private func drop(_ id: UUID) {
+        links[id] = nil
+        if audioOwner == id { endAudio() }
+        publish()
+    }
+
+    private func scan() {
+        guard !isHandoffPaused else {
+            publish()
+            return
         }
-        timer.resume()
-        connectTimer = timer
+        guard central.state == .poweredOn else { return }
+        let uuid = CBUUID(string: VibeProtocol.serviceUUID)
+        // macOS can restore a BLE connection on its own without telling the
+        // app. The device then stops advertising, so scanning alone would never
+        // find it again. Take those over first.
+        for p in central.retrieveConnectedPeripherals(withServices: [uuid]) where matches(p.name) {
+            if links[p.identifier] == nil { Log.ble("接管系统已保持的连接 \(p.name ?? "?")") }
+            adopt(p, name: p.name ?? "FoloVibe")
+        }
+        // Keep scanning even with devices connected: another one may turn up.
+        central.stopScan()
+        central.scanForPeripherals(
+            withServices: [uuid], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+        Log.ble("扫描 \(prefix)*（已连接 \(readyLinks.count) 台）")
+        startMaintenance()
+        publish()
     }
 
-    private func stopConnectWatchdog() {
-        connectTimer?.cancel()
-        connectTimer = nil
-    }
-
-    private func startReclaim() {
-        reclaimTimer?.cancel()
+    /// One timer does the periodic chores for every link: expire connection
+    /// attempts that will never answer, and pick up connections the system
+    /// restored behind our back.
+    private func startMaintenance() {
+        guard maintenance == nil else { return }
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now() + 3, repeating: 3)
         timer.setEventHandler { [weak self] in
-            guard let self, self.peripheral == nil, self.central.state == .poweredOn else { return }
+            guard let self, self.central.state == .poweredOn else { return }
+            let now = Date()
+            for l in self.links.values where !l.connected && now > l.connectDeadline {
+                Log.ble("连接 \(l.name) 超时，重新扫描")
+                self.central.cancelPeripheralConnection(l.peripheral)
+                self.drop(l.peripheral.identifier)
+                self.scan()
+            }
+            self.publish()
+            guard !self.isHandoffPaused else { return }
             let uuid = CBUUID(string: VibeProtocol.serviceUUID)
-            guard let held = self.central.retrieveConnectedPeripherals(withServices: [uuid]).first
-            else { return }
-            Log.ble("接管系统已保持的连接 \(held.name ?? "?")")
-            self.central.stopScan()
-            self.peripheral = held
-            held.delegate = self
-            self.update { $0.phase = "连接中"; $0.deviceName = held.name ?? $0.deviceName }
-            self.central.connect(held)
-            self.armConnectWatchdog(held)
+            for p in self.central.retrieveConnectedPeripherals(withServices: [uuid])
+            where self.links[p.identifier] == nil && self.matches(p.name) {
+                Log.ble("接管系统已保持的连接 \(p.name ?? "?")")
+                self.adopt(p, name: p.name ?? "FoloVibe")
+            }
         }
         timer.resume()
-        reclaimTimer = timer
+        maintenance = timer
     }
 
-    private func stopReclaim() {
-        reclaimTimer?.cancel()
-        reclaimTimer = nil
+    private func endAudio() {
+        guard audioOwner != nil else { return }
+        audioOwner = nil
+        mic.finish()
+        update { $0.streaming = false }
     }
 
     private func update(_ change: (inout Snapshot) -> Void) {
@@ -259,96 +399,122 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         lock.unlock()
     }
 
-    private func scan() {
-        guard !isHandoffPaused else {
-            update { $0.handoffPaused = true; $0.phase = "已释放，等待另一台 Mac" }
-            return
+    /// Rebuilds the aggregate fields from the links.
+    private func publish() {
+        let all = links.values.sorted { $0.name < $1.name }
+        let ready = all.filter(\.ready)
+        var devices = all.map {
+            Device(id: $0.peripheral.identifier, name: $0.name, rssi: $0.rssi,
+                   firmwareVersion: $0.firmware, ready: $0.ready, connected: $0.connected,
+                   busyElsewhere: false)
         }
-        guard central.state == .poweredOn else { return }
-        let uuid = CBUUID(string: VibeProtocol.serviceUUID)
-        if let p = central.retrieveConnectedPeripherals(withServices: [uuid]).first {
-            peripheral = p
-            p.delegate = self
-            update { $0.phase = "连接中"; $0.deviceName = p.name ?? $0.deviceName }
-            central.connect(p)
-            armConnectWatchdog(p)
-            return
+        // Advertising stops once a device is connected anywhere, so a device
+        // missing for a while has either gone or been taken by another Mac.
+        let fresh = Date().addingTimeInterval(-30)
+        for (id, s) in seen where links[id] == nil && s.at > fresh {
+            devices.append(Device(id: id, name: s.name, rssi: s.rssi, firmwareVersion: "",
+                                  ready: false, connected: false, busyElsewhere: s.busy))
         }
-        update { $0.phase = "扫描中" }
-        Log.ble("扫描 \(prefix)*")
-        central.scanForPeripherals(withServices: [uuid])
-        startReclaim()
+        devices.sort { $0.name == $1.name ? $0.id.uuidString < $1.id.uuidString : $0.name < $1.name }
+        let paused = isHandoffPaused
+        update {
+            $0.devices = devices
+            $0.connected = all.contains(where: \.connected)
+            $0.subscribed = !ready.isEmpty
+            $0.deviceName = ready.isEmpty ? (all.first?.name ?? "—") : ready.map(\.name).joined(separator: "、")
+            $0.rssi = ready.first?.rssi
+            $0.firmwareVersion = ready.map(\.firmware).filter { !$0.isEmpty }.joined(separator: "、")
+            $0.handoffPaused = paused
+            if paused {
+                $0.phase = "已释放，等待另一台 Mac"
+            } else if ready.count > 1 {
+                $0.phase = "已就绪（\(ready.count) 台）"
+            } else if ready.count == 1 {
+                $0.phase = "已就绪"
+            } else if !all.isEmpty {
+                $0.phase = "连接中"
+            } else {
+                $0.phase = $0.bluetoothOn ? "扫描中" : "蓝牙关闭"
+            }
+        }
     }
+
+    // MARK: - CBCentralManagerDelegate
 
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         let on = central.state == .poweredOn
-        update { $0.bluetoothOn = on; $0.phase = on ? "扫描中" : "蓝牙关闭" }
-        if on { scan() }
-        else { Log.ble("系统蓝牙未开 (\(central.state.rawValue))") }
+        update { $0.bluetoothOn = on }
+        if on { scan() } else {
+            links.removeAll()
+            endAudio()
+            publish()
+            Log.ble("系统蓝牙未开 (\(central.state.rawValue))")
+        }
     }
 
     func centralManager(
         _ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
         advertisementData: [String: Any], rssi RSSI: NSNumber
     ) {
-        let name = peripheral.name ?? advertisementData[CBAdvertisementDataLocalNameKey] as? String
+        // The advertised name first: macOS caches peripheral.name per device and
+        // keeps serving the old one after a firmware update renames it.
+        let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String ?? peripheral.name
         guard let name, name.hasPrefix(prefix) else { return }
-        central.stopScan()
-        self.peripheral = peripheral
-        peripheral.delegate = self
-        update {
-            $0.phase = "连接中"
-            $0.deviceName = name
-            $0.rssi = RSSI.intValue
+        let id = peripheral.identifier
+        if let l = links[id], l.name != name {
+            l.name = name
+            publish()
         }
+        // Firmware that predates handover never advertises while connected, so
+        // a missing flag means free.
+        let mfg = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data
+        let busy = mfg.map { $0.count >= 3 && $0[0] == 0xFF && $0[1] == 0xFF && $0[2] == 1 } ?? false
+        let changed = seen[id]?.busy != busy
+        seen[id] = (name, RSSI.intValue, busy, Date())
+        peripherals[id] = peripheral
+        if changed {
+            publish()
+            if busy && links[id] == nil { Log.ble("\(name) 正被另一台主机使用，本机不自动连接（可在设置里点「使用」）") }
+        }
+        // Only a free device is picked up automatically. Taking one from
+        // another Mac is the user's call, or two Macs would pass it back and
+        // forth for ever.
+        guard links[id] == nil, !busy, !isReleased(id) else { return }
         Log.ble("发现 \(name) RSSI \(RSSI)")
-        central.connect(peripheral)
+        adopt(peripheral, name: name)
+        links[id]?.rssi = RSSI.intValue
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        stopReclaim()
-        stopConnectWatchdog()
-        if isHandoffPaused {
+        guard let l = links[peripheral.identifier], !isHandoffPaused, !isReleased(peripheral.identifier)
+        else {
             central.cancelPeripheralConnection(peripheral)
             return
         }
-        audioCharacteristic = nil
-        eventCharacteristic = nil
-        audioNotifyReady = false
-        eventNotifyReady = false
-        control = nil
-        update { $0.connected = true; $0.phase = "发现服务"; $0.deviceName = peripheral.name ?? $0.deviceName }
-        Log.ble("已连接 \(peripheral.name ?? "?")")
+        l.connected = true
+        publish()
+        Log.ble("已连接 \(l.name)")
         peripheral.discoverServices([CBUUID(string: VibeProtocol.serviceUUID)])
     }
 
     func centralManager(
         _ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?
     ) {
-        stopConnectWatchdog()
-        update { $0.connected = false; $0.phase = "连接失败" }
-        Log.ble("连接失败 \(error?.localizedDescription ?? "")")
+        Log.ble("连接失败 \(peripheral.name ?? "?") \(error?.localizedDescription ?? "")")
+        drop(peripheral.identifier)
         if autoReconnect && !isHandoffPaused { scan() }
     }
 
     func centralManager(
         _ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?
     ) {
-        update {
-            $0.connected = false
-            $0.subscribed = false
-            $0.streaming = false
-            $0.phase = "已断开"
-        }
-        control = nil
-        audioCharacteristic = nil
-        eventCharacteristic = nil
-        audioNotifyReady = false
-        eventNotifyReady = false
-        lastSeq = nil
-        Log.ble("断开 \(error?.localizedDescription ?? "正常")")
+        let name = links[peripheral.identifier]?.name ?? peripheral.name ?? "?"
+        drop(peripheral.identifier)
+        Log.ble("断开 \(name) \(error?.localizedDescription ?? "正常")")
         if autoReconnect && !isHandoffPaused { scan() }
     }
+
+    // MARK: - CBPeripheralDelegate
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let error {
@@ -374,45 +540,51 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     func peripheral(
         _ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?
     ) {
-        audioNotifyReady = false
-        eventNotifyReady = false
+        guard let l = links[peripheral.identifier] else { return }
+        l.audioReady = false
+        l.eventReady = false
         for ch in service.characteristics ?? [] {
             if ch.uuid == CBUUID(string: VibeProtocol.audioUUID) {
-                audioCharacteristic = ch
+                l.audio = ch
             } else if ch.uuid == CBUUID(string: VibeProtocol.eventUUID) {
-                eventCharacteristic = ch
+                l.event = ch
             } else if ch.uuid == CBUUID(string: VibeProtocol.controlUUID) {
-                control = ch
+                l.control = ch
             } else if ch.uuid == CBUUID(string: VibeProtocol.versionUUID) {
-                versionCharacteristic = ch
                 peripheral.readValue(for: ch)
             } else if ch.uuid == CBUUID(string: VibeProtocol.otaUUID) {
-                otaCharacteristic = ch
+                l.ota = ch
             }
         }
+        // Claim the device before anything else. If another Mac has it, the
+        // device only switches once asked, and it must switch before the
+        // notifications below are enabled or they would land on the old link.
+        if let c = l.control {
+            peripheral.writeValue(Data([VibeProtocol.ctrlClaim]), for: c, type: .withResponse)
+        }
         let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse) + 3
-        update { $0.subscribed = false; $0.phase = "开启通知"; $0.mtu = mtu }
-        Log.ble("发现音频/事件特征，按顺序开启通知，约 MTU \(mtu)")
-        enableNextNotify()
+        update { $0.mtu = mtu }
+        Log.ble("\(l.name)：发现音频/事件特征，按顺序开启通知，约 MTU \(mtu)")
+        enableNextNotify(l)
     }
 
     /// CoreBluetooth serializes CCCD writes less reliably when two notify
     /// requests are issued back-to-back. Wait for the first state callback
     /// before enabling the second one; otherwise the firmware may receive
     /// audio notifications but never receive button-event notifications.
-    private func enableNextNotify() {
-        guard let p = peripheral else { return }
-        if !audioNotifyReady, let ch = audioCharacteristic {
-            Log.ble("开启音频通知")
+    private func enableNextNotify(_ l: Link) {
+        let p = l.peripheral
+        if !l.audioReady, let ch = l.audio {
             p.setNotifyValue(true, for: ch)
-        } else if !eventNotifyReady, let ch = eventCharacteristic {
-            Log.ble("开启按键事件通知")
+        } else if !l.eventReady, let ch = l.event {
             p.setNotifyValue(true, for: ch)
-        } else if audioNotifyReady && eventNotifyReady {
-            update { $0.subscribed = true; $0.phase = "已就绪" }
-            Log.ble("音频/按键事件通知均已开启")
-            writePowerMode()
-            writeActionsLocked()
+        } else if l.audioReady && l.eventReady {
+            l.ready = true
+            publish()
+            Log.ble("\(l.name) 已就绪（共 \(readyLinks.count) 台）")
+            writePowerMode(l)
+            writeActions(l)
+            writeLabels(l)
             p.readRSSI()
         }
     }
@@ -422,90 +594,91 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         didUpdateNotificationStateFor characteristic: CBCharacteristic,
         error: Error?
     ) {
+        guard let l = links[peripheral.identifier] else { return }
         if let error {
-            update { $0.subscribed = false; $0.phase = "通知失败" }
-            Log.ble("通知开启失败 \(characteristic.uuid): \(error.localizedDescription)")
+            Log.ble("\(l.name) 通知开启失败 \(characteristic.uuid): \(error.localizedDescription)")
             return
         }
         guard characteristic.isNotifying else {
-            update { $0.subscribed = false; $0.phase = "通知未开启" }
-            Log.ble("通知未开启 \(characteristic.uuid)")
+            Log.ble("\(l.name) 通知未开启 \(characteristic.uuid)")
             return
         }
         if characteristic.uuid == CBUUID(string: VibeProtocol.audioUUID) {
-            audioNotifyReady = true
-            Log.ble("音频通知已开启")
+            l.audioReady = true
         } else if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID) {
-            eventNotifyReady = true
-            Log.ble("按键事件通知已开启")
+            l.eventReady = true
         }
-        enableNextNotify()
+        enableNextNotify(l)
     }
 
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
-        update { $0.rssi = RSSI.intValue }
+        links[peripheral.identifier]?.rssi = RSSI.intValue
+        publish()
     }
 
     func peripheral(
         _ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?
     ) {
-        guard let data = characteristic.value, error == nil else { return }
+        guard let data = characteristic.value, error == nil,
+              let l = links[peripheral.identifier] else { return }
         if characteristic.uuid == CBUUID(string: VibeProtocol.versionUUID) {
-            let version = String(decoding: data, as: UTF8.self)
-            update { $0.firmwareVersion = version }
-            Log.ble("设备固件 \(version)")
-            DispatchQueue.main.async { self.onFirmwareVersion?(version) }
+            l.firmware = String(decoding: data, as: UTF8.self)
+            publish()
+            Log.ble("\(l.name) 设备固件 \(l.firmware)")
+            let summary = snapshot.firmwareVersion
+            DispatchQueue.main.async { self.onFirmwareVersion?(summary) }
             return
         }
         if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
             let byte = data.first, let gesture = GestureEvent.parse(byte)
         {
             update { $0.lastEvent = gesture.title }
-            Log.ble("手势 \(gesture.title)")
-            DispatchQueue.main.async { self.onGesture?(gesture) }
+            Log.ble("\(l.name) 手势 \(gesture.title)")
+            let id = peripheral.identifier
+            DispatchQueue.main.async { self.onGesture?(gesture, id) }
             return
         }
         // Older firmware still speaks the semantic events.
         if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
             let byte = data.first, let ev = VibeEvent(rawValue: byte)
         {
-            if ev == .start || ev == .typelessTranslate || ev == .typelessAsk || ev == .doubaoStart {
-                update { $0.streaming = true }
-            }
-            if ev == .stop || ev == .doubaoStop || ev == .doubaoStopAndSend {
-                update { $0.streaming = false }
-                mic.finish()
-            }
+            if ev == .stop || ev == .doubaoStop || ev == .doubaoStopAndSend { endAudio() }
             update { $0.lastEvent = ev.title }
             Log.ble("事件 \(ev.title)")
             DispatchQueue.main.async { self.onEvent?(ev) }
             return
         }
         if characteristic.uuid == CBUUID(string: VibeProtocol.audioUUID) {
-            handleAudio(data)
+            handleAudio(data, from: l)
         }
     }
 
-    private func handleAudio(_ data: Data) {
+    private func handleAudio(_ data: Data, from l: Link) {
+        let id = l.peripheral.identifier
+        if let owner = audioOwner, owner != id { return }
         guard let pkt = AudioPacket.parse(data) else {
             update { $0.lost += 1 }
             return
         }
         let hex = data.prefix(8).map { String(format: "%02X", $0) }.joined(separator: " ")
         if pkt.eos {
-            update { $0.streaming = false; $0.lastPacketHex = hex + " EOS" }
-            lastSeq = nil
-            mic.finish()
+            update { $0.lastPacketHex = hex + " EOS" }
+            l.lastSeq = nil
+            if audioOwner == id { endAudio() }
             return
         }
-        if let last = lastSeq {
+        if audioOwner == nil {
+            audioOwner = id
+            if links.count > 1 { Log.ble("\(l.name) 开始说话，其它设备的声音暂不采用") }
+        }
+        if let last = l.lastSeq {
             let gap = UInt16(truncatingIfNeeded: pkt.seq &- last &- 1)
             if gap > 0 && gap < 80 {
                 update { $0.lost += Int(gap) }
                 for _ in 0..<gap { audio.push([Int16](repeating: 0, count: 320)) }
             }
         }
-        lastSeq = pkt.seq
+        l.lastSeq = pkt.seq
         let pcm = IMAADPCM.decode(pkt.adpcm, predictor: pkt.predictor, stepIndex: pkt.stepIndex)
         audio.push(pcm)
         mic.append(pcm)

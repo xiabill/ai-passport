@@ -1,4 +1,5 @@
 #include "vibe_ble.h"
+#include "vibe_ui.h"
 #include "vibe_app.h"
 #include "vibe_ota.h"
 
@@ -51,6 +52,9 @@ static const ble_uuid128_t s_ota_uuid = BLE_UUID128_INIT(
 static uint16_t s_audio_handle;
 static uint16_t s_event_handle;
 static volatile uint16_t s_conn = BLE_HS_CONN_HANDLE_NONE;
+// A second connection waiting to claim the device; see VIBE_CTRL_CLAIM.
+static volatile uint16_t s_pending = BLE_HS_CONN_HANDLE_NONE;
+static esp_timer_handle_t s_claim_timer;
 static uint8_t s_addr_type;
 static bool s_audio_sub;
 static bool s_event_sub;
@@ -68,6 +72,7 @@ static bool s_radio_down;
 #define ECO_ADV_GRACE_US (60 * 1000000LL)
 
 static int gap_event(struct ble_gap_event *event, void *arg);
+static void take_over(uint16_t handle);
 static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
                       struct ble_gatt_access_ctxt *ctxt, void *arg);
 
@@ -114,9 +119,18 @@ static const struct ble_gatt_svc_def s_svcs[] = {
 static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
                       struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-    (void)conn_handle;
     (void)attr_handle;
     (void)arg;
+    // During a handover the outgoing Mac can still land a write or two before
+    // its link is gone. Only the current one gets to steer the device.
+    if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR && conn_handle != s_conn) {
+        uint8_t v = 0;
+        if (conn_handle == s_pending && OS_MBUF_PKTLEN(ctxt->om) >= 1) {
+            os_mbuf_copydata(ctxt->om, 0, 1, &v);
+            if (v == VIBE_CTRL_CLAIM) take_over(conn_handle);
+        }
+        return 0;
+    }
     if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR) {
         if (ble_uuid_cmp(ctxt->chr->uuid, &s_ver_uuid.u) == 0) {
             const esp_app_desc_t *desc = esp_app_get_description();
@@ -147,6 +161,18 @@ static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
             if (n > VIBE_GESTURE_COUNT) n = VIBE_GESTURE_COUNT;
             os_mbuf_copydata(ctxt->om, 1, n, actions);
             vibe_app_on_actions(actions, n);
+        } else if (v == VIBE_CTRL_LABEL && len >= 4) {
+            uint8_t hdr[3];
+            uint8_t data[200];
+            os_mbuf_copydata(ctxt->om, 1, 3, hdr);
+            uint16_t n = len - 4;
+            if (n > sizeof(data)) n = sizeof(data);
+            os_mbuf_copydata(ctxt->om, 4, n, data);
+            vibe_ui_label_chunk(hdr[0], (uint16_t)(hdr[1] | (hdr[2] << 8)), data, n);
+        } else if (v == VIBE_CTRL_LABEL_CLEAR && len >= 2) {
+            uint8_t slot = 0;
+            os_mbuf_copydata(ctxt->om, 1, 1, &slot);
+            vibe_ui_label_clear(slot);
         } else if (v == VIBE_CTRL_POWER_MODE_STANDARD || v == VIBE_CTRL_POWER_MODE_ECO ||
                    v == VIBE_CTRL_POWER_MODE_ULTRA) {
             vibe_app_on_power_mode((uint8_t)(v - VIBE_CTRL_POWER_MODE_STANDARD));
@@ -158,8 +184,17 @@ static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
     return BLE_ATT_ERR_READ_NOT_PERMITTED;
 }
 
+// Manufacturer data in the scan response: the test company ID, then one byte
+// saying whether some Mac is using the device. A Mac only connects to a free
+// device on its own; a busy one is taken over only when the user asks.
+#define VIBE_ADV_COMPANY 0xFFFF
+
 static int advertise(void)
 {
+    // Called again on every connect and disconnect to refresh the busy flag,
+    // and the fields cannot change under a running advertisement.
+    if (ble_gap_adv_active()) ble_gap_adv_stop();
+    const bool busy = s_conn != BLE_HS_CONN_HANDLE_NONE;
     struct ble_hs_adv_fields fields = {0};
     fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
     fields.uuids128 = (ble_uuid128_t *)&s_svc_uuid;
@@ -172,14 +207,19 @@ static int advertise(void)
     rsp.name = (const uint8_t *)s_name;
     rsp.name_len = strlen(s_name);
     rsp.name_is_complete = 1;
+    const uint8_t mfg[3] = { VIBE_ADV_COMPANY & 0xFF, VIBE_ADV_COMPANY >> 8, busy ? 1 : 0 };
+    rsp.mfg_data = mfg;
+    rsp.mfg_data_len = sizeof(mfg);
     rc = ble_gap_adv_rsp_set_fields(&rsp);
     if (rc != 0) return rc;
 
     struct ble_gap_adv_params params = {0};
     params.conn_mode = BLE_GAP_CONN_MODE_UND;
     params.disc_mode = BLE_GAP_DISC_MODE_GEN;
-    params.itvl_min = 160;  // 100 ms (0.625 ms units)
-    params.itvl_max = 240;  // 150 ms
+    // A connected device keeps advertising so another Mac can take it over,
+    // but nobody is waiting on that, so it does so at a tenth of the rate.
+    params.itvl_min = busy ? 1600 : 160;  // 1 s : 100 ms (0.625 ms units)
+    params.itvl_max = busy ? 2400 : 240;  // 1.5 s : 150 ms
     return ble_gap_adv_start(s_addr_type, NULL, BLE_HS_FOREVER, &params, gap_event,
                              NULL);
 }
@@ -188,7 +228,11 @@ static void set_name_from_addr(void)
 {
     uint8_t addr[6] = {0};
     ble_hs_id_copy_addr(s_addr_type, addr, NULL);
-    snprintf(s_name, sizeof(s_name), "FoloVibe-%02X%02X", addr[5], addr[4]);
+    // NimBLE stores the address little-endian: addr[5] and addr[4] are the
+    // vendor prefix, identical on every FoloToy board, so naming from them gave
+    // every device the same name and two of them could not be told apart. The
+    // low bytes are the part that differs from one board to the next.
+    snprintf(s_name, sizeof(s_name), "FoloVibe-%02X%02X", addr[1], addr[0]);
     ble_svc_gap_device_name_set(s_name);
     ESP_LOGI(TAG, "GAP name %s", s_name);
 }
@@ -328,13 +372,52 @@ void vibe_ble_resume_radio(void)
     }
 }
 
+static void log_peer(const char *what, uint16_t handle)
+{
+    struct ble_gap_conn_desc d;
+    if (ble_gap_conn_find(handle, &d) != 0) return;
+    const uint8_t *a = d.peer_id_addr.val;
+    ESP_LOGI(TAG, "%s handle=%u peer=%02X:%02X:%02X:%02X:%02X:%02X", what, handle,
+             a[5], a[4], a[3], a[2], a[1], a[0]);
+}
+
+// The waiting connection asked for the device: drop the current one and
+// promote it. Its notifications are enabled after this, so they land on the
+// promoted handle.
+static void take_over(uint16_t handle)
+{
+    if (handle != s_pending) return;
+    esp_timer_stop(s_claim_timer);
+    const uint16_t old = s_conn;
+    s_pending = BLE_HS_CONN_HANDLE_NONE;
+    s_conn = handle;
+    s_audio_sub = false;
+    s_event_sub = false;
+    vibe_app_on_audio_sub(false);
+    vibe_ui_labels_reset();
+    s_gear = -1;
+    apply_gear(0);
+    log_peer("claimed by", handle);
+    if (old != BLE_HS_CONN_HANDLE_NONE) ble_gap_terminate(old, BLE_ERR_REM_USER_CONN_TERM);
+    if (!s_radio_down) advertise();
+}
+
+static void claim_timeout_cb(void *arg)
+{
+    (void)arg;
+    const uint16_t h = s_pending;
+    if (h == BLE_HS_CONN_HANDLE_NONE) return;
+    ESP_LOGI(TAG, "handle=%u never claimed the device; dropping it", h);
+    ble_gap_terminate(h, BLE_ERR_REM_USER_CONN_TERM);
+}
+
 static int gap_event(struct ble_gap_event *event, void *arg)
 {
     (void)arg;
     switch (event->type) {
     case BLE_GAP_EVENT_CONNECT:
         if (event->connect.status != 0) {
-            s_conn = BLE_HS_CONN_HANDLE_NONE;
+            // A failed attempt says nothing about a link that is already up.
             if (!s_radio_down) advertise();
             return 0;
         }
@@ -342,7 +425,24 @@ static int gap_event(struct ble_gap_event *event, void *arg)
             ble_gap_terminate(event->connect.conn_handle, BLE_ERR_REM_USER_CONN_TERM);
             return 0;
         }
+        log_peer("connect", event->connect.conn_handle);
+        // Already in use: the newcomer gets a short window to claim the device
+        // and is dropped if it does not. The current Mac keeps working until
+        // then, and keeps the device if nobody asks.
+        if (s_conn != BLE_HS_CONN_HANDLE_NONE && s_conn != event->connect.conn_handle) {
+            if (s_pending != BLE_HS_CONN_HANDLE_NONE) {
+                ble_gap_terminate(s_pending, BLE_ERR_REM_USER_CONN_TERM);
+            }
+            s_pending = event->connect.conn_handle;
+            esp_timer_stop(s_claim_timer);
+            esp_timer_start_once(s_claim_timer, VIBE_CLAIM_WINDOW_MS * 1000ULL);
+            ESP_LOGI(TAG, "handle=%u waiting to claim; handle=%u keeps the device",
+                     s_pending, s_conn);
+            if (!s_radio_down) advertise();
+            return 0;
+        }
         s_conn = event->connect.conn_handle;
+        vibe_ui_labels_reset();
         s_audio_sub = false;
         s_event_sub = false;
         ble_att_set_preferred_mtu(185);
@@ -352,10 +452,18 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
         vibe_app_on_ble_link(true);
         ESP_LOGI(TAG, "connected handle=%u", s_conn);
+        if (!s_radio_down) advertise();
         return 0;
 
     case BLE_GAP_EVENT_DISCONNECT:
-        ESP_LOGI(TAG, "disconnect reason=%d", event->disconnect.reason);
+        ESP_LOGI(TAG, "disconnect handle=%u reason=%d",
+                 event->disconnect.conn.conn_handle, event->disconnect.reason);
+        if (event->disconnect.conn.conn_handle == s_pending) {
+            s_pending = BLE_HS_CONN_HANDLE_NONE;
+            esp_timer_stop(s_claim_timer);
+            return 0;
+        }
+        if (event->disconnect.conn.conn_handle != s_conn) return 0;  // the one we handed off
         s_conn = BLE_HS_CONN_HANDLE_NONE;
         s_audio_sub = false;
         s_event_sub = false;
@@ -371,6 +479,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         return 0;
 
     case BLE_GAP_EVENT_SUBSCRIBE:
+        if (event->subscribe.conn_handle != s_conn) return 0;
         if (event->subscribe.attr_handle == s_audio_handle) {
             s_audio_sub = event->subscribe.cur_notify;
             vibe_app_on_audio_sub(s_audio_sub);
@@ -386,7 +495,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         return 0;
 
     case BLE_GAP_EVENT_ADV_COMPLETE:
-        if (s_conn == BLE_HS_CONN_HANDLE_NONE && !s_adv_paused && !s_radio_down) advertise();
+        if (!s_adv_paused && !s_radio_down) advertise();
         return 0;
 
     default:
@@ -443,6 +552,13 @@ esp_err_t vibe_ble_start(void)
     strcpy(s_name, "FoloVibe");
     ble_svc_gap_device_name_set(s_name);
     ble_att_set_preferred_mtu(185);
+    if (!s_claim_timer) {
+        const esp_timer_create_args_t ct = {
+            .callback = claim_timeout_cb,
+            .name = "ble_claim",
+        };
+        esp_timer_create(&ct, &s_claim_timer);
+    }
     if (!s_idle_timer) {
         const esp_timer_create_args_t t = {
             .callback = idle_timer_cb,

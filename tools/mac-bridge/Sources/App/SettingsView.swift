@@ -41,8 +41,10 @@ struct SettingsView: View {
                     }
                 }
 
-                SurfaceCard("连接设备", subtitle: "Bridge 会自动寻找名称以此前缀开头的 Passport") {
+                SurfaceCard("连接设备", subtitle: "空闲的 Passport 会自动连上；另一台 Mac 在用的，点「使用」就切到本机") {
                     VStack(spacing: 15) {
+                        deviceList
+                        Divider()
                         SettingRow("设备名前缀", subtitle: "默认 FoloVibe") {
                             TextField("FoloVibe", text: prefixBinding)
                                 .textFieldStyle(.roundedBorder)
@@ -131,6 +133,12 @@ struct SettingsView: View {
                                             .labelsHidden()
                                             .pickerStyle(.menu)
                                             .frame(minWidth: 128)
+                                            TextField(store.current.buttons.action(key, gesture).deviceTitle,
+                                                      text: labelBinding(key, gesture))
+                                                .textFieldStyle(.roundedBorder)
+                                                .font(.caption)
+                                                .controlSize(.small)
+                                                .help("设备屏幕上显示的名字，留空用默认")
                                             if store.current.buttons.action(key, gesture) == .customKey {
                                                 Button {
                                                     model.strokeTarget = GestureSlot(key: key, gesture: gesture)
@@ -290,10 +298,70 @@ struct SettingsView: View {
         }
     }
 
+    private func labelBinding(_ key: ButtonKey, _ gesture: ButtonGesture) -> Binding<String> {
+        Binding(
+            get: { store.current.buttons.label(key, gesture) ?? "" },
+            set: { store.current.buttons.setLabel(key, gesture, $0) })
+    }
+
     private func actionBinding(_ key: ButtonKey, _ gesture: ButtonGesture) -> Binding<ButtonAction> {
         Binding(
             get: { store.current.buttons.action(key, gesture) },
             set: { store.current.buttons.set(key, gesture, $0) })
+    }
+
+    @ViewBuilder
+    private var deviceList: some View {
+        let devices = model.bleSnap.devices
+        if devices.isEmpty {
+            HStack(spacing: 8) {
+                ProgressView().controlSize(.small)
+                Text("正在寻找附近的 Passport…").font(.callout).foregroundStyle(.secondary)
+                Spacer()
+            }
+        } else {
+            VStack(spacing: 10) {
+                ForEach(devices, id: \.id) { d in
+                    HStack(spacing: 12) {
+                        Image(systemName: d.ready ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(d.ready ? .green : .secondary)
+                            .frame(width: 20)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(d.name).font(.callout.weight(.medium))
+                            Text(deviceDetail(d)).font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if d.ready {
+                            Text("使用中").font(.caption).foregroundStyle(.green)
+                        } else if d.connected {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Button("使用") { model.useDevice(d) }
+                                .buttonStyle(.bordered)
+                                .help(d.busyElsewhere
+                                    ? "它正在另一台 Mac 上使用，点这里会切换到本机"
+                                    : "连接这台设备")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func deviceDetail(_ d: BLEClient.Device) -> String {
+        var parts: [String] = []
+        if d.ready {
+            parts.append("已连接本机")
+        } else if d.connected {
+            parts.append("连接中")
+        } else if d.busyElsewhere {
+            parts.append("另一台 Mac 在用")
+        } else {
+            parts.append("空闲")
+        }
+        if let rssi = d.rssi { parts.append("信号 \(rssi)") }
+        if !d.firmwareVersion.isEmpty { parts.append(d.firmwareVersion) }
+        return parts.joined(separator: " · ")
     }
 
     private func keyRow(

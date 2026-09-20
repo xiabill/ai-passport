@@ -131,7 +131,7 @@ public struct BridgeSettings: Equatable, Codable {
         let d = BridgeSettings.default
         devicePrefix = try c.decodeIfPresent(String.self, forKey: .devicePrefix) ?? d.devicePrefix
         outputDevice = try c.decodeIfPresent(String.self, forKey: .outputDevice) ?? d.outputDevice
-talkTap = try c.decodeIfPresent(HotkeyTap.self, forKey: .talkTap) ?? d.talkTap
+        talkTap = try c.decodeIfPresent(HotkeyTap.self, forKey: .talkTap) ?? d.talkTap
         doubaoTap = try c.decodeIfPresent(HotkeyTap.self, forKey: .doubaoTap) ?? d.doubaoTap
         talkKey = try c.decodeIfPresent(String.self, forKey: .talkKey) ?? d.talkKey
         doubaoKey = try c.decodeIfPresent(String.self, forKey: .doubaoKey) ?? d.doubaoKey

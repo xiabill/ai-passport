@@ -91,7 +91,7 @@ final class AppModel: ObservableObject {
         ble.setPowerMode(settings.current.powerMode)
         appliedPowerMode = settings.current.powerMode
         ble.onEvent = { [weak self] ev in self?.handle(ev) }
-        ble.onGesture = { [weak self] g in self?.handleGesture(g) }
+        ble.onGesture = { [weak self] g, device in self?.handleGesture(g, from: device) }
         ble.onFirmwareVersion = { [weak self] v in self?.firmwareVersion = v }
         ble.onOTAProgress = { [weak self] p in self?.otaProgress = p }
         ble.onOTAFinished = { [weak self] err in
@@ -101,6 +101,7 @@ final class AppModel: ObservableObject {
             Log.sys(self.otaNote)
         }
         ble.writeActions(settings.current.buttons.actionCodes)
+        ble.writeLabels(renderedLabels())
         applyAudio()
         refreshChecks()
         followTypelessIfStranded()
@@ -372,8 +373,15 @@ final class AppModel: ObservableObject {
 
     /// The device reports which button was pressed and how; the binding decides
     /// what that means. Rebinding therefore never needs a firmware flash.
-    func handleGesture(_ gesture: GestureEvent) {
+    func handleGesture(_ gesture: GestureEvent, from device: UUID? = nil) {
         let action = settings.current.buttons.action(gesture.key, gesture.gesture)
+        if action == .handoff {
+            // Only the device whose button was pressed moves; any others stay.
+            lastAction = "\(gesture.title) → \(action.title)"
+            Log.key(lastAction)
+            if let device { ble.release(device) }
+            return
+        }
         let stroke = settings.current.buttons.stroke(gesture.key, gesture.gesture)
         if action == .none {
             lastAction = "\(gesture.title)（未绑定）"
@@ -398,6 +406,8 @@ final class AppModel: ObservableObject {
             KeyTap.tapClearAll()
         case .newline:
             KeyTap.tapNewline()
+        case .handoff:
+            break  // handled in handleGesture, which knows which device asked
         case .customKey:
             guard let stroke else {
                 Log.key("这个手势绑定了自定义按键，但还没录制")
@@ -457,11 +467,36 @@ final class AppModel: ObservableObject {
         KeyTap.tap(settings.current.send)
     }
 
+    /// Custom screen labels drawn here, by wire slot. Every slot is present so a
+    /// label removed in settings is cleared on the device too.
+    private func renderedLabels() -> [UInt8: Data?] {
+        var out = [UInt8: Data?]()
+        for key in ButtonKey.allCases {
+            for gesture in ButtonGesture.allCases {
+                let slot = ButtonMap.wireSlot(key, gesture)
+                // updateValue, not subscript assignment: assigning a nil
+                // Data? through the subscript deletes the key instead of
+                // storing "no label", and the slot would never be cleared.
+                out.updateValue(settings.current.buttons.label(key, gesture).map {
+                    LabelRenderer.render($0, main: gesture == .click)
+                }, forKey: slot)
+            }
+        }
+        return out
+    }
+
+    /// Use a device now, taking it from another Mac if one has it.
+    func useDevice(_ device: BLEClient.Device) {
+        ble.use(device.id)
+    }
+
     /// True when the device runs an older build than the latest release.
     var firmwareUpdateAvailable: Bool {
-        guard let latest = updater.latest, firmwareVersion != "—", !firmwareVersion.isEmpty
-        else { return false }
-        return versionIsNewer(latest.version, than: ReleaseInfo.version(fromTag: firmwareVersion))
+        guard let latest = updater.latest else { return false }
+        return bleSnap.devices.contains {
+            !$0.firmwareVersion.isEmpty
+                && versionIsNewer(latest.version, than: ReleaseInfo.version(fromTag: $0.firmwareVersion))
+        }
     }
 
     /// Downloads the firmware from the current release and streams it to the
@@ -499,6 +534,7 @@ final class AppModel: ObservableObject {
         if appliedButtons != settings.current.buttons {
             appliedButtons = settings.current.buttons
             ble.writeActions(settings.current.buttons.actionCodes)
+            ble.writeLabels(renderedLabels())
         }
         if appliedPowerMode != settings.current.powerMode {
             appliedPowerMode = settings.current.powerMode
