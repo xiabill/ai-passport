@@ -195,6 +195,34 @@ do {
 }
 
 do {
+    // A screen label is trimmed, and blank means "use the built-in name".
+    var map = ButtonMap.default
+    map.setLabel(.up, .click, "  讯飞 ")
+    expect(map.label(.up, .click) == "讯飞", "label is trimmed")
+    map.setLabel(.up, .click, "   ")
+    expect(map.label(.up, .click) == nil, "blank label falls back to the default")
+    map.setLabel(.down, .long, "问问")
+    let round = try? JSONDecoder().decode(ButtonMap.self, from: JSONEncoder().encode(map))
+    expect(round?.label(.down, .long) == "问问", "label round trips")
+    // Wire slots follow the firmware's gesture index: button * 3 + gesture.
+    expect(ButtonMap.wireSlot(.mid, .double) == 4, "wire slot matches firmware")
+    // Configurations written before labels existed still decode.
+    let legacy = Data(#"{"bindings":{"0.0":"doubao"}}"#.utf8)
+    let old = try? JSONDecoder().decode(ButtonMap.self, from: legacy)
+    expect(old?.action(.up, .click) == .doubao && old?.label(.up, .click) == nil,
+           "legacy button map has no labels")
+}
+
+do {
+    // Handing a device to another Mac never arms the microphone, and its wire
+    // code must not collide with anything the firmware already knows.
+    expect(ButtonAction.handoff.code == 10, "handoff wire code")
+    expect(!ButtonAction.handoff.isRecording, "handoff does not record")
+    expect(Set(ButtonAction.allCases.map(\.code)).count == ButtonAction.allCases.count,
+           "every action has its own wire code")
+}
+
+do {
     expect(ButtonAction.customKey.code == 9, "custom key wire code")
     expect(!ButtonAction.customKey.isRecording, "custom key does not record")
     expect(KeyStroke.label(keyCode: 8, modifiers: KeyStroke.command, keyName: "C") == "⌘C",

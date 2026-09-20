@@ -43,6 +43,7 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
     case doubaoClear
     case newline
     case customKey
+    case handoff
 
     public var title: String {
         switch self {
@@ -56,6 +57,25 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
         case .doubaoClear: return "全选并删除"
         case .newline: return "换行（不发送）"
         case .customKey: return "自定义按键"
+        case .handoff: return "交给另一台 Mac"
+        }
+    }
+
+    /// The short name the device prints under a key, mirroring action_title()
+    /// in vibe_ui.c. Shown as the placeholder for a custom label.
+    public var deviceTitle: String {
+        switch self {
+        case .none: return "--"
+        case .typelessDictate: return "语音"
+        case .typelessTranslate: return "翻译"
+        case .typelessAsk: return "随便问"
+        case .doubao: return "豆包"
+        case .enter: return "发送"
+        case .doubaoSelectAll: return "全选"
+        case .doubaoClear: return "删除"
+        case .newline: return "换行"
+        case .customKey: return "自定"
+        case .handoff: return "切换"
         }
     }
 
@@ -65,7 +85,8 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
     public var isRecording: Bool {
         switch self {
         case .typelessDictate, .typelessTranslate, .typelessAsk, .doubao: return true
-        case .none, .enter, .doubaoSelectAll, .doubaoClear, .newline, .customKey: return false
+        case .none, .enter, .doubaoSelectAll, .doubaoClear, .newline, .customKey, .handoff:
+            return false
         }
     }
 
@@ -83,6 +104,7 @@ public enum ButtonAction: String, CaseIterable, Codable, Hashable {
         case .doubaoClear: return 7
         case .newline: return 8
         case .customKey: return 9
+        case .handoff: return 10
         }
     }
 
@@ -105,15 +127,20 @@ public struct ButtonMap: Codable, Equatable {
     private var bindings: [String: ButtonAction]
     /// Only meaningful for slots bound to `.customKey`.
     private var strokes: [String: KeyStroke]
+    /// What the device screen says for a gesture, when the built-in name will
+    /// not do — a different input method behind the same action, say.
+    private var labels: [String: String]
 
     public init(bindings: [String: ButtonAction] = [:],
-                strokes: [String: KeyStroke] = [:]) {
+                strokes: [String: KeyStroke] = [:],
+                labels: [String: String] = [:]) {
         self.bindings = bindings
         self.strokes = strokes
+        self.labels = labels
     }
 
     private enum CodingKeys: String, CodingKey {
-        case bindings, strokes
+        case bindings, strokes, labels
     }
 
     /// Configurations written before custom keys existed have no `strokes`.
@@ -121,6 +148,23 @@ public struct ButtonMap: Codable, Equatable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         bindings = try c.decodeIfPresent([String: ButtonAction].self, forKey: .bindings) ?? [:]
         strokes = try c.decodeIfPresent([String: KeyStroke].self, forKey: .strokes) ?? [:]
+        labels = try c.decodeIfPresent([String: String].self, forKey: .labels) ?? [:]
+    }
+
+    /// The custom screen label, or nil to use the built-in name.
+    public func label(_ key: ButtonKey, _ gesture: ButtonGesture) -> String? {
+        let text = labels[Self.slot(key, gesture)]?.trimmingCharacters(in: .whitespaces) ?? ""
+        return text.isEmpty ? nil : text
+    }
+
+    public mutating func setLabel(_ key: ButtonKey, _ gesture: ButtonGesture, _ text: String?) {
+        let trimmed = text?.trimmingCharacters(in: .whitespaces) ?? ""
+        labels[Self.slot(key, gesture)] = trimmed.isEmpty ? nil : trimmed
+    }
+
+    /// Wire slot for a gesture: button * 3 + gesture, as the firmware counts.
+    public static func wireSlot(_ key: ButtonKey, _ gesture: ButtonGesture) -> UInt8 {
+        UInt8(key.rawValue * 3 + gesture.rawValue)
     }
 
     public func stroke(_ key: ButtonKey, _ gesture: ButtonGesture) -> KeyStroke? {
