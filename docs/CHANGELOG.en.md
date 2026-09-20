@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- Fixed "the app is damaged" on other Macs: without a stable signing identity the build skipped signing and shipped a bundle with no CodeResources; it now ad-hoc signs the bundle and verifies the result.
 - Rebuilt the device screen: a layered layout whose centre changes with state (ring, spinner, Bluetooth glyph, or a full-width waveform with a timer), and key cards that state click, double click and long press; adds a 24px hero font, raises the LVGL pool to 64KB and the screenshot task stack to 8KB.
 - One Mac can connect to several devices at once and use any of them; audio belongs to whichever started talking first. Settings lists every device in range and which one is in use.
 - Handover is now deliberate: a connected device keeps advertising flagged as in use, and a new connection must claim it within three seconds or be dropped.
