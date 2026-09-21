@@ -39,6 +39,12 @@ extern "C" {
 
 // Control characteristic values >= 0x80 are Bridge commands. Values 0..3
 // remain reserved for Typeless state feedback.
+// Sent on the event channel to the Mac that is losing the device, right
+// before its link is cut, so it can say what happened instead of reporting a
+// bare disconnect. Outside the gesture range (0x20..0x2B) and the legacy
+// events (1..11).
+#define VIBE_EV_HANDED_OVER 0x7EU
+
 #define VIBE_CTRL_POWER_MODE_STANDARD 0x80U
 #define VIBE_CTRL_POWER_MODE_ECO      0x81U
 #define VIBE_CTRL_POWER_MODE_ULTRA    0x82U
@@ -56,7 +62,10 @@ extern "C" {
 // that connects without asking (an old Bridge, a phone, the OS reconnecting
 // on its own) is dropped instead of silently stealing the device.
 #define VIBE_CTRL_CLAIM       0x95U
-#define VIBE_CLAIM_WINDOW_MS  3000U
+// Twenty seconds, not three: a Mac needs four to six just to discover the
+// service and its characteristics before it can ask for anything, so a short
+// window dropped every newcomer before it could speak.
+#define VIBE_CLAIM_WINDOW_MS  20000U
 #define VIBE_LABEL_MAIN_W 64U
 #define VIBE_LABEL_MAIN_H 20U
 #define VIBE_LABEL_ALT_W  44U

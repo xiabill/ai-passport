@@ -30,6 +30,17 @@ struct StatusView: View {
                             .help("更多设备连接操作")
                         }))
 
+                if !model.handoffNotice.isEmpty {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.left.arrow.right.circle.fill")
+                            .foregroundStyle(.blue)
+                        Text(model.handoffNotice).font(.callout)
+                        Spacer()
+                    }
+                    .padding(10)
+                    .background(Color.blue.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
+                }
+
                 SetupGuideView(model: model, compactWhenReady: true)
                 connectionCard
 

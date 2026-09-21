@@ -389,6 +389,7 @@ static void take_over(uint16_t handle)
     if (handle != s_pending) return;
     esp_timer_stop(s_claim_timer);
     const uint16_t old = s_conn;
+    const bool old_event_sub = s_event_sub;
     s_pending = BLE_HS_CONN_HANDLE_NONE;
     s_conn = handle;
     s_audio_sub = false;
@@ -398,7 +399,17 @@ static void take_over(uint16_t handle)
     s_gear = -1;
     apply_gear(0);
     log_peer("claimed by", handle);
-    if (old != BLE_HS_CONN_HANDLE_NONE) ble_gap_terminate(old, BLE_ERR_REM_USER_CONN_TERM);
+    if (old != BLE_HS_CONN_HANDLE_NONE) {
+        // Tell the Mac losing the device before cutting it off, so it can say
+        // where the device went rather than showing a bare disconnect.
+        if (old_event_sub) {
+            uint8_t ev = VIBE_EV_HANDED_OVER;
+            struct os_mbuf *om = ble_hs_mbuf_from_flat(&ev, 1);
+            if (om) ble_gatts_notify_custom(old, s_event_handle, om);
+        }
+        ble_gap_terminate(old, BLE_ERR_REM_USER_CONN_TERM);
+    }
+    vibe_ui_flash("已切换到另一台 Mac");
     if (!s_radio_down) advertise();
 }
 

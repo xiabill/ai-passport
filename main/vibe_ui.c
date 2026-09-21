@@ -81,6 +81,8 @@ static vibe_ui_model_t s_live;
 static int64_t s_rec_since_us;
 static int64_t s_batt_at_us;
 static bool s_was_recording;
+static char s_flash[40];
+static int64_t s_flash_until_us;
 
 // --- small helpers ---------------------------------------------------------
 // LVGL invalidates on every setter call, even when nothing changes. The
@@ -289,7 +291,9 @@ static void paint_idle_hero(const vibe_ui_model_t *m)
     set_text(s_title, title);
 
     char sub[48];
-    if (m->charging && m->charge_minutes > 0) {
+    if (s_flash[0] && esp_timer_get_time() < s_flash_until_us) {
+        snprintf(sub, sizeof(sub), "%s", s_flash);
+    } else if (m->charging && m->charge_minutes > 0) {
         snprintf(sub, sizeof(sub), "充电中  约 %d:%02d 充满",
                  m->charge_minutes / 60, m->charge_minutes % 60);
     } else if (m->charging) {
@@ -730,4 +734,10 @@ void vibe_ui_label_clear(uint8_t slot)
 void vibe_ui_labels_reset(void)
 {
     for (uint8_t i = 0; i < VIBE_GESTURE_COUNT; i++) s_lab_ready[i] = false;
+}
+
+void vibe_ui_flash(const char *text)
+{
+    snprintf(s_flash, sizeof(s_flash), "%s", text ? text : "");
+    s_flash_until_us = esp_timer_get_time() + 5000000;  // five seconds
 }

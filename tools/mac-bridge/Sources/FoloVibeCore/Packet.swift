@@ -41,6 +41,8 @@ public enum VibeProtocol {
     /// "I mean to use this device." A device already in use only switches to
     /// a new connection that sends this; see VIBE_CTRL_CLAIM.
     public static let ctrlClaim: UInt8 = 0x95
+    /// The device says it is leaving for another Mac; see VIBE_EV_HANDED_OVER.
+    public static let eventHandedOver: UInt8 = 0x7E
     /// Bitmap sizes per slot kind; must match VIBE_LABEL_* in vibe_protocol.h.
     public static let labelMain = (width: 64, height: 20)
     public static let labelAlt = (width: 44, height: 16)

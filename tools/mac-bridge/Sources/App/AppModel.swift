@@ -51,6 +51,8 @@ final class AppModel: ObservableObject {
     @Published var typelessMicOK = false
     @Published var loginOn = false
     @Published var lastAction = "—"
+    /// A device changing hands, worth a line on screen for a short while.
+    @Published var handoffNotice = ""
     @Published var debugNote = ""
     @Published var activeInputTitle = "—"
     @Published var captureTarget: KeyCaptureTarget?
@@ -93,6 +95,8 @@ final class AppModel: ObservableObject {
         ble.onEvent = { [weak self] ev in self?.handle(ev) }
         ble.onGesture = { [weak self] g, device in self?.handleGesture(g, from: device) }
         ble.onFirmwareVersion = { [weak self] v in self?.firmwareVersion = v }
+        ble.onHandedOver = { [weak self] name in self?.notice("\(name) 已被另一台 Mac 接管") }
+        ble.onTookOver = { [weak self] name in self?.notice("已从另一台 Mac 接管 \(name)") }
         ble.onOTAProgress = { [weak self] p in self?.otaProgress = p }
         ble.onOTAFinished = { [weak self] err in
             guard let self else { return }
@@ -483,6 +487,15 @@ final class AppModel: ObservableObject {
             }
         }
         return out
+    }
+
+    private func notice(_ text: String) {
+        handoffNotice = text
+        // Long enough to read on the way past, short enough not to linger.
+        let shown = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 12) { [weak self] in
+            if self?.handoffNotice == shown { self?.handoffNotice = "" }
+        }
     }
 
     /// Use a device now, taking it from another Mac if one has it.

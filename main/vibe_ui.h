@@ -39,6 +39,10 @@ void vibe_ui_label_clear(uint8_t slot);
 // Labels belong to the Mac that sent them; a new link starts from the defaults.
 void vibe_ui_labels_reset(void);
 
+// A short message under the title, for something that just happened and is
+// worth one glance: the device changing hands, say.
+void vibe_ui_flash(const char *text);
+
 #ifdef __cplusplus
 }
 #endif

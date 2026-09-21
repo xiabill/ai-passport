@@ -90,6 +90,10 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     var onEvent: ((VibeEvent) -> Void)?
     var onGesture: ((GestureEvent, UUID) -> Void)?
     var onFirmwareVersion: ((String) -> Void)?
+    /// The device left for another Mac, by name.
+    var onHandedOver: ((String) -> Void)?
+    /// This Mac took a device that another one was using.
+    var onTookOver: ((String) -> Void)?
     var onOTAProgress: ((Double) -> Void)?
     var onOTAFinished: ((String?) -> Void)?
     var onPCM: (([Int16]) -> Void)?
@@ -286,15 +290,22 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     }
 
     /// Use this device now. If another Mac has it, the device drops that Mac
-    /// and follows this one — whoever connects last gets it.
+    /// and follows this one once this connection asks for it.
     func use(_ id: UUID) {
         queue.async { [self] in
             guard links[id] == nil, let p = peripherals[id] else { return }
             releasedUntil[id] = nil
-            Log.ble("选择使用 \(seen[id]?.name ?? p.name ?? "?")")
-            adopt(p, name: seen[id]?.name ?? p.name ?? "FoloVibe", force: true)
+            let name = seen[id]?.name ?? p.name ?? "FoloVibe"
+            let wasBusy = seen[id]?.busy ?? false
+            Log.ble(wasBusy ? "正在从另一台 Mac 接管 \(name)…" : "选择使用 \(name)")
+            claiming.insert(id)
+            adopt(p, name: name, force: true)
         }
     }
+
+    /// Devices this Mac asked for while another one had them, so the takeover
+    /// can be reported once it lands.
+    private var claiming = Set<UUID>()
 
     func resumeAfterHandoff() {
         queue.async { [self] in
@@ -585,6 +596,11 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             writePowerMode(l)
             writeActions(l)
             writeLabels(l)
+            if claiming.remove(l.peripheral.identifier) != nil {
+                let name = l.name
+                Log.ble("已从另一台 Mac 接管 \(name)")
+                DispatchQueue.main.async { self.onTookOver?(name) }
+            }
             p.readRSSI()
         }
     }
@@ -627,6 +643,16 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             Log.ble("\(l.name) 设备固件 \(l.firmware)")
             let summary = snapshot.firmwareVersion
             DispatchQueue.main.async { self.onFirmwareVersion?(summary) }
+            return
+        }
+        if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
+            data.first == VibeProtocol.eventHandedOver
+        {
+            // Sent just before the device cuts this link, so the disconnect
+            // that follows has an explanation instead of looking like a fault.
+            let name = l.name
+            Log.ble("\(name) 已被另一台 Mac 接管")
+            DispatchQueue.main.async { self.onHandedOver?(name) }
             return
         }
         if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
