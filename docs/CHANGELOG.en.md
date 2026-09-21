@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- Fixed two Macs trading the same device: only an explicit "use" claims a device now, automatic connections never do, and a device lost to another Mac is left alone by this one's reconnection for five minutes unless asked for.
 - Fixed handover to another Mac: the claim window goes from three to twenty seconds, since macOS needs four to six to discover the service before it can ask; the device now notifies the outgoing Mac first, and both Macs and the device screen report the handover.
 - Fixed "the app is damaged" on other Macs: without a stable signing identity the build skipped signing and shipped a bundle with no CodeResources; it now ad-hoc signs the bundle and verifies the result.
 - Rebuilt the device screen: a layered layout whose centre changes with state (ring, spinner, Bluetooth glyph, or a full-width waveform with a timer), and key cards that state click, double click and long press; adds a 24px hero font, raises the LVGL pool to 64KB and the screenshot task stack to 8KB.
