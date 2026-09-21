@@ -42,6 +42,10 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         var name: String
         var connected = false
         var connectDeadline: Date
+        /// True only when the user asked for this device. An automatic
+        /// connection never claims: a free device needs no claim, and claiming
+        /// a busy one would mean two Macs taking it from each other.
+        var claimRequested = false
         var control: CBCharacteristic?
         var audio: CBCharacteristic?
         var event: CBCharacteristic?
@@ -66,6 +70,10 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     private var links: [UUID: Link] = [:]
     /// Devices handed to another Mac, ignored until the date passes.
     private var releasedUntil: [UUID: Date] = [:]
+    /// Devices another Mac took from us. Reconnecting the moment one falls
+    /// free would have the two Macs pulling it back and forth, so this one
+    /// waits to be asked.
+    private var yieldedUntil: [UUID: Date] = [:]
     /// Everything advertising nearby, connected or not, so the user can pick.
     private var seen: [UUID: (name: String, rssi: Int, busy: Bool, at: Date)] = [:]
     /// Devices seen during this run, so a busy one can be connected on request.
@@ -299,7 +307,8 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             let wasBusy = seen[id]?.busy ?? false
             Log.ble(wasBusy ? "正在从另一台 Mac 接管 \(name)…" : "选择使用 \(name)")
             claiming.insert(id)
-            adopt(p, name: name, force: true)
+            yieldedUntil[id] = nil
+            adopt(p, name: name, force: true, claim: true)
         }
     }
 
@@ -320,6 +329,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
 
     private func isReleased(_ id: UUID) -> Bool {
         if let until = releasedUntil[id], Date() < until { return true }
+        if let until = yieldedUntil[id], Date() < until { return true }
         return false
     }
 
@@ -329,10 +339,12 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         return name.hasPrefix(prefix)
     }
 
-    private func adopt(_ p: CBPeripheral, name: String, force: Bool = false) {
+    private func adopt(_ p: CBPeripheral, name: String, force: Bool = false,
+                       claim: Bool = false) {
         guard links[p.identifier] == nil else { return }
         guard force || (!isReleased(p.identifier) && !isHandoffPaused) else { return }
         let l = Link(p, name: name)
+        l.claimRequested = claim
         links[p.identifier] = l
         p.delegate = self
         central.connect(p)
@@ -567,10 +579,9 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
                 l.ota = ch
             }
         }
-        // Claim the device before anything else. If another Mac has it, the
-        // device only switches once asked, and it must switch before the
-        // notifications below are enabled or they would land on the old link.
-        if let c = l.control {
+        // Only a device the user asked for is claimed, and it has to happen
+        // before the notifications below or they would land on the old link.
+        if l.claimRequested, let c = l.control {
             peripheral.writeValue(Data([VibeProtocol.ctrlClaim]), for: c, type: .withResponse)
         }
         let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse) + 3
@@ -651,7 +662,11 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             // Sent just before the device cuts this link, so the disconnect
             // that follows has an explanation instead of looking like a fault.
             let name = l.name
-            Log.ble("\(name) 已被另一台 Mac 接管")
+            // Five minutes: long enough that the two Macs stop fighting over
+            // it, short enough that the device comes back on its own once the
+            // other Mac is done with it.
+            yieldedUntil[peripheral.identifier] = Date().addingTimeInterval(300)
+            Log.ble("\(name) 已被另一台 Mac 接管，本机 5 分钟内不自动连回（可在设置里点「使用」）")
             DispatchQueue.main.async { self.onHandedOver?(name) }
             return
         }
