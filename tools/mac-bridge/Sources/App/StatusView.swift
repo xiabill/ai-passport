@@ -98,13 +98,46 @@ struct StatusView: View {
         }
     }
 
+    /// The bindings as they stand, so the page answers "what does each key do
+    /// right now" without a trip to settings.
     private var quickActions: some View {
-        SurfaceCard("硬件操作", subtitle: "按键会自动触发对应输入法，下面是当前映射") {
+        SurfaceCard("按键映射", subtitle: "在设置里可以改") {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 250), spacing: 12)], spacing: 12) {
-                action(title: "语音输入", detail: "单击中键", shortcut: model.settings.current.talkKey, symbol: "mic.fill", tint: .blue)
-                action(title: "翻译", detail: "双击中键", shortcut: "\(model.settings.current.talkKey) + Shift", symbol: "character.bubble", tint: .purple)
-                action(title: "随便问", detail: "长按中键", shortcut: "\(model.settings.current.talkKey) + Space", symbol: "sparkles", tint: .orange)
+                ForEach(ButtonKey.allCases, id: \.self) { key in
+                    ForEach(ButtonGesture.allCases, id: \.self) { gesture in
+                        let bound = model.settings.current.buttons.action(key, gesture)
+                        if bound != .none {
+                            action(
+                                title: model.settings.current.buttons.label(key, gesture) ?? bound.title,
+                                detail: "\(key.title)\(gesture.title)",
+                                shortcut: model.settings.current.buttons.stroke(key, gesture)?.display
+                                    ?? bound.title,
+                                symbol: symbol(for: bound),
+                                tint: tint(for: bound))
+                        }
+                    }
+                }
             }
+        }
+    }
+
+    private func symbol(for action: ButtonAction) -> String {
+        switch action {
+        case .voice: return "mic.fill"
+        case .key: return "keyboard"
+        case .clear: return "delete.left"
+        case .handoff: return "arrow.left.arrow.right"
+        case .none: return "circle"
+        }
+    }
+
+    private func tint(for action: ButtonAction) -> Color {
+        switch action {
+        case .voice: return .blue
+        case .key: return .cyan
+        case .clear: return .purple
+        case .handoff: return .teal
+        case .none: return .secondary
         }
     }
 
@@ -170,9 +203,7 @@ struct StatusView: View {
         SurfaceCard("运行检查", subtitle: "输入前建议全部显示为正常") {
             VStack(alignment: .leading, spacing: 13) {
                 CheckRow(title: "辅助功能", detail: model.axOK ? "可以发送快捷键" : "需要在系统设置中授权", ok: model.axOK)
-                CheckRow(title: "虚拟音频设备", detail: model.blackholeOK ? model.settings.current.outputDevice : "未找到配置的输出设备", ok: model.blackholeOK)
-                CheckRow(title: "Typeless", detail: model.typeless.running ? "应用正在运行" : "请先打开 Typeless", ok: model.typeless.running)
-                CheckRow(title: "Typeless 麦克风", detail: model.typelessMicOK ? model.typelessMicLabel : "需要选择正确的音频设备", ok: model.typelessMicOK)
+                CheckRow(title: "虚拟麦克风", detail: model.audioOK ? model.settings.current.outputDevice : "未找到配置的输出设备", ok: model.audioOK)
             }
         }
         .frame(maxWidth: .infinity)
@@ -213,7 +244,7 @@ struct StatusView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 HStack(spacing: 18) {
-                    Label(model.blackholeOK ? "输出设备可用" : "输出设备缺失", systemImage: model.blackholeOK ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    Label(model.audioOK ? "输出设备可用" : "输出设备缺失", systemImage: model.audioOK ? "checkmark.circle.fill" : "xmark.circle.fill")
                     Label(model.bleSnap.packets > 0 ? "收到 BLE 音频包" : "等待 BLE 音频包", systemImage: model.bleSnap.packets > 0 ? "checkmark.circle.fill" : "hourglass")
                     Text("丢包 \(model.bleSnap.lost)")
                 }
@@ -260,12 +291,8 @@ struct StatusView: View {
         if !model.bleSnap.bluetoothOn { out.append("打开系统蓝牙") }
         if !model.bleSnap.subscribed { out.append("等待 Passport 广播 FoloVibe-* 并靠近 Mac") }
         if !model.axOK { out.append("在系统设置里给 FoloVibe Bridge 打开辅助功能") }
-        if !model.blackholeOK {
-            out.append("未找到 \(model.settings.current.outputDevice)，用状态页的“一键配置”自动挑一个可用设备")
-        }
-        if !model.typeless.running { out.append("打开 Typeless") }
-        if model.typeless.running && !model.typelessMicOK {
-            out.append("把 Typeless 麦克风改成 \(model.settings.current.outputDevice)，或用“一键配置”自动写入")
+        if !model.audioOK {
+            out.append("未找到 \(model.settings.current.outputDevice)，在设置里换一个虚拟麦克风")
         }
         return out
     }

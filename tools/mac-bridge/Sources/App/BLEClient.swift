@@ -95,7 +95,6 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     var prefix = "FoloVibe"
     var autoReconnect = true
 
-    var onEvent: ((VibeEvent) -> Void)?
     var onGesture: ((GestureEvent, UUID) -> Void)?
     var onFirmwareVersion: ((String) -> Void)?
     /// The device left for another Mac, by name.
@@ -122,15 +121,6 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     // MARK: - Writes, broadcast to every ready device
 
     private var readyLinks: [Link] { links.values.filter(\.ready) }
-
-    func writeTypeless(_ state: UInt8) {
-        queue.async { [self] in
-            for l in readyLinks {
-                guard let c = l.control else { continue }
-                l.peripheral.writeValue(Data([state]), for: c, type: .withoutResponse)
-            }
-        }
-    }
 
     func setPowerMode(_ mode: BridgePowerMode) {
         queue.async { [self] in
@@ -677,16 +667,6 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             Log.ble("\(l.name) 手势 \(gesture.title)")
             let id = peripheral.identifier
             DispatchQueue.main.async { self.onGesture?(gesture, id) }
-            return
-        }
-        // Older firmware still speaks the semantic events.
-        if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
-            let byte = data.first, let ev = VibeEvent(rawValue: byte)
-        {
-            if ev == .stop || ev == .doubaoStop || ev == .doubaoStopAndSend { endAudio() }
-            update { $0.lastEvent = ev.title }
-            Log.ble("事件 \(ev.title)")
-            DispatchQueue.main.async { self.onEvent?(ev) }
             return
         }
         if characteristic.uuid == CBUUID(string: VibeProtocol.audioUUID) {

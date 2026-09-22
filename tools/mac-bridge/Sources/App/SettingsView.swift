@@ -17,7 +17,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 12) {
                 PageHeader(
                     title: "设置",
-                    subtitle: "把硬件按键和两个输入法配置成你的工作流",
+                    subtitle: "给每个手势配一个动作和一个快捷键",
                     trailing: AnyView(
                         Button { store.reset() } label: {
                             Label("恢复默认", systemImage: "arrow.counterclockwise")
@@ -27,35 +27,30 @@ struct SettingsView: View {
 
                 SetupGuideView(model: model)
 
-                SurfaceCard("设备功耗模式", subtitle: "根据你是否长时间闲置，快速切换设备的耗电策略") {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Picker("功耗模式", selection: powerModeBinding) {
-                            ForEach(BridgePowerMode.allCases, id: \.self) { mode in
-                                Label(mode.title, systemImage: mode.symbol).tag(mode)
+                ForEach(ButtonKey.allCases, id: \.self) { key in
+                    SurfaceCard(key.title, subtitle: keySummary(key)) {
+                        VStack(spacing: 10) {
+                            ForEach(ButtonGesture.allCases, id: \.self) { gesture in
+                                gestureRow(key, gesture)
+                                if gesture != ButtonGesture.allCases.last { Divider() }
                             }
                         }
-                        .pickerStyle(.segmented)
-                        Text(store.current.powerMode.subtitle + "。省电模式下，设备闲置 60 秒后会暂停 BLE 广播，按普通功能键即可恢复。")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
                     }
                 }
 
-                SurfaceCard("连接设备", subtitle: "空闲的 Passport 会自动连上；另一台 Mac 在用的，点「使用」就切到本机") {
+                SurfaceCard("连接设备", subtitle: "空闲的设备会自动连上；另一台 Mac 在用的，点「使用」切到本机") {
                     VStack(spacing: 15) {
                         deviceList
                         Divider()
-                        SettingRow("设备名前缀", subtitle: "默认 FoloVibe") {
+                        SettingRow("设备名前缀", subtitle: "默认 FoloVibe，填完整名字可只连某一台") {
                             TextField("FoloVibe", text: prefixBinding)
                                 .textFieldStyle(.roundedBorder)
                                 .frame(width: 220)
                         }
-                        SettingRow("音频输出设备", subtitle: "选择 Passport 音频要送入的虚拟设备") {
+                        SettingRow("音频输出设备", subtitle: "设备的声音送进这个虚拟麦克风，语音软件从这里听") {
                             HStack(spacing: 8) {
                                 Picker("输出设备", selection: outputBinding) {
-                                    ForEach(audioDeviceOptions, id: \.self) { name in
-                                        Text(name).tag(name)
-                                    }
+                                    ForEach(audioDeviceOptions, id: \.self) { Text($0).tag($0) }
                                 }
                                 .labelsHidden()
                                 .frame(width: 220)
@@ -65,9 +60,9 @@ struct SettingsView: View {
                                 .help("刷新音频设备列表")
                             }
                         }
-                        if !model.blackholeOK {
+                        if !model.audioOK {
                             HStack(spacing: 8) {
-                                Label("未找到当前输出设备", systemImage: "exclamationmark.triangle.fill")
+                                Label("未找到这个音频设备", systemImage: "exclamationmark.triangle.fill")
                                     .font(.caption)
                                     .foregroundStyle(.orange)
                                 Button("安装 BlackHole") { Permissions.openBlackHoleDownload() }
@@ -81,124 +76,21 @@ struct SettingsView: View {
                                 Text("设备重新出现时自动恢复连接").font(.caption).foregroundStyle(.secondary)
                             }
                         }
-                        Divider()
-                        HStack(spacing: 10) {
-                            Image(systemName: model.bleSnap.handoffPaused ? "pause.circle.fill" : "arrow.left.arrow.right.circle.fill")
-                                .foregroundStyle(model.bleSnap.handoffPaused ? .orange : .blue)
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text("多 Mac 切换").font(.callout.weight(.medium))
-                                Text(model.bleSnap.handoffPaused
-                                    ? "本机已暂时让出设备，另一台 Mac 可以自动接管"
-                                    : "同一设备一次连接一台 Mac，需要换电脑时先释放设备")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            if model.bleSnap.handoffPaused {
-                                Button("恢复自动连接") { model.ble.resumeAfterHandoff() }
-                                    .buttonStyle(.bordered)
-                            } else {
-                                Button("释放给另一台 Mac") { model.ble.releaseForHandoff() }
-                                    .buttonStyle(.borderedProminent)
-                            }
-                        }
                     }
                 }
 
-                SurfaceCard("硬件按键", subtitle: "三个键 × 三个手势，改完立刻同步到设备") {
-                    VStack(alignment: .leading, spacing: 9) {
-                        // 一行一个键、一列一个手势:9 个绑定一屏看全，比按键分组
-                        // 少占三分之二的高度。
-                        Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 6) {
-                            GridRow {
-                                Text("").gridCellUnsizedAxes(.horizontal)
-                                ForEach(ButtonGesture.allCases, id: \.self) { gesture in
-                                    Text(gesture.title)
-                                        .font(.caption2.weight(.medium))
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            ForEach(ButtonKey.allCases, id: \.self) { key in
-                                GridRow {
-                                    Text(key.title)
-                                        .font(.callout.weight(.medium))
-                                        .gridCellUnsizedAxes(.horizontal)
-                                    ForEach(ButtonGesture.allCases, id: \.self) { gesture in
-                                        VStack(alignment: .leading, spacing: 3) {
-                                            Picker("", selection: actionBinding(key, gesture)) {
-                                                ForEach(ButtonAction.allCases, id: \.self) { action in
-                                                    Text(action.title).tag(action)
-                                                }
-                                            }
-                                            .labelsHidden()
-                                            .pickerStyle(.menu)
-                                            .frame(minWidth: 128)
-                                            TextField(store.current.buttons.action(key, gesture).deviceTitle,
-                                                      text: labelBinding(key, gesture))
-                                                .textFieldStyle(.roundedBorder)
-                                                .font(.caption)
-                                                .controlSize(.small)
-                                                .help("设备屏幕上显示的名字，留空用默认")
-                                            if store.current.buttons.action(key, gesture) == .customKey {
-                                                Button {
-                                                    model.strokeTarget = GestureSlot(key: key, gesture: gesture)
-                                                } label: {
-                                                    Text(store.current.buttons.stroke(key, gesture)?.label ?? "点击录制")
-                                                        .font(.caption)
-                                                        .frame(maxWidth: .infinity)
-                                                }
-                                                .controlSize(.small)
-                                            }
-                                        }
-                                    }
-                                }
+                SurfaceCard("设备功耗模式", subtitle: "根据你是否长时间闲置，切换设备的耗电策略") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Picker("", selection: powerModeBinding) {
+                            ForEach(BridgePowerMode.allCases, id: \.self) { mode in
+                                Label(mode.title, systemImage: mode.symbol).tag(mode)
                             }
                         }
-                        Text("设备屏幕显示每个键的单击动作。绑定存在 Bridge 里，换绑不用重刷固件。选“自定义按键”可以录制任意快捷键。")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-
-                SurfaceCard("输入法快捷键", subtitle: "上面的动作最终按这里的键发给输入法") {
-                    VStack(alignment: .leading, spacing: 14) {
-                        keyRow("Typeless 基础键", "翻译自动加 Shift，随便问自动加 Space", talkBinding, Hotkey.talkKeys, .blue, "mic.fill", .talk, talkTapBinding)
-                        keyRow("豆包快捷键", "豆包“免按模式”默认要双击唤起", doubaoBinding, Hotkey.doubaoKeys, .green, "mic", .doubao, doubaoTapBinding)
-                        keyRow("发送键", "“发送回车”动作使用的键", sendBinding, Hotkey.sendKeys, .accentColor, "return", .send)
-                        Text("可以直接从列表选择，也可以点“录入”后按实体键。右侧选择这个键是按一下还是连按两下——输入法要求哪种，就选哪种。")
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        Text(store.current.powerMode.subtitle)
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                    }
-                }
-
-                SurfaceCard("Typeless 闭环", subtitle: "Bridge 会观察 Typeless 状态，在快捷键没有生效时自动补按") {
-                    VStack(alignment: .leading, spacing: 15) {
-                        Toggle(isOn: retapOn) {
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text("启用自动补按").font(.callout.weight(.medium))
-                                Text("只在检测到状态不一致时补按，不改变正常输入流程").font(.caption).foregroundStyle(.secondary)
-                            }
-                        }
-                        HStack(spacing: 12) {
-                            valueField("开始等待", value: retapFrom, suffix: "秒")
-                            valueField("结束等待", value: retapTo, suffix: "秒")
-                            valueField("最多补按", value: retapMax, suffix: "次")
-                        }
-                        Divider()
-                        SettingRow("状态轮询", subtitle: "读取 Typeless 最近状态的间隔") {
-                            HStack(spacing: 6) {
-                                TextField("2", value: poll, formatter: number)
-                                    .textFieldStyle(.roundedBorder)
-                                    .frame(width: 72)
-                                Text("秒").foregroundStyle(.secondary)
-                            }
-                        }
-                        Label(
-                            model.typelessMicOK ? "当前麦克风：\(model.typelessMicLabel)" : "当前麦克风不匹配：\(model.typelessMicLabel)",
-                            systemImage: model.typelessMicOK ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                            .font(.caption)
-                            .foregroundStyle(model.typelessMicOK ? .green : .orange)
                     }
                 }
 
@@ -259,7 +151,7 @@ struct SettingsView: View {
                     }
                 }
 
-                SurfaceCard("启动与权限", subtitle: "这些选项只影响 Bridge 自身，不会修改 Typeless 设置") {
+                SurfaceCard("启动与权限", subtitle: "这些选项只影响本程序") {
                     VStack(alignment: .leading, spacing: 14) {
                         Toggle(isOn: loginBinding) {
                             VStack(alignment: .leading, spacing: 3) {
@@ -281,33 +173,125 @@ struct SettingsView: View {
                         }
                     }
                 }
+
+                SurfaceCard("运行日志", subtitle: "出问题时看这里") {
+                    DisclosureGroup("展开日志") {
+                        LogView(model: model).frame(height: 260)
+                    }
+                    .font(.callout)
+                }
             }
             .frame(maxWidth: 920, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
         }
         .sheet(item: $model.strokeTarget) { slot in
-            StrokeCaptureSheet(title: slot.title) { stroke in
+            StrokeCaptureSheet(
+                title: slot.title,
+                current: store.current.buttons.stroke(slot.key, slot.gesture)
+            ) { stroke in
                 store.current.buttons.setStroke(slot.key, slot.gesture, stroke)
             }
         }
-        .sheet(item: $model.captureTarget) { target in
-            KeyCaptureSheet(title: target.title, keys: target.keys) { key in
-                setKey(target, key)
+    }
+
+    /// One gesture on one button: what it does, which key it sends, and what
+    /// the device screen calls it. One line, so a button reads top to bottom.
+    @ViewBuilder
+    private func gestureRow(_ key: ButtonKey, _ gesture: ButtonGesture) -> some View {
+        let action = store.current.buttons.action(key, gesture)
+        let stroke = store.current.buttons.stroke(key, gesture)
+        HStack(spacing: 10) {
+            Text(gesture.title)
+                .font(.callout.weight(.medium))
+                .frame(width: 42, alignment: .leading)
+
+            Menu {
+                Button("无") { bind(key, gesture, .none) }
+                Divider()
+                Button("语音输入（同时开始录音）") { bind(key, gesture, .voice) }
+                Button("全选并删除") { bind(key, gesture, .clear) }
+                Button("交给另一台 Mac") { bind(key, gesture, .handoff) }
+                Divider()
+                ForEach(KeyPreset.Group.allCases, id: \.self) { group in
+                    Menu(group.rawValue) {
+                        ForEach(KeyPreset.grouped(group)) { preset in
+                            Button("\(preset.title)   \(preset.stroke.label)") {
+                                store.current.buttons.bind(key, gesture, preset: preset.id)
+                            }
+                        }
+                    }
+                }
+                Divider()
+                Button("自定义按键…") {
+                    bind(key, gesture, .key)
+                    model.strokeTarget = GestureSlot(key: key, gesture: gesture)
+                }
+            } label: {
+                Text(menuTitle(key, gesture))
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .frame(width: 190)
+
+            // The key itself, clickable when there is one to change.
+            if action.needsStroke {
+                Button {
+                    model.strokeTarget = GestureSlot(key: key, gesture: gesture)
+                } label: {
+                    Text(stroke?.display ?? "未设置")
+                        .font(.caption.monospaced())
+                        .frame(width: 104)
+                }
+                .controlSize(.small)
+                .help("点一下重新录制，可选按一下、连按两下或按住")
+            } else {
+                Text("—")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .frame(width: 104)
+            }
+
+            TextField(action.deviceTitle, text: labelBinding(key, gesture))
+                .textFieldStyle(.roundedBorder)
+                .font(.caption)
+                .controlSize(.small)
+                .frame(width: 92)
+                .help("设备屏幕上显示的名字，留空用默认")
         }
     }
 
-    private func labelBinding(_ key: ButtonKey, _ gesture: ButtonGesture) -> Binding<String> {
-        Binding(
-            get: { store.current.buttons.label(key, gesture) ?? "" },
-            set: { store.current.buttons.setLabel(key, gesture, $0) })
+    /// What the menu shows now: the preset's name when it is one, otherwise
+    /// the action.
+    private func menuTitle(_ key: ButtonKey, _ gesture: ButtonGesture) -> String {
+        let action = store.current.buttons.action(key, gesture)
+        guard action == .key else { return action.title }
+        if let stroke = store.current.buttons.stroke(key, gesture),
+            let preset = KeyPreset.all.first(where: {
+                $0.stroke.keyCode == stroke.keyCode && $0.stroke.modifiers == stroke.modifiers
+                    && $0.stroke.isMedia == stroke.isMedia
+            })
+        {
+            return preset.title
+        }
+        return "自定义按键"
     }
 
-    private func actionBinding(_ key: ButtonKey, _ gesture: ButtonGesture) -> Binding<ButtonAction> {
-        Binding(
-            get: { store.current.buttons.action(key, gesture) },
-            set: { store.current.buttons.set(key, gesture, $0) })
+    /// A one-line summary under the button's name, so the card says what the
+    /// button does without being unfolded.
+    private func keySummary(_ key: ButtonKey) -> String {
+        ButtonGesture.allCases.map { gesture -> String in
+            let action = store.current.buttons.action(key, gesture)
+            if action == .none { return "\(gesture.title) —" }
+            let name = store.current.buttons.label(key, gesture)
+                ?? (action == .key ? menuTitle(key, gesture) : action.title)
+            return "\(gesture.title) \(name)"
+        }.joined(separator: "   ")
+    }
+
+    private func bind(_ key: ButtonKey, _ gesture: ButtonGesture, _ action: ButtonAction) {
+        store.current.buttons.set(key, gesture, action)
+        if !action.needsStroke { store.current.buttons.setStroke(key, gesture, nil) }
+        store.current.buttons.setLabel(key, gesture, nil)
     }
 
     @ViewBuilder
@@ -364,134 +348,46 @@ struct SettingsView: View {
         return parts.joined(separator: " · ")
     }
 
-    private func keyRow(
-        _ title: String,
-        _ subtitle: String,
-        _ binding: Binding<String>,
-        _ keys: [Hotkey],
-        _ tint: Color,
-        _ symbol: String,
-        _ target: KeyCaptureTarget,
-        _ tap: Binding<HotkeyTap>? = nil
-    ) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: symbol)
-                .foregroundStyle(tint)
-                .frame(width: 28, height: 28)
-                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.callout.weight(.medium))
-                Text(subtitle).font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer()
-            Picker("", selection: binding) {
-                ForEach(keys, id: \.name) { Text($0.name).tag($0.name) }
-            }
-            .labelsHidden()
-            .pickerStyle(.menu)
-            .frame(width: 124, alignment: .trailing)
-            if let tap {
-                Picker("", selection: tap) {
-                    ForEach(HotkeyTap.allCases, id: \.self) { Text($0.title).tag($0) }
-                }
-                .labelsHidden()
-                .pickerStyle(.segmented)
-                .frame(width: 104)
-            }
-            Button("录入") { model.captureTarget = target }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .help("按下要映射的按键")
-        }
+    private func labelBinding(_ key: ButtonKey, _ gesture: ButtonGesture) -> Binding<String> {
+        Binding(
+            get: { store.current.buttons.label(key, gesture) ?? "" },
+            set: { store.current.buttons.setLabel(key, gesture, $0) })
     }
 
-    private func valueField(_ label: String, value: Binding<Double>, suffix: String) -> some View {
-        HStack(spacing: 6) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(label).font(.caption).foregroundStyle(.secondary)
-                TextField(label, value: value, formatter: number)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 76)
-            }
-            Text(suffix).font(.caption).foregroundStyle(.secondary).padding(.top, 18)
-        }
-    }
-
-    private func valueField(_ label: String, value: Binding<Int>, suffix: String) -> some View {
-        HStack(spacing: 6) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(label).font(.caption).foregroundStyle(.secondary)
-                TextField(label, value: value, formatter: intNumber)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 76)
-            }
-            Text(suffix).font(.caption).foregroundStyle(.secondary).padding(.top, 18)
-        }
-    }
-
-    private var number: NumberFormatter {
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        return f
-    }
-    private var intNumber: NumberFormatter {
-        let f = NumberFormatter()
-        f.numberStyle = .none
-        return f
+    private func actionBinding(_ key: ButtonKey, _ gesture: ButtonGesture) -> Binding<ButtonAction> {
+        Binding(
+            get: { store.current.buttons.action(key, gesture) },
+            set: { store.current.buttons.set(key, gesture, $0) })
     }
 
     private var prefixBinding: Binding<String> {
         Binding(get: { store.current.devicePrefix }, set: { store.current.devicePrefix = $0 })
     }
+
     private var outputBinding: Binding<String> {
         Binding(get: { store.current.outputDevice }, set: { store.current.outputDevice = $0 })
     }
+
     private var audioDeviceOptions: [String] {
         var names = model.audioDeviceNames
-        if !names.contains(store.current.outputDevice) { names.insert(store.current.outputDevice, at: 0) }
-        return names.isEmpty ? [store.current.outputDevice] : names
+        if !names.contains(store.current.outputDevice) {
+            names.insert(store.current.outputDevice, at: 0)
+        }
+        return names
     }
+
     private var autoReconnect: Binding<Bool> {
         Binding(get: { store.current.autoReconnect }, set: { store.current.autoReconnect = $0 })
     }
+
     private var powerModeBinding: Binding<BridgePowerMode> {
         Binding(get: { store.current.powerMode }, set: { store.current.powerMode = $0 })
     }
-    private var talkBinding: Binding<String> {
-        Binding(get: { store.current.talkKey }, set: { store.current.talkKey = $0 })
-    }
-    private var sendBinding: Binding<String> {
-        Binding(get: { store.current.sendKey }, set: { store.current.sendKey = $0 })
-    }
-    private var doubaoBinding: Binding<String> {
-        Binding(get: { store.current.doubaoKey }, set: { store.current.doubaoKey = $0 })
-    }
 
-    private var talkTapBinding: Binding<HotkeyTap> {
-        Binding(get: { store.current.talkTap }, set: { store.current.talkTap = $0 })
-    }
-
-    private var doubaoTapBinding: Binding<HotkeyTap> {
-        Binding(get: { store.current.doubaoTap }, set: { store.current.doubaoTap = $0 })
-    }
-    private var retapOn: Binding<Bool> {
-        Binding(get: { store.current.retapEnabled }, set: { store.current.retapEnabled = $0 })
-    }
-    private var retapFrom: Binding<Double> {
-        Binding(get: { store.current.retapFromSec }, set: { store.current.retapFromSec = $0 })
-    }
-    private var retapTo: Binding<Double> {
-        Binding(get: { store.current.retapToSec }, set: { store.current.retapToSec = $0 })
-    }
-    private var retapMax: Binding<Int> {
-        Binding(get: { store.current.retapMax }, set: { store.current.retapMax = $0 })
-    }
-    private var poll: Binding<Double> {
-        Binding(get: { store.current.typelessPollSec }, set: { store.current.typelessPollSec = $0 })
-    }
     private var hidden: Binding<Bool> {
         Binding(get: { store.current.startHidden }, set: { store.current.startHidden = $0 })
     }
+
     private var loginBinding: Binding<Bool> {
         Binding(
             get: { model.loginOn },
@@ -499,35 +395,5 @@ struct SettingsView: View {
                 LoginItem.set($0)
                 store.current.launchAtLogin = $0
             })
-    }
-
-    private func setKey(_ target: KeyCaptureTarget, _ key: Hotkey) {
-        switch target {
-        case .talk: store.current.talkKey = key.name
-        case .doubao: store.current.doubaoKey = key.name
-        case .send: store.current.sendKey = key.name
-        }
-    }
-}
-
-enum KeyCaptureTarget: String, Identifiable {
-    case talk, doubao, send
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .talk: return "Typeless 基础键"
-        case .doubao: return "豆包快捷键"
-        case .send: return "发送键"
-        }
-    }
-
-    var keys: [Hotkey] {
-        switch self {
-        case .talk: return Hotkey.talkKeys
-        case .doubao: return Hotkey.doubaoKeys
-        case .send: return Hotkey.sendKeys
-        }
     }
 }

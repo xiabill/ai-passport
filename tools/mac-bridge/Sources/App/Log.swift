@@ -23,8 +23,6 @@ enum Log {
     static func ble(_ m: String) { write("蓝牙", m) }
     static func audio(_ m: String) { write("音频", m) }
     static func key(_ m: String) { write("按键", m) }
-    static func typeless(_ m: String) { write("Typeless", m) }
-    static func debug(_ m: String) { write("调试", m) }
 
     static func write(_ category: String, _ message: String) {
         let time = stamp.string(from: Date())

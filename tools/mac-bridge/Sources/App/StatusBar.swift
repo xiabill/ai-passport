@@ -4,7 +4,7 @@ import FoloVibeCore
 final class StatusBar: NSObject, NSMenuDelegate {
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let phaseItem = NSMenuItem()
-    private let typelessItem = NSMenuItem()
+    private let lastActionItem = NSMenuItem()
     private let problemItem = NSMenuItem()
     private let handoffItem = NSMenuItem()
 
@@ -13,10 +13,10 @@ final class StatusBar: NSObject, NSMenuDelegate {
         let menu = NSMenu()
         menu.autoenablesItems = false
         phaseItem.isEnabled = false
-        typelessItem.isEnabled = false
+        lastActionItem.isEnabled = false
         problemItem.isEnabled = false
         menu.addItem(phaseItem)
-        menu.addItem(typelessItem)
+        menu.addItem(lastActionItem)
         menu.addItem(problemItem)
         menu.addItem(.separator())
         menu.addItem(action("打开主窗口", #selector(open), "1"))
@@ -49,10 +49,9 @@ final class StatusBar: NSObject, NSMenuDelegate {
         let snap = m.bleSnap
         item.button?.toolTip = snap.streaming ? "FoloVibe Bridge · 正在输入" : "FoloVibe Bridge · \(snap.phase)"
         phaseItem.title = "设备：\(snap.phase)  \(snap.deviceName)"
-        typelessItem.title = "输入：\(m.activeInputTitle)  Typeless：\(m.typelessState.title)"
+        lastActionItem.title = "最近：\(m.lastAction)"
         if !m.axOK { problemItem.title = "辅助功能未开" }
-        else if !m.blackholeOK { problemItem.title = "未找到 BlackHole" }
-        else if !m.typelessMicOK { problemItem.title = "Typeless 麦克风不匹配" }
+        else if !m.audioOK { problemItem.title = "未找到音频设备" }
         else { problemItem.title = "检查项正常" }
         handoffItem.title = snap.handoffPaused ? "恢复自动连接" : "释放设备给另一台 Mac"
     }

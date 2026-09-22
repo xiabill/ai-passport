@@ -16,7 +16,7 @@ struct LogView: View {
         VStack(alignment: .leading, spacing: 12) {
             PageHeader(
                 title: "日志",
-                subtitle: "按时间查看蓝牙、音频、按键和 Typeless 事件",
+                subtitle: "按时间查看蓝牙、音频和按键事件",
                 trailing: AnyView(
                     HStack(spacing: 8) {
                         Button { NSWorkspace.shared.open(Log.url) } label: {
@@ -130,7 +130,6 @@ struct LogView: View {
         case "蓝牙": return .blue
         case "音频": return .green
         case "按键": return .purple
-        case "Typeless": return .orange
         case "调试": return .pink
         default: return .gray
         }

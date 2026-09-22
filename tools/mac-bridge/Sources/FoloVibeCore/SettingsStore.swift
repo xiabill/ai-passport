@@ -34,17 +34,7 @@ public enum BridgePowerMode: String, Codable, CaseIterable {
 public struct BridgeSettings: Equatable, Codable {
     public var devicePrefix: String
     public var outputDevice: String
-    public var talkKey: String
-    public var doubaoKey: String
-    public var sendKey: String
-    public var talkTap: HotkeyTap
-    public var doubaoTap: HotkeyTap
     public var buttons: ButtonMap
-    public var retapEnabled: Bool
-    public var retapFromSec: Double
-    public var retapToSec: Double
-    public var retapMax: Int
-    public var typelessPollSec: Double
     public var launchAtLogin: Bool
     public var startHidden: Bool
     public var autoReconnect: Bool
@@ -53,35 +43,15 @@ public struct BridgeSettings: Equatable, Codable {
     public init(
         devicePrefix: String,
         outputDevice: String,
-        talkKey: String,
-        doubaoKey: String,
-        sendKey: String,
-        talkTap: HotkeyTap = .single,
-        doubaoTap: HotkeyTap = .double,
         buttons: ButtonMap = .default,
-        retapEnabled: Bool,
-        retapFromSec: Double,
-        retapToSec: Double,
-        retapMax: Int,
-        typelessPollSec: Double,
-        launchAtLogin: Bool,
-        startHidden: Bool,
-        autoReconnect: Bool,
+        launchAtLogin: Bool = false,
+        startHidden: Bool = false,
+        autoReconnect: Bool = true,
         powerMode: BridgePowerMode = .standard
     ) {
         self.devicePrefix = devicePrefix
         self.outputDevice = outputDevice
-        self.talkKey = talkKey
-        self.doubaoKey = doubaoKey
-        self.sendKey = sendKey
-        self.talkTap = talkTap
-        self.doubaoTap = doubaoTap
         self.buttons = buttons
-        self.retapEnabled = retapEnabled
-        self.retapFromSec = retapFromSec
-        self.retapToSec = retapToSec
-        self.retapMax = retapMax
-        self.typelessPollSec = typelessPollSec
         self.launchAtLogin = launchAtLogin
         self.startHidden = startHidden
         self.autoReconnect = autoReconnect
@@ -90,63 +60,65 @@ public struct BridgeSettings: Equatable, Codable {
 
     public static let `default` = BridgeSettings(
         devicePrefix: "FoloVibe",
-        outputDevice: "BlackHole 2ch",
-        talkKey: "Fn",
-        doubaoKey: "Right Option",
-        sendKey: "Return",
-        talkTap: .single,
-        doubaoTap: .double,
-        buttons: .default,
-        retapEnabled: true,
-        retapFromSec: 2,
-        retapToSec: 6,
-        retapMax: 3,
-        typelessPollSec: 2,
-        launchAtLogin: false,
-        startHidden: false,
-        autoReconnect: true,
-        powerMode: .standard
+        outputDevice: "BlackHole 2ch"
     )
 
-    public var talk: Hotkey {
-        Hotkey.named(talkKey, in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[0])
-    }
-    public var send: Hotkey {
-        Hotkey.named(sendKey, in: Hotkey.sendKeys, fallback: Hotkey.sendKeys[0])
-    }
-    public var doubao: Hotkey {
-        Hotkey.named(doubaoKey, in: Hotkey.doubaoKeys, fallback: Hotkey.doubaoKeys[0])
-    }
-
     private enum CodingKeys: String, CodingKey {
-        case devicePrefix, outputDevice, talkKey, doubaoKey, sendKey, buttons
-        case talkTap, doubaoTap
-        case retapEnabled, retapFromSec, retapToSec, retapMax, typelessPollSec
+        case devicePrefix, outputDevice, buttons
         case launchAtLogin, startHidden, autoReconnect, powerMode
+        // Retired: the app no longer knows about particular input methods, so
+        // their keys live on the gestures that send them. Decoded once, to
+        // carry an existing setup across, then never written again.
+        case talkKey, doubaoKey, talkTap, doubaoTap
     }
 
-    /// Keep existing installations valid when the Doubao setting is added.
+    /// Settings written by an older version still open, and the shortcuts that
+    /// used to be global move onto the gestures that were using them.
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let d = BridgeSettings.default
         devicePrefix = try c.decodeIfPresent(String.self, forKey: .devicePrefix) ?? d.devicePrefix
         outputDevice = try c.decodeIfPresent(String.self, forKey: .outputDevice) ?? d.outputDevice
-        talkTap = try c.decodeIfPresent(HotkeyTap.self, forKey: .talkTap) ?? d.talkTap
-        doubaoTap = try c.decodeIfPresent(HotkeyTap.self, forKey: .doubaoTap) ?? d.doubaoTap
-        talkKey = try c.decodeIfPresent(String.self, forKey: .talkKey) ?? d.talkKey
-        doubaoKey = try c.decodeIfPresent(String.self, forKey: .doubaoKey) ?? d.doubaoKey
-        sendKey = try c.decodeIfPresent(String.self, forKey: .sendKey) ?? d.sendKey
         buttons = try c.decodeIfPresent(ButtonMap.self, forKey: .buttons) ?? d.buttons
-        retapEnabled = try c.decodeIfPresent(Bool.self, forKey: .retapEnabled) ?? d.retapEnabled
-        retapFromSec = try c.decodeIfPresent(Double.self, forKey: .retapFromSec) ?? d.retapFromSec
-        retapToSec = try c.decodeIfPresent(Double.self, forKey: .retapToSec) ?? d.retapToSec
-        retapMax = try c.decodeIfPresent(Int.self, forKey: .retapMax) ?? d.retapMax
-        typelessPollSec = try c.decodeIfPresent(Double.self, forKey: .typelessPollSec) ?? d.typelessPollSec
         launchAtLogin = try c.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? d.launchAtLogin
         startHidden = try c.decodeIfPresent(Bool.self, forKey: .startHidden) ?? d.startHidden
         autoReconnect = try c.decodeIfPresent(Bool.self, forKey: .autoReconnect) ?? d.autoReconnect
         powerMode = try c.decodeIfPresent(BridgePowerMode.self, forKey: .powerMode) ?? d.powerMode
+
+        let talk = try c.decodeIfPresent(String.self, forKey: .talkKey)
+        let doubao = try c.decodeIfPresent(String.self, forKey: .doubaoKey)
+        let doubaoTaps = (try c.decodeIfPresent(String.self, forKey: .doubaoTap)) == "single" ? 1 : 2
+        let talkTaps = (try c.decodeIfPresent(String.self, forKey: .talkTap)) == "double" ? 2 : 1
+        buttons.adoptLegacyStrokes(
+            dictation: Self.legacyStroke(talk, taps: talkTaps),
+            doubao: Self.legacyStroke(doubao, taps: doubaoTaps))
     }
+
+    /// Only the keys still in use are written back; the retired ones exist
+    /// for reading an old file and are dropped on the next save.
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(devicePrefix, forKey: .devicePrefix)
+        try c.encode(outputDevice, forKey: .outputDevice)
+        try c.encode(buttons, forKey: .buttons)
+        try c.encode(launchAtLogin, forKey: .launchAtLogin)
+        try c.encode(startHidden, forKey: .startHidden)
+        try c.encode(autoReconnect, forKey: .autoReconnect)
+        try c.encode(powerMode, forKey: .powerMode)
+    }
+
+    /// The keys the old settings could name, by the label they were stored as.
+    private static func legacyStroke(_ name: String?, taps: Int) -> KeyStroke? {
+        guard let name, let code = legacyKeyCodes[name] else { return nil }
+        return KeyStroke(keyCode: code, modifiers: 0, label: name,
+                         style: taps > 1 ? .double : .tap)
+    }
+
+    private static let legacyKeyCodes: [String: UInt16] = [
+        "Fn": 0x3F, "Right Option": 0x3D, "Left Option": 0x3A,
+        "F13": 0x69, "F14": 0x6B, "F15": 0x71, "F16": 0x6A,
+        "F17": 0x40, "F18": 0x4F, "F19": 0x50, "Return": 0x24,
+    ]
 }
 
 public final class SettingsStore: ObservableObject {

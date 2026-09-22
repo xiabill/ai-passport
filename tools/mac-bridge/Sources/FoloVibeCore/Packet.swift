@@ -48,34 +48,6 @@ public enum VibeProtocol {
     public static let labelAlt = (width: 44, height: 16)
 }
 
-public enum VibeEvent: UInt8, CaseIterable, Equatable {
-    case start = 1
-    case stop = 2
-    case enter = 3
-    case doubaoStart = 5
-    case doubaoStop = 6
-    case doubaoStopAndSend = 7
-    case typelessTranslate = 8
-    case typelessAsk = 9
-    case doubaoSelectAll = 10
-    case doubaoClear = 11
-
-    public var title: String {
-        switch self {
-        case .start: return "开始说话"
-        case .stop: return "停止说话"
-        case .enter: return "发送"
-        case .doubaoStart: return "豆包开始"
-        case .doubaoStop: return "豆包停止"
-        case .doubaoStopAndSend: return "豆包停止并发送"
-        case .typelessTranslate: return "Typeless 翻译"
-        case .typelessAsk: return "Typeless 随便问"
-        case .doubaoSelectAll: return "豆包全选并删除"
-        case .doubaoClear: return "豆包清空"
-        }
-    }
-}
-
 public struct AudioPacket: Equatable {
     public var seq: UInt16
     public var predictor: Int16

@@ -68,12 +68,6 @@ struct RootView: View {
             Text(connectionTitle)
                 .font(.caption.weight(.semibold))
                 .fixedSize()
-            if model.activeInputTitle != "—" {
-                Text(model.activeInputTitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
@@ -86,8 +80,6 @@ struct RootView: View {
         switch model.tab {
         case .status: StatusView(model: model)
         case .settings: SettingsView(model: model)
-        case .logs: LogView(model: model)
-        case .debug: DebugView(model: model)
         }
     }
 

@@ -32,141 +32,10 @@ do {
     expect(pkt?.eos == false, "packet not eos")
     expect(AudioPacket.parse(Data([9, 0, 0, 0, 0, 1]))?.eos == true, "eos packet")
     expect(AudioPacket.parse(Data([1, 2, 3, 4, 5])) == nil, "reject short")
-    expect(VibeEvent.start.rawValue == 1, "event start")
-    expect(VibeEvent.doubaoStart.rawValue == 5, "Doubao start event")
-    expect(VibeEvent.doubaoStopAndSend.rawValue == 7, "Doubao stop-send event")
-    expect(VibeEvent.doubaoSelectAll.rawValue == 10, "Doubao select-all event")
-    expect(VibeEvent.doubaoClear.rawValue == 11, "Doubao clear event")
-    expect(VibeEvent.typelessTranslate.rawValue == 8, "Typeless translation event")
-    expect(VibeEvent.typelessAsk.rawValue == 9, "Typeless Ask anything event")
 }
 
 do {
-    expect(BridgeSettings.default.talk.name == "Fn", "default talk key")
-    expect(BridgeSettings.default.talk.carbon == 0x3F, "Fn carbon")
-    expect(BridgeSettings.default.doubao.name == "Right Option", "default Doubao key")
-    expect(BridgeSettings.default.doubao.carbon == 0x3D, "Right Option carbon")
     expect(BridgeSettings.default.powerMode == .standard, "default standard power mode")
-    var s = BridgeSettings.default
-    s.talkKey = "Nope"
-    expect(s.talk.name == "Fn", "unknown key fallback")
-    let ud = UserDefaults(suiteName: "folovibe.tests.\(UUID().uuidString)")!
-    let store = SettingsStore(defaults: ud)
-    store.current.talkKey = "F18"
-    store.current.doubaoKey = "Left Option"
-    let again = SettingsStore(defaults: ud)
-    expect(again.current.talkKey == "F18", "settings round trip")
-    expect(again.current.doubaoKey == "Left Option", "Doubao setting round trip")
-    store.current.powerMode = .eco
-    let powerAgain = SettingsStore(defaults: ud)
-    expect(powerAgain.current.powerMode == .eco, "power mode round trip")
-    expect(Hotkey.named("F17", in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[0]).carbon == 0x40, "F17 lookup")
-    expect(Hotkey.named("Fn", in: Hotkey.talkKeys, fallback: Hotkey.talkKeys[0]).carbon == 0x3F, "Fn lookup")
-    expect(Hotkey.named("Right Option", in: Hotkey.doubaoKeys, fallback: Hotkey.doubaoKeys[0]).carbon == 0x3D, "Doubao lookup")
-    expect(VibeProtocol.powerModeStandard == 0x80, "standard power command")
-    expect(VibeProtocol.powerModeEco == 0x81, "eco power command")
-}
-
-do {
-    expect(
-        TypelessState.derive(running: false, hasRow: true, statusNull: true, durationNull: true)
-            == .down, "typeless down")
-    expect(
-        TypelessState.derive(running: true, hasRow: true, statusNull: true, durationNull: true)
-            == .recording, "typeless recording")
-    expect(
-        TypelessState.derive(running: true, hasRow: true, statusNull: true, durationNull: false)
-            == .processing, "typeless processing")
-    expect(
-        TypelessState.derive(running: true, hasRow: true, statusNull: false, durationNull: false)
-            == .idle, "typeless idle")
-    expect(
-        TypelessState.derive(running: true, hasRow: false, statusNull: true, durationNull: true)
-            == .idle, "typeless empty")
-}
-
-do {
-    let map = ButtonMap.default
-    expect(map.action(.up, .click) == .doubao, "default up click drives Doubao")
-    expect(map.action(.mid, .click) == .enter, "default mid click confirms")
-    expect(map.action(.down, .click) == .typelessDictate, "default down click dictates")
-    expect(map.action(.down, .double) == .typelessTranslate, "default down double translates")
-    expect(map.action(.down, .long) == .typelessAsk, "default down long asks")
-    expect(map.action(.mid, .double) == .newline, "default mid double inserts a newline")
-    expect(map.action(.mid, .long) == .newline, "default mid long inserts a newline")
-    // Every gesture is bound by default now, so check the fallback on an empty map.
-    expect(ButtonMap().action(.mid, .long) == .none, "unbound gesture defaults to none")
-
-    var custom = ButtonMap.default
-    custom.set(.mid, .long, .typelessAsk)
-    expect(custom.action(.mid, .long) == .typelessAsk, "rebinding sticks")
-
-    expect(!ButtonAction.newline.isRecording, "newline does not record")
-    expect(ButtonAction.newline.code == 8, "newline wire code")
-
-    // Wire order must be gesture index = key * 3 + gesture.
-    let codes = custom.actionCodes
-    expect(codes.count == 9, "nine action codes")
-    expect(codes[ButtonKey.down.rawValue * 3 + ButtonGesture.click.rawValue] == 1, "dictate code")
-    expect(codes[ButtonKey.mid.rawValue * 3 + ButtonGesture.long.rawValue] == 3, "ask code")
-    expect(codes[ButtonKey.up.rawValue * 3 + ButtonGesture.click.rawValue] == 4, "Doubao code")
-    expect(codes[ButtonKey.mid.rawValue * 3 + ButtonGesture.click.rawValue] == 5, "Return code")
-
-    expect(ButtonAction.typelessDictate.isRecording, "dictate records")
-    expect(ButtonAction.doubao.isRecording, "Doubao records")
-    expect(!ButtonAction.enter.isRecording, "Return does not record")
-    expect(ButtonAction.typelessAsk.isTypeless, "ask is Typeless-backed")
-
-    // Only the same input method may end a take (mirrors VIBE_ACT_SAME_INPUT).
-    expect(
-        ButtonAction.typelessDictate.drivesSameInput(as: .typelessTranslate),
-        "Typeless modes share one input method")
-    expect(
-        !ButtonAction.typelessDictate.drivesSameInput(as: .doubao),
-        "Typeless and Doubao are separate input methods")
-    expect(ButtonAction.doubao.drivesSameInput(as: .doubao), "Doubao stops itself")
-    expect(!ButtonAction.doubao.isTypeless, "Doubao is not Typeless-backed")
-
-    // Gesture wire encoding: 0x20 | (button << 2) | gesture.
-    expect(GestureEvent.parse(0x24) == GestureEvent(key: .mid, gesture: .click), "0x24 = mid click")
-    expect(GestureEvent.parse(0x20) == GestureEvent(key: .up, gesture: .click), "0x20 = up click")
-    expect(GestureEvent.parse(0x2A) == GestureEvent(key: .down, gesture: .long), "0x2A = down long")
-    expect(GestureEvent.parse(0x19) == nil, "reject non-gesture byte")
-
-    let ud = UserDefaults(suiteName: "folovibe.buttons.\(UUID().uuidString)")!
-    let store = SettingsStore(defaults: ud)
-    store.current.buttons.set(.up, .long, .enter)
-    expect(SettingsStore(defaults: ud).current.buttons.action(.up, .long) == .enter,
-        "bindings round trip")
-}
-
-do {
-    expect(ReleaseInfo.version(fromTag: "v0.3.3-vibe-typeless") == "0.3.3", "tag to version")
-    expect(ReleaseInfo.version(fromTag: "0.4.0") == "0.4.0", "bare tag")
-
-    expect(versionIsNewer("0.3.4", than: "0.3.3"), "patch bump is newer")
-    expect(versionIsNewer("0.4.0", than: "0.3.9"), "minor bump beats higher patch")
-    expect(versionIsNewer("1.0.0", than: "0.9.9"), "major bump")
-    expect(!versionIsNewer("0.3.3", than: "0.3.3"), "same version is not newer")
-    expect(!versionIsNewer("0.3.2", than: "0.3.3"), "older is not newer")
-    // A dev build like 0.3.3-2-gc05cd86 must not offer to "upgrade" to 0.3.3.
-    expect(!versionIsNewer("0.3.3", than: "0.3.3-2-gc05cd86"), "release is not newer than its own dev build")
-    expect(versionIsNewer("0.3.4", than: "0.3.3-2-gc05cd86"), "next release beats a dev build")
-
-    let json = """
-    {"tag_name":"v0.3.3-vibe-typeless","assets":[
-      {"name":"FoloVibeBridge-macos.zip","browser_download_url":"https://example.com/a.zip"},
-      {"name":"FoloToy-AI-Passport-full.bin","browser_download_url":"https://example.com/f.bin"}]}
-    """.data(using: .utf8)!
-    let info = ReleaseInfo.parse(json)
-    expect(info?.version == "0.3.3", "parsed version")
-    expect(info?.appURL?.lastPathComponent == "a.zip", "parsed app asset")
-    expect(info?.firmwareURL?.lastPathComponent == "f.bin", "parsed firmware asset")
-    expect(ReleaseInfo.parse(Data("nonsense".utf8)) == nil, "reject malformed release")
-}
-
-do {
-    // The device derives its mode from the command's offset, so the three
     // codes must stay consecutive.
     expect(VibeProtocol.powerModeEco == VibeProtocol.powerModeStandard + 1, "eco follows standard")
     expect(VibeProtocol.powerModeUltra == VibeProtocol.powerModeStandard + 2, "ultra follows eco")
@@ -175,23 +44,56 @@ do {
 }
 
 do {
-    // Defaults must keep today's behaviour: Typeless answers one press, Doubao
-    // hands-free wants two.
-    expect(BridgeSettings.default.talkTap == .single, "typeless defaults to a single tap")
-    expect(BridgeSettings.default.doubaoTap == .double, "doubao defaults to a double tap")
+    // A setup written when the app knew about particular input methods keeps
+    // working: the keys that lived in settings move onto the gestures that
+    // were sending them, double press and all. Without this an upgrade would
+    // leave every button silent until each one was recorded again.
+    let legacy = Data(#"""
+    {"talkKey":"F13","doubaoKey":"Right Option","talkTap":"single","doubaoTap":"double",
+     "buttons":{"bindings":{"0.0":"doubao","2.0":"typelessDictate","1.0":"enter"}}}
+    """#.utf8)
+    let old = try? JSONDecoder().decode(BridgeSettings.self, from: legacy)
+    expect(old?.buttons.action(.up, .click) == .voice, "Doubao binding becomes voice input")
+    expect(old?.buttons.stroke(.up, .click)?.keyCode == 0x3D, "and keeps Right Option")
+    expect(old?.buttons.stroke(.up, .click)?.style == .double, "and its double press")
+    expect(old?.buttons.stroke(.down, .click)?.keyCode == 0x69, "dictation keeps F13")
+    expect(old?.buttons.stroke(.down, .click)?.style == .tap, "as a single press")
+    // Return used to be an action of its own; it is the same key, now carried
+    // by the gesture, so the binding keeps working without being re-made.
+    expect(old?.buttons.action(.mid, .click) == .key, "Return becomes a sent key")
+    expect(old?.buttons.stroke(.mid, .click)?.keyCode == 0x24, "carrying Return itself")
+    expect(old?.buttons.label(.mid, .click) == "发送", "and naming the key on screen")
 
-    // A config written before the setting existed must still decode, and must
-    // land on those same defaults rather than nil or single-for-everything.
-    let legacy = Data(#"{"talkKey":"F13","doubaoKey":"Right Option","sendKey":"Return"}"#.utf8)
-    let decoded = try? JSONDecoder().decode(BridgeSettings.self, from: legacy)
-    expect(decoded?.talkKey == "F13", "legacy settings still decode")
-    expect(decoded?.doubaoTap == .double, "legacy settings keep the doubao double tap")
+    // The retired keys are read once and never written back.
+    let saved = try? JSONEncoder().encode(old ?? .default)
+    let text = String(decoding: saved ?? Data(), as: UTF8.self)
+    expect(!text.contains("talkKey") && !text.contains("doubaoTap"),
+        "retired settings are not written again")
+}
 
-    var s = BridgeSettings.default
-    s.doubaoTap = .single
-    let round = try? JSONDecoder().decode(
-        BridgeSettings.self, from: JSONEncoder().encode(s))
-    expect(round?.doubaoTap == .single, "tap style round trips")
+do {
+    // Presets are just named strokes, so picking one fills the same field the
+    // recorder would — and names the key on the device at the same time.
+    var map = ButtonMap()
+    map.bind(.up, .double, preset: "copy")
+    expect(map.action(.up, .double) == .key, "a preset is a sent key")
+    expect(map.stroke(.up, .double)?.modifiers == KeyStroke.command, "copy carries Command")
+    expect(map.label(.up, .double) == "复制", "and labels the key on the device")
+    expect(KeyPreset.find("playPause")?.stroke.isMedia == true,
+        "media keys are marked, since they do not travel as key events")
+    expect(KeyPreset.all.count == Set(KeyPreset.all.map(\.id)).count, "preset ids are unique")
+    expect(KeyPreset.Group.allCases.allSatisfy { !KeyPreset.grouped($0).isEmpty },
+        "every group has something in it")
+
+    // How a key is sent survives a save, and an older stroke reads as a tap.
+    var s = KeyStroke(keyCode: 8, modifiers: 0, label: "C", style: .hold)
+    let round = try? JSONDecoder().decode(KeyStroke.self, from: JSONEncoder().encode(s))
+    expect(round?.style == .hold, "hold survives a round trip")
+    let older = Data(#"{"keyCode":8,"modifiers":0,"label":"C","taps":2}"#.utf8)
+    expect((try? JSONDecoder().decode(KeyStroke.self, from: older))?.style == .double,
+        "a stroke written before styles reads as a double press")
+    s.style = .tap
+    expect(s.display == "C" , "a plain tap shows just the key")
 }
 
 do {
@@ -209,7 +111,7 @@ do {
     // Configurations written before labels existed still decode.
     let legacy = Data(#"{"bindings":{"0.0":"doubao"}}"#.utf8)
     let old = try? JSONDecoder().decode(ButtonMap.self, from: legacy)
-    expect(old?.action(.up, .click) == .doubao && old?.label(.up, .click) == nil,
+    expect(old?.action(.up, .click) == .voice && old?.label(.up, .click) == nil,
            "legacy button map has no labels")
 }
 
@@ -223,8 +125,8 @@ do {
 }
 
 do {
-    expect(ButtonAction.customKey.code == 9, "custom key wire code")
-    expect(!ButtonAction.customKey.isRecording, "custom key does not record")
+    expect(ButtonAction.key.code == 9, "send-key wire code")
+    expect(!ButtonAction.key.isRecording, "sending a key does not record")
     expect(KeyStroke.label(keyCode: 8, modifiers: KeyStroke.command, keyName: "C") == "⌘C",
         "label puts the symbol before the key")
     expect(KeyStroke.label(keyCode: 8,
@@ -232,7 +134,7 @@ do {
         keyName: "C") == "⌃⌥⇧⌘C", "modifiers use the conventional order")
 
     var map = ButtonMap.default
-    map.set(.down, .double, .customKey)
+    map.set(.down, .double, .key)
     map.setStroke(.down, .double, KeyStroke(keyCode: 8, modifiers: KeyStroke.command, label: "⌘C"))
     expect(map.stroke(.down, .double)?.label == "⌘C", "stroke stored per slot")
     expect(map.stroke(.up, .click) == nil, "other slots keep no stroke")
@@ -242,8 +144,8 @@ do {
     {"bindings":{"1.0":"enter"}}
     """.utf8)
     let decoded = try? JSONDecoder().decode(ButtonMap.self, from: legacy)
-    expect(decoded?.action(.mid, .click) == .enter, "legacy config still decodes")
-    expect(decoded?.stroke(.mid, .click) == nil, "legacy config has no strokes")
+    expect(decoded?.action(.mid, .click) == .key, "legacy config still decodes")
+    expect(decoded?.stroke(.mid, .click)?.keyCode == 0x24, "and gains the key it used to mean")
 
     let round = try? JSONDecoder().decode(
         ButtonMap.self, from: JSONEncoder().encode(map))

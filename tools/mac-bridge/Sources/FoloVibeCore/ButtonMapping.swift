@@ -29,107 +29,93 @@ public enum ButtonGesture: Int, CaseIterable, Codable, Hashable {
     }
 }
 
-/// What a gesture should do. The firmware no longer decides this; it only
-/// reports the gesture and lets the bridge map it, so changing a binding never
-/// requires reflashing.
+/// What a gesture should do. These are behaviours, not applications: which
+/// app a shortcut happens to drive is the user's business, so a gesture that
+/// starts dictation carries the shortcut for whatever they use.
 public enum ButtonAction: String, CaseIterable, Codable, Hashable {
     case none
-    case typelessDictate
-    case typelessTranslate
-    case typelessAsk
-    case doubao
-    case enter
-    case doubaoSelectAll
-    case doubaoClear
-    case newline
-    case customKey
+    case voice
+    case key
+    case clear
     case handoff
 
     public var title: String {
         switch self {
         case .none: return "无"
-        case .typelessDictate: return "Typeless 语音输入"
-        case .typelessTranslate: return "Typeless 翻译"
-        case .typelessAsk: return "Typeless 随便问"
-        case .doubao: return "豆包语音输入"
-        case .enter: return "发送回车"
-        case .doubaoSelectAll: return "全选"
-        case .doubaoClear: return "全选并删除"
-        case .newline: return "换行（不发送）"
-        case .customKey: return "自定义按键"
+        case .voice: return "语音输入"
+        case .key: return "发送按键"
+        case .clear: return "全选并删除"
         case .handoff: return "交给另一台 Mac"
         }
     }
 
-    /// The short name the device prints under a key, mirroring action_title()
-    /// in vibe_ui.c. Shown as the placeholder for a custom label.
+    /// True for the actions that carry a shortcut of their own.
+    public var needsStroke: Bool { self == .voice || self == .key }
+
+    /// Recording has to start on the device itself: waiting for a round trip
+    /// would clip the first syllable. The device only needs this one bit.
+    public var isRecording: Bool { self == .voice }
+
+    /// The short name the device prints under a key when no label is set.
     public var deviceTitle: String {
         switch self {
         case .none: return "--"
-        case .typelessDictate: return "语音"
-        case .typelessTranslate: return "翻译"
-        case .typelessAsk: return "随便问"
-        case .doubao: return "豆包"
-        case .enter: return "发送"
-        case .doubaoSelectAll: return "全选"
-        case .doubaoClear: return "删除"
-        case .newline: return "换行"
-        case .customKey: return "自定"
+        case .voice: return "语音"
+        case .key: return "按键"
+        case .clear: return "删除"
         case .handoff: return "切换"
         }
     }
 
-    /// Recording actions must start audio capture on the device itself: waiting
-    /// for a BLE round trip would clip the first syllable. The device only
-    /// needs this one bit, not the action's meaning.
-    public var isRecording: Bool {
-        switch self {
-        case .typelessDictate, .typelessTranslate, .typelessAsk, .doubao: return true
-        case .none, .enter, .doubaoSelectAll, .doubaoClear, .newline, .customKey, .handoff:
-            return false
-        }
-    }
-
-    /// Wire code sent to the device (VIBE_ACT_* in vibe_protocol.h). The device
-    /// uses it only to arm the microphone and label the on-screen key hints.
+    /// Wire code sent to the device (VIBE_ACT_* in vibe_protocol.h), which
+    /// uses it only to arm the microphone and label the keys. Codes for the
+    /// actions this app used to have are retired rather than reused, so an
+    /// older device never misreads a new binding.
     public var code: UInt8 {
         switch self {
         case .none: return 0
-        case .typelessDictate: return 1
-        case .typelessTranslate: return 2
-        case .typelessAsk: return 3
-        case .doubao: return 4
-        case .enter: return 5
-        case .doubaoSelectAll: return 6
-        case .doubaoClear: return 7
-        case .newline: return 8
-        case .customKey: return 9
+        case .voice: return 1
+        case .clear: return 7
+        case .key: return 9
         case .handoff: return 10
         }
     }
 
-    /// Two recording actions drive the same input method when they are equal,
-    /// or when both are Typeless modes. Mirrors VIBE_ACT_SAME_INPUT so the
-    /// device and the bridge agree on what may stop a take.
-    public func drivesSameInput(as other: ButtonAction) -> Bool {
-        self == other || (isTypeless && other.isTypeless)
+    /// Bindings written when every shortcut was its own action, or when they
+    /// were named after input methods. Anything that sends one key is now the
+    /// same action carrying that key; `ButtonMap` fills in the stroke.
+    public init(legacy raw: String) {
+        switch raw {
+        case "typelessDictate", "typelessTranslate", "typelessAsk", "doubao": self = .voice
+        case "customKey", "enter", "newline", "selectAll": self = .key
+        case "doubaoSelectAll": self = .key
+        case "doubaoClear": self = .clear
+        default: self = ButtonAction(rawValue: raw) ?? .none
+        }
     }
 
-    public var isTypeless: Bool {
-        switch self {
-        case .typelessDictate, .typelessTranslate, .typelessAsk: return true
-        default: return false
+    /// The preset a retired action turns into, so an upgrade keeps doing what
+    /// it did rather than silently sending nothing.
+    static func legacyPreset(_ raw: String) -> KeyPreset? {
+        switch raw {
+        case "enter": return KeyPreset.find("return")
+        case "newline": return KeyPreset.find("newline")
+        case "selectAll", "doubaoSelectAll": return KeyPreset.find("selectAll")
+        default: return nil
         }
     }
 }
 
 public struct ButtonMap: Codable, Equatable {
     private var bindings: [String: ButtonAction]
-    /// Only meaningful for slots bound to `.customKey`.
+    /// The shortcut a gesture sends; needed by voice input and send-key.
     private var strokes: [String: KeyStroke]
     /// What the device screen says for a gesture, when the built-in name will
     /// not do — a different input method behind the same action, say.
     private var labels: [String: String]
+    /// What each slot was bound to before actions stopped being named after
+    /// input methods. Not stored: it only exists to carry an old setup over.
+    public private(set) var legacyBindings: [String: String] = [:]
 
     public init(bindings: [String: ButtonAction] = [:],
                 strokes: [String: KeyStroke] = [:],
@@ -146,9 +132,22 @@ public struct ButtonMap: Codable, Equatable {
     /// Configurations written before custom keys existed have no `strokes`.
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        bindings = try c.decodeIfPresent([String: ButtonAction].self, forKey: .bindings) ?? [:]
+        let raw = try c.decodeIfPresent([String: String].self, forKey: .bindings) ?? [:]
+        bindings = raw.mapValues { ButtonAction(legacy: $0) }
+        // Retired actions that were simply one key become that key right here:
+        // nothing outside this type is needed to know what Return meant. Only
+        // the input-method ones wait for adoptLegacyStrokes, whose keys used
+        // to live in settings.
+        legacyBindings = raw.filter { ButtonAction(rawValue: $0.value) == nil }
         strokes = try c.decodeIfPresent([String: KeyStroke].self, forKey: .strokes) ?? [:]
         labels = try c.decodeIfPresent([String: String].self, forKey: .labels) ?? [:]
+        for (slot, value) in raw {
+            guard let preset = ButtonAction.legacyPreset(value), strokes[slot] == nil else {
+                continue
+            }
+            strokes[slot] = preset.stroke
+            if labels[slot] == nil { labels[slot] = preset.short }
+        }
     }
 
     /// The custom screen label, or nil to use the built-in name.
@@ -161,6 +160,35 @@ public struct ButtonMap: Codable, Equatable {
         let trimmed = text?.trimmingCharacters(in: .whitespaces) ?? ""
         labels[Self.slot(key, gesture)] = trimmed.isEmpty ? nil : trimmed
     }
+
+    /// Fills in the shortcut for gestures migrated from the old input-method
+    /// actions, whose keys used to live in settings rather than per gesture.
+    /// Without this a working setup would go silent until every gesture was
+    /// recorded again.
+    public mutating func adoptLegacyStrokes(dictation: KeyStroke?, doubao: KeyStroke?) {
+        for (slot, raw) in legacyBindings where strokes[slot] == nil {
+            switch raw {
+            case "doubao": strokes[slot] = doubao
+            case "typelessDictate": strokes[slot] = dictation
+            case "typelessTranslate":
+                strokes[slot] = dictation.map { shifted($0, by: KeyStroke.shift, symbol: "⇧") }
+            case "typelessAsk":
+                strokes[slot] = dictation.map { spaced($0) }
+            default: break
+            }
+        }
+        legacyBindings = [:]
+    }
+
+    /// The old translation shortcut was the dictation key plus Shift.
+    private func shifted(_ s: KeyStroke, by flag: UInt64, symbol: String) -> KeyStroke {
+        KeyStroke(keyCode: s.keyCode, modifiers: s.modifiers | flag,
+                  label: symbol + s.label, style: s.style)
+    }
+
+    /// And "ask anything" was the dictation key followed by Space, which a
+    /// single stroke cannot express; the base key is the closest honest thing.
+    private func spaced(_ s: KeyStroke) -> KeyStroke { s }
 
     /// Wire slot for a gesture: button * 3 + gesture, as the firmware counts.
     public static func wireSlot(_ key: ButtonKey, _ gesture: ButtonGesture) -> UInt8 {
@@ -200,21 +228,29 @@ public struct ButtonMap: Codable, Equatable {
         return out
     }
 
-    /// Laid out for the thumb rather than for the old firmware: the two input
-    /// methods sit on the outer keys and confirm sits in the middle, where the
-    /// finger rests.
+    /// A usable starting point: voice input on the outer keys, confirming and
+    /// editing in the middle where the finger rests. Every binding here is one
+    /// the user can change, and the presets show how.
     public static let `default`: ButtonMap = {
         var map = ButtonMap()
-        map.set(.up, .click, .doubao)
-        map.set(.up, .double, .doubaoSelectAll)
-        map.set(.up, .long, .doubaoClear)
-        map.set(.mid, .click, .enter)
-        // 换行放在中键的另外两个手势上:确认和换行是同一类操作,手指不用挪。
-        map.set(.mid, .double, .newline)
-        map.set(.mid, .long, .newline)
-        map.set(.down, .click, .typelessDictate)
-        map.set(.down, .double, .typelessTranslate)
-        map.set(.down, .long, .typelessAsk)
+        map.set(.up, .click, .voice)
+        map.bind(.up, .double, preset: "copy")
+        map.bind(.up, .long, preset: "paste")
+        map.bind(.mid, .click, preset: "return")
+        map.bind(.mid, .double, preset: "newline")
+        map.set(.mid, .long, .clear)
+        map.set(.down, .click, .voice)
+        map.bind(.down, .double, preset: "undo")
+        map.set(.down, .long, .handoff)
         return map
     }()
+
+    /// Binds a gesture to a ready-made shortcut, naming the key on the device
+    /// screen at the same time.
+    public mutating func bind(_ key: ButtonKey, _ gesture: ButtonGesture, preset id: String) {
+        guard let preset = KeyPreset.find(id) else { return }
+        set(key, gesture, .key)
+        setStroke(key, gesture, preset.stroke)
+        setLabel(key, gesture, preset.short)
+    }
 }

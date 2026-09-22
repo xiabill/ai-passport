@@ -23,7 +23,7 @@ final class MicTest {
         samples.removeAll()
         result = "待录：在设备上按确定说话再按确定停止"
         lock.unlock()
-        Log.debug("麦克风测试：待录")
+        Log.sys("麦克风测试：待录")
     }
 
     func cancel() {
@@ -55,11 +55,11 @@ final class MicTest {
         do {
             let url = try Self.writeWAV(pcm)
             result = String(format: "上次 %.1fs · 峰值 %d · %@", seconds, peak(pcm), url.lastPathComponent)
-            Log.debug("麦克风测试已保存 \(url.path)")
+            Log.sys("麦克风测试已保存 \(url.path)")
             play(url)
         } catch {
             result = "保存失败：\(error.localizedDescription)"
-            Log.debug(result)
+            Log.sys(result)
         }
     }
 
@@ -79,7 +79,7 @@ final class MicTest {
             player.play()
             playback = (engine, player)
         } catch {
-            Log.debug("回放失败：\(error.localizedDescription)")
+            Log.sys("回放失败：\(error.localizedDescription)")
         }
     }
 

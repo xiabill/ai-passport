@@ -28,5 +28,5 @@ public struct LogLine: Equatable, Identifiable {
 }
 
 public enum LogCategory {
-    public static let all = ["系统", "蓝牙", "音频", "按键", "Typeless", "调试"]
+    public static let all = ["系统", "蓝牙", "音频", "按键"]
 }

@@ -113,7 +113,7 @@ final class AudioOutput {
     }
 
     func playTestTone(seconds: Double = 2) {
-        Log.debug("播放 \(Int(seconds)) 秒 440Hz 测试音")
+        Log.audio("播放 \(Int(seconds)) 秒 440Hz 测试音")
         testTone = true
         DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
             self?.testTone = false
