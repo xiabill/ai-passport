@@ -292,6 +292,13 @@ final class AppModel: ObservableObject {
         if Date().timeIntervalSince(lastEnvCheck) >= Self.envCheckSec {
             lastEnvCheck = Date()
             refreshChecks()
+            // macOS moves an audio engine back to the default output on its own
+            // after a configuration change. Catch it within seconds rather
+            // than let the next take play out of the speakers.
+            if !audio.isOnChosenDevice {
+                Log.audio("输出漂离了 \(settings.current.outputDevice)，重新绑定")
+                audio.rebuild(reason: "输出设备漂移")
+            }
         }
         if mic.result != "未测试" { audioTestNote = mic.result }
 

@@ -90,9 +90,57 @@ final class AudioOutput {
                 userInfo: [NSLocalizedDescriptionKey: "找不到输出设备 \(deviceName)"]
             )
         }
-        try engine.outputNode.auAudioUnit.setDeviceID(deviceID)
+        // The engine's output follows the system default device unless told
+        // otherwise, and snaps back to it whenever the audio configuration
+        // changes. Setting the device through AVAudioEngine was not enough: it
+        // was found playing the user's voice out of the speakers with the
+        // virtual device selected. Bind the underlying unit directly, with the
+        // engine stopped, and then check what it actually bound to.
+        if engine.isRunning { engine.stop() }
+        guard let unit = engine.outputNode.audioUnit else {
+            throw NSError(domain: "FoloVibe", code: 2,
+                          userInfo: [NSLocalizedDescriptionKey: "无法访问音频输出单元"])
+        }
+        var id = deviceID
+        let status = AudioUnitSetProperty(
+            unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0,
+            &id, UInt32(MemoryLayout<AudioDeviceID>.size))
+        guard status == noErr else {
+            throw NSError(domain: "FoloVibe", code: 3,
+                          userInfo: [NSLocalizedDescriptionKey: "绑定输出设备失败（\(status)）"])
+        }
         engine.connect(sourceNode, to: engine.outputNode, format: format)
-        if !engine.isRunning { try engine.start() }
+        try engine.start()
+
+        // Speech is private. Playing it out loud is worse than playing nothing,
+        // so if the output is anywhere but the chosen device, stop.
+        let bound = boundDeviceID
+        guard bound == deviceID else {
+            engine.stop()
+            throw NSError(domain: "FoloVibe", code: 4, userInfo: [
+                NSLocalizedDescriptionKey:
+                    "输出没有接到 \(deviceName)，而是接到了 \(Self.deviceName(bound) ?? "未知设备")；"
+                    + "为免声音从扬声器放出，已停止输出"])
+        }
+    }
+
+    /// The device the output unit is actually using right now.
+    var boundDeviceID: AudioDeviceID {
+        guard let unit = engine.outputNode.audioUnit else { return 0 }
+        var id = AudioDeviceID(0)
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        AudioUnitGetProperty(unit, kAudioOutputUnitProperty_CurrentDevice,
+                             kAudioUnitScope_Global, 0, &id, &size)
+        return id
+    }
+
+    /// False when the output has wandered off the chosen device, which the
+    /// system does on its own after a configuration change.
+    var isOnChosenDevice: Bool {
+        guard engine.isRunning, let want = Self.findOutputDevice(nameContains: deviceName) else {
+            return true  // nothing playing, nothing to leak
+        }
+        return boundDeviceID == want
     }
 
     func rebuild(reason: String) {
