@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+- The Mac app no longer revolves around particular input methods: the state watching, re-pressing, microphone rewriting and their settings are gone. A gesture now says which key to send and how, with 27 presets, custom recording (including a bare modifier) and tap/double/hold delivery; the layout follows the hardware, one card per button. Existing setups migrate.
+- Fixed the device sticking on "transcribing": the state depended on the input-method watching that was removed, and the device cannot know when transcription ends, so stopping a take returns to ready.
+- Four pages became two, with logs folded into settings, and the setup guide four steps.
 - Fixed two Macs trading the same device: only an explicit "use" claims a device now, automatic connections never do, and a device lost to another Mac is left alone by this one's reconnection for five minutes unless asked for.
 - Fixed handover to another Mac: the claim window goes from three to twenty seconds, since macOS needs four to six to discover the service before it can ask; the device now notifies the outgoing Mac first, and both Macs and the device screen report the handover.
 - Fixed "the app is damaged" on other Macs: without a stable signing identity the build skipped signing and shipped a bundle with no CodeResources; it now ad-hoc signs the bundle and verifies the result.
