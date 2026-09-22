@@ -42,15 +42,14 @@ int main(void)
     assert(s.phase == VIBE_PHASE_RECORDING);
     assert(s.active_gesture == G_MID_CLICK);
 
-    // Same gesture again stops; a Typeless action waits for the transcript.
+    // The same gesture again stops the take and the device is done: nothing
+    // reports when a transcript lands, so it must not sit waiting for one.
     o = vibe_state_apply(&s, VIBE_IN_GESTURE, G_MID_CLICK);
     assert(o.stop_capture);
-    assert(s.phase == VIBE_PHASE_PROCESSING);
-    o = vibe_state_apply(&s, VIBE_IN_TYPELESS, VIBE_TL_IDLE);
     assert(s.phase == VIBE_PHASE_IDLE);
     assert(s.active_gesture == VIBE_GESTURE_NONE);
 
-    // Doubao is not Typeless-backed, so it returns to idle immediately.
+    // A second recording key behaves the same way.
     linked_idle(&s);
     vibe_state_apply(&s, VIBE_IN_GESTURE, G_UP_CLICK);
     assert(s.phase == VIBE_PHASE_RECORDING);
@@ -69,11 +68,11 @@ int main(void)
     assert(s.phase == VIBE_PHASE_RECORDING);
     assert(s.active_gesture == G_MID_CLICK);
 
-    // A different Typeless mode still ends a Typeless take, since both drive
-    // the same input method.
+    // A different gesture does not end someone else's take.
     o = vibe_state_apply(&s, VIBE_IN_GESTURE, G_MID_DOUBLE);
-    assert(o.stop_capture);
-    assert(s.phase == VIBE_PHASE_PROCESSING);
+    assert(!o.stop_capture);
+    assert(s.phase == VIBE_PHASE_RECORDING);
+    assert(s.active_gesture == G_MID_CLICK);
 
     // Non-recording actions only report; they never touch the microphone.
     linked_idle(&s);
@@ -102,10 +101,6 @@ int main(void)
     vibe_state_apply(&s, VIBE_IN_GESTURE, G_MID_CLICK);
     o = vibe_state_apply(&s, VIBE_IN_SILENCE, 0);
     assert(o.stop_capture);
-    assert(s.phase == VIBE_PHASE_PROCESSING);
-
-    // A stuck transcript is released by the timeout.
-    o = vibe_state_apply(&s, VIBE_IN_PROC_TIMEOUT, 0);
     assert(s.phase == VIBE_PHASE_IDLE);
 
     // Losing the link mid-take stops capture and parks the device.

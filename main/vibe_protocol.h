@@ -32,13 +32,7 @@ extern "C" {
 #define VIBE_BLE_DOUBAO_SELECT_ALL  10U
 #define VIBE_BLE_DOUBAO_CLEAR       11U
 
-#define VIBE_TL_IDLE       0U
-#define VIBE_TL_RECORDING  1U
-#define VIBE_TL_PROCESSING 2U
-#define VIBE_TL_DOWN       3U
-
-// Control characteristic values >= 0x80 are Bridge commands. Values 0..3
-// remain reserved for Typeless state feedback.
+// Control characteristic values >= 0x80 are Bridge commands.
 // Sent on the event channel to the Mac that is losing the device, right
 // before its link is cut, so it can say what happened instead of reporting a
 // bare disconnect. Outside the gesture range (0x20..0x2B) and the legacy
@@ -111,15 +105,10 @@ extern "C" {
     ((a) == VIBE_ACT_DICTATE || (a) == VIBE_ACT_TRANSLATE || \
      (a) == VIBE_ACT_ASK || (a) == VIBE_ACT_DOUBAO)
 // Of those, the ones backed by Typeless, whose transcript we must wait for.
-#define VIBE_ACT_WAITS_TRANSCRIPT(a) \
-    ((a) == VIBE_ACT_DICTATE || (a) == VIBE_ACT_TRANSLATE || (a) == VIBE_ACT_ASK)
-
-// Two recording actions drive the same input method when they are the same
-// action, or when both are Typeless modes. Only a gesture from the same input
-// method may end a take; pressing the other one is ignored so a mistaken press
-// cannot cut a recording short.
-#define VIBE_ACT_SAME_INPUT(a, b) \
-    ((a) == (b) || (VIBE_ACT_WAITS_TRANSCRIPT(a) && VIBE_ACT_WAITS_TRANSCRIPT(b)))
+// Only the gesture that started a take may end it: pressing a different one
+// is ignored, so a mistaken press cannot cut a recording short. There is one
+// recording action now, so this is just equality.
+#define VIBE_ACT_SAME_INPUT(a, b) ((a) == (b))
 
 void vibe_packet_pack(uint8_t *out, uint16_t seq, int16_t predictor,
                       uint8_t step_index, const uint8_t *adpcm);

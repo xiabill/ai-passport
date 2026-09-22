@@ -57,7 +57,7 @@ static lv_obj_t *s_scr;
 static lv_obj_t *s_link_icon, *s_name;
 static lv_obj_t *s_batt_icon, *s_batt;
 static lv_obj_t *s_idle;           // hero group shown when not recording
-static lv_obj_t *s_halo, *s_ring, *s_mic, *s_bt, *s_spin;
+static lv_obj_t *s_halo, *s_ring, *s_mic, *s_bt;
 static lv_obj_t *s_title, *s_sub;
 static lv_obj_t *s_rec;            // hero group shown while recording
 static lv_obj_t *s_rec_dot, *s_rec_clock;
@@ -272,15 +272,11 @@ static void paint_idle_hero(const vibe_ui_model_t *m)
 {
     const char *title;
     uint32_t accent;
-    bool spinning = false, offline = false;
+    bool offline = false;
     if (!m->linked) {
         title = HERO("等待连接");
         accent = VU_FAINT;
         offline = true;
-    } else if (m->phase == VIBE_PHASE_PROCESSING) {
-        title = HERO("转写中");
-        accent = VU_ORANGE;
-        spinning = true;
     } else if (m->phase == VIBE_PHASE_IDLE && m->audio_sub) {
         title = HERO("就绪");
         accent = VU_GREEN;
@@ -300,8 +296,6 @@ static void paint_idle_hero(const vibe_ui_model_t *m)
         snprintf(sub, sizeof(sub), "充电中");
     } else if (offline) {
         snprintf(sub, sizeof(sub), "在 Mac 上打开 FoloVibe");
-    } else if (spinning) {
-        snprintf(sub, sizeof(sub), "文字马上就到");
     } else if (m->phase == VIBE_PHASE_IDLE && m->audio_sub) {
         snprintf(sub, sizeof(sub), "按下按键开始说话");
     } else {
@@ -322,9 +316,8 @@ static void paint_idle_hero(const vibe_ui_model_t *m)
             set_bg_c(part, mic);
         }
     }
-    show(s_mic, !offline && !spinning);
+    show(s_mic, !offline);
     show(s_bt, offline);
-    show(s_spin, spinning);
 }
 
 static void paint_recording(const vibe_ui_model_t *m)
@@ -559,16 +552,6 @@ static void build_idle_hero(void)
 
     s_bt = text(s_idle, LV_SYMBOL_BLUETOOTH, &lv_font_montserrat_20, VU_FAINT);
     lv_obj_align(s_bt, LV_ALIGN_TOP_MID, 0, RING_Y + RING_D / 2 - 11);
-
-    s_spin = lv_spinner_create(s_idle);
-    lv_obj_remove_flag(s_spin, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_size(s_spin, RING_D, RING_D);
-    lv_obj_set_pos(s_spin, RING_X, RING_Y);
-    lv_spinner_set_anim_params(s_spin, 1000, 90);
-    lv_obj_set_style_arc_width(s_spin, 3, LV_PART_MAIN);
-    lv_obj_set_style_arc_width(s_spin, 3, LV_PART_INDICATOR);
-    lv_obj_set_style_arc_opa(s_spin, LV_OPA_TRANSP, LV_PART_MAIN);
-    lv_obj_set_style_arc_color(s_spin, lv_color_hex(VU_ORANGE), LV_PART_INDICATOR);
 
     s_title = centered(s_idle, HERO("就绪"), &ui_font_cjk_24, VU_TEXT, RING_Y + RING_D + 14);
     s_sub = centered(s_idle, "", &ui_font_cjk_14, VU_DIM, RING_Y + RING_D + 46);

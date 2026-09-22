@@ -18,7 +18,6 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev);
 // BLE / audio callbacks: NimBLE or audio task. Must not touch LVGL.
 void vibe_app_on_ble_link(bool up);
 void vibe_app_on_audio_sub(bool sub);
-void vibe_app_on_typeless(uint8_t state);
 
 // Gesture-to-action bindings pushed by the bridge over the control channel.
 void vibe_app_on_actions(const uint8_t *actions, size_t len);

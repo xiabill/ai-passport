@@ -176,8 +176,6 @@ static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
         } else if (v == VIBE_CTRL_POWER_MODE_STANDARD || v == VIBE_CTRL_POWER_MODE_ECO ||
                    v == VIBE_CTRL_POWER_MODE_ULTRA) {
             vibe_app_on_power_mode((uint8_t)(v - VIBE_CTRL_POWER_MODE_STANDARD));
-        } else {
-            vibe_app_on_typeless(v);
         }
         return 0;
     }

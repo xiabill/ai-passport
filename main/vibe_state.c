@@ -29,32 +29,25 @@ static bool gesture_records(const vibe_state_t *s, uint8_t g)
     return VIBE_ACT_RECORDS(gesture_action(s, g));
 }
 
-static bool gesture_waits_transcript(const vibe_state_t *s, uint8_t g)
-{
-    return VIBE_ACT_WAITS_TRANSCRIPT(gesture_action(s, g));
-}
 
 void vibe_state_init(vibe_state_t *s)
 {
     s->phase = VIBE_PHASE_DOWN;
     s->linked = false;
     s->audio_sub = false;
-    s->typeless = VIBE_TL_IDLE;
     for (int i = 0; i < VIBE_GESTURE_COUNT; i++) s->actions[i] = VIBE_ACT_NONE;
     s->active_gesture = VIBE_GESTURE_NONE;
 }
 
-// Stops capture. Typeless-backed gestures park in PROCESSING until the bridge
-// reports the transcript landed; everything else is done immediately.
+// Stops capture and is done. The device used to park here waiting to be told
+// the transcript had landed, but nothing reports that any more: which app
+// receives the speech is the user's business, so the device cannot know when
+// it finished. Claiming to wait only left the screen stuck.
 static void finish_recording(vibe_state_t *s, vibe_out_t *o)
 {
     o->stop_capture = true;
-    if (gesture_waits_transcript(s, s->active_gesture)) {
-        s->phase = VIBE_PHASE_PROCESSING;
-    } else {
-        s->active_gesture = VIBE_GESTURE_NONE;
-        ready_phase(s);
-    }
+    s->active_gesture = VIBE_GESTURE_NONE;
+    ready_phase(s);
 }
 
 vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint32_t arg)
@@ -118,25 +111,10 @@ vibe_out_t vibe_state_apply(vibe_state_t *s, vibe_in_t in, uint32_t arg)
         break;
     }
 
-    case VIBE_IN_TYPELESS:
-        s->typeless = (uint8_t)arg;
-        if (s->phase == VIBE_PHASE_PROCESSING &&
-            (s->typeless == VIBE_TL_IDLE || s->typeless == VIBE_TL_DOWN)) {
-            s->active_gesture = VIBE_GESTURE_NONE;
-            ready_phase(s);
-        }
-        break;
-
     case VIBE_IN_SILENCE:
         if (s->phase == VIBE_PHASE_RECORDING) finish_recording(s, &o);
         break;
 
-    case VIBE_IN_PROC_TIMEOUT:
-        if (s->phase == VIBE_PHASE_PROCESSING) {
-            s->active_gesture = VIBE_GESTURE_NONE;
-            ready_phase(s);
-        }
-        break;
     }
 
     return o;

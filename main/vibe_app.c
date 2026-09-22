@@ -18,11 +18,6 @@
 
 static const char *TAG = "vibe_app";
 
-// Fallback only. The normal exit from PROCESSING is the bridge writing back a
-// Typeless idle/down state, which arrives within one poll of the transcript
-// landing. This must outlast a long transcription, otherwise a queued Return
-// fires while Typeless is still writing into the focused field.
-#define PROC_TIMEOUT_US (20 * 1000 * 1000)
 
 static SemaphoreHandle_t s_mu;
 static vibe_state_t s_st;
@@ -33,7 +28,6 @@ static uint8_t s_bar_samples;
 static uint8_t s_tail_level;
 static uint8_t s_last_event;
 static bool s_swallow_click;
-static esp_timer_handle_t s_proc_timer;
 
 static void apply(vibe_in_t in, uint32_t arg);
 static void actions_load(void);
@@ -46,7 +40,6 @@ static void publish_locked(void)
     for (int i = 0; i < VIBE_GESTURE_COUNT; i++) m.actions[i] = s_st.actions[i];
     m.linked = s_st.linked;
     m.audio_sub = s_st.audio_sub;
-    m.typeless = s_st.typeless;
     m.power_mode = vibe_power_mode();
     m.last_event = s_last_event;
     m.battery = -1;
@@ -58,24 +51,12 @@ static void publish_locked(void)
     vibe_ui_set(&m);
 }
 
-static void proc_timeout(void *arg)
-{
-    (void)arg;
-    apply(VIBE_IN_PROC_TIMEOUT, 0);
-}
 
-static void arm_proc_timer(bool on)
-{
-    if (!s_proc_timer) return;
-    esp_timer_stop(s_proc_timer);
-    if (on) esp_timer_start_once(s_proc_timer, PROC_TIMEOUT_US);
-}
 
 static void apply(vibe_in_t in, uint32_t arg)
 {
     xSemaphoreTake(s_mu, portMAX_DELAY);
     vibe_out_t o = vibe_state_apply(&s_st, in, arg);
-    bool processing = s_st.phase == VIBE_PHASE_PROCESSING;
     if (o.n_events) s_last_event = o.ble_events[o.n_events - 1];
     publish_locked();
     xSemaphoreGive(s_mu);
@@ -95,15 +76,14 @@ static void apply(vibe_in_t in, uint32_t arg)
     }
     if (o.edit_action) vibe_audio_beep(VIBE_BEEP_EDIT);
     for (uint8_t i = 0; i < o.n_events; i++) {
-        // The send cue follows the actual event emission, so a queued Return
-        // is acknowledged when it is released after Typeless processing.
+        // The send cue follows the event itself, so it sounds when the
+        // keystroke actually goes out.
         if (o.ble_events[i] == VIBE_BLE_ENTER ||
             o.ble_events[i] == VIBE_BLE_DOUBAO_STOP_SEND) {
             vibe_audio_beep(VIBE_BEEP_SEND);
         }
         vibe_ble_event_send(o.ble_events[i]);
     }
-    arm_proc_timer(processing);
 }
 
 esp_err_t vibe_app_start(void)
@@ -112,13 +92,7 @@ esp_err_t vibe_app_start(void)
     if (!s_mu) return ESP_ERR_NO_MEM;
     vibe_state_init(&s_st);
 
-    const esp_timer_create_args_t args = {
-        .callback = proc_timeout,
-        .name = "vibe_proc",
-    };
-    esp_err_t err = esp_timer_create(&args, &s_proc_timer);
-    if (err != ESP_OK) return err;
-
+    esp_err_t err = ESP_OK;
     actions_load();
     vibe_power_init();
     vibe_ui_start();
@@ -238,10 +212,6 @@ void vibe_app_on_audio_sub(bool sub)
     if (sub) vibe_audio_beep(VIBE_BEEP_READY);
 }
 
-void vibe_app_on_typeless(uint8_t state)
-{
-    apply(VIBE_IN_TYPELESS, state);
-}
 
 void vibe_app_on_power_mode(uint8_t mode)
 {
