@@ -61,6 +61,18 @@ extern "C" {
 // that connects without asking (an old Bridge, a phone, the OS reconnecting
 // on its own) is dropped instead of silently stealing the device.
 #define VIBE_CTRL_CLAIM       0x95U
+// Play a cue: 0x97 then the cue. For the sounds only the Mac can decide on —
+// the device does not know which key a gesture sends, so it cannot tell a
+// Return from any other key.
+#define VIBE_CTRL_CUE         0x97U
+#define VIBE_CUE_SEND         1U
+#define VIBE_CUE_EDIT         2U
+// Cue volume: 0x98, level (0 silent .. 4 loudest), flags. With bit 0 of the
+// flags set the device plays a sample at the new level, which is what the Mac
+// asks for when the user changes it — but not when it merely syncs on connect.
+#define VIBE_CTRL_VOLUME      0x98U
+#define VIBE_VOLUME_LEVELS    5U
+#define VIBE_VOLUME_PREVIEW   0x01U
 // Twenty seconds, not three: a Mac needs four to six just to discover the
 // service and its characteristics before it can ask for anything, so a short
 // window dropped every newcomer before it could speak.
@@ -73,7 +85,7 @@ extern "C" {
 // belongs to, drawn there for the same reason — Mac names are not limited to
 // the device font's few hundred characters.
 #define VIBE_LABEL_HOST_SLOT 9U
-#define VIBE_LABEL_HOST_W 150U
+#define VIBE_LABEL_HOST_W 108U  // stops short of the volume icon
 #define VIBE_LABEL_HOST_H 16U
 #define VIBE_LABEL_SLOTS  10U
 

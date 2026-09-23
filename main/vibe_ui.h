@@ -23,6 +23,7 @@ typedef struct {
     int charge_minutes;   // until full, or -1 when it cannot be stated honestly
     uint8_t typeless;
     vibe_power_mode_t power_mode;
+    uint8_t volume;       // cue level, 0 silent .. VIBE_VOLUME_LEVELS - 1
     uint8_t last_event;   // 0 if none
     uint8_t bars[VIBE_UI_BARS];
     uint32_t sent;

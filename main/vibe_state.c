@@ -3,7 +3,7 @@
 
 static vibe_out_t out_none(void)
 {
-    vibe_out_t o = {{0, 0}, 0, false, false, false};
+    vibe_out_t o = {0};
     return o;
 }
 

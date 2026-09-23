@@ -18,11 +18,21 @@ static const char *TAG = "vibe_audio";
 #define SILENCE_PEAK 500
 #define SILENCE_BLOCKS (30 * 50)  // 30 s of 20 ms blocks
 #define BEEP_SAMPLE_RATE 16000U
-// The ES8311's DAC feeds a fixed-gain speaker amplifier. Keep headroom in the
-// PCM signal, but leave enough level for the cue to remain audible in normal
-// use. The previous 900/36 combination was effectively inaudible here.
-#define BEEP_AMPLITUDE 1800
+// The ES8311's DAC feeds a fixed-gain speaker amplifier. Loudness is set by
+// the codec's volume, so the signal itself runs near full scale for the best
+// signal-to-noise, with a few dB kept back so the amplifier never clips.
+//
+// The cues used to be about 50 dB below full at the default level: a 2600
+// peak (-22 dBFS), a codec volume of 52 that the library's default curve maps
+// linearly onto -50..0 dB (so -24 dB), and the library's own -3.6 dB for a
+// 5 V amplifier fed from a 3.3 V DAC. That is roughly 1/300 of full scale.
+#define BEEP_AMPLITUDE 12000
 #define BEEP_VOLUME 52U
+// Codec volume per level: -22.5, -15, -7.5 and 0 dB on the default curve.
+// Even 7.5 dB steps, which the ear hears as roughly equal.
+static const uint8_t s_level_volume[VIBE_VOLUME_LEVELS] = {0, 55, 70, 85, 100};
+static volatile uint8_t s_level = 2;
+static volatile bool s_playing;
 #define BEEP_PI 3.14159265358979323846f
 
 static TaskHandle_t s_task;
@@ -81,7 +91,10 @@ static bool take_pending_beep(vibe_beep_t *type)
     // End is always the final state the user needs to hear. Keep connection
     // ready and send cues ahead of edit/start cues when several transitions
     // arrive in the same scheduling window.
-    if (pending & VIBE_BEEP_END) *type = VIBE_BEEP_END;
+    if (pending & VIBE_BEEP_SLEEP) *type = VIBE_BEEP_SLEEP;
+    else if (pending & VIBE_BEEP_END) *type = VIBE_BEEP_END;
+    else if (pending & VIBE_BEEP_DISCONNECT) *type = VIBE_BEEP_DISCONNECT;
+    else if (pending & VIBE_BEEP_BOOT) *type = VIBE_BEEP_BOOT;
     else if (pending & VIBE_BEEP_READY) *type = VIBE_BEEP_READY;
     else if (pending & VIBE_BEEP_SEND) *type = VIBE_BEEP_SEND;
     else if (pending & VIBE_BEEP_EDIT) *type = VIBE_BEEP_EDIT;
@@ -97,39 +110,67 @@ static void play_button_beep(vibe_beep_t type)
         unsigned hz;
         unsigned samples;
     } beep_segment_t;
-    // Use a sparse two-note palette. Fewer simultaneous/high harmonics means
-    // less energy for the fixed-gain PA to amplify, while the direction of
-    // the interval still distinguishes start, end and edit actions.
-    static const beep_segment_t start[] = {
-        {440U, 640U},  // A4, 40 ms
-        {0U,   240U},  // 15 ms gap
-        {554U, 800U},  // C#5, 50 ms
+    // One palette in C major so the cues sound like a family, each a short
+    // figure whose direction carries the meaning: rising means something is
+    // opening or has succeeded, falling means it has closed. Gaps are silent.
+    // (Durations at 16 kHz: 16 samples per millisecond.)
+    //
+    // An octave higher than first written: a speaker this size loses a lot
+    // below 1 kHz, and hearing is most sensitive from 2 to 4 kHz, so the same
+    // signal around 1-2.4 kHz sounds several times louder than around 500 Hz.
+    static const beep_segment_t boot[] = {       // awake: an arpeggio
+        {1046U, 1440U}, {0U, 160U},               // C6
+        {1318U, 1440U}, {0U, 160U},               // E6
+        {1568U, 2880U},                           // G6, left to ring
     };
-    static const beep_segment_t end[] = {
-        {554U, 720U},  // C#5, 45 ms
-        {0U,   240U},  // 15 ms gap
-        {440U, 1440U}, // A4, 90 ms
+    static const beep_segment_t ready[] = {      // connected: ready to talk
+        {1568U, 1600U}, {0U, 160U},               // G6
+        {2094U, 4000U},                          // C7, rings on
     };
-    static const beep_segment_t edit[] = {
-        {659U, 560U},  // E5, 35 ms
-        {0U,   240U},  // 15 ms gap
-        {554U, 960U},  // C#5, 60 ms
+    static const beep_segment_t start[] = {      // recording starts
+        {1318U, 960U}, {0U, 80U},                 // E6
+        {1760U, 1600U},                           // A6
     };
-    static const beep_segment_t ready[] = {
-        {392U, 560U},  // G4, 35 ms
-        {0U,   240U},  // 15 ms gap
-        {523U, 800U},  // C5, 50 ms
+    static const beep_segment_t end[] = {        // recording stops: mirrored
+        {1760U, 960U}, {0U, 80U},                 // A6
+        {1318U, 2080U},                           // E6
     };
-    static const beep_segment_t send[] = {
-        {784U, 480U},  // G5, 30 ms
-        {0U,   160U},  // 10 ms gap
-        {988U, 640U},  // B5, 40 ms
+    static const beep_segment_t send[] = {       // sent: quick, bright, upward
+        {1568U, 800U}, {0U, 80U},                 // G6
+        {1976U, 800U}, {0U, 80U},                 // B6
+        {2350U, 2400U},                          // D7
+    };
+    static const beep_segment_t disconnect[] = { // link lost: "connected" reversed
+        {2094U, 1600U}, {0U, 160U},              // C7
+        {1568U, 3200U},                           // G6
+    };
+    static const beep_segment_t sleep[] = {      // going to sleep: "boot" reversed
+        {1568U, 1440U}, {0U, 160U},               // G6
+        {1318U, 1440U}, {0U, 160U},               // E6
+        {1046U, 3600U},                           // C6, left to fade out
+    };
+    static const beep_segment_t edit[] = {       // erased: soft and low
+        {1318U, 720U}, {0U, 160U},                // E6
+        {1046U, 1280U},                           // C6
     };
 
     const beep_segment_t *segments;
     unsigned segment_count;
     const char *label;
-    if (type == VIBE_BEEP_START) {
+    if (s_level == 0) return;  // silent: nothing to play
+    if (type == VIBE_BEEP_SLEEP) {
+        segments = sleep;
+        segment_count = sizeof(sleep) / sizeof(sleep[0]);
+        label = "sleep";
+    } else if (type == VIBE_BEEP_DISCONNECT) {
+        segments = disconnect;
+        segment_count = sizeof(disconnect) / sizeof(disconnect[0]);
+        label = "disconnect";
+    } else if (type == VIBE_BEEP_BOOT) {
+        segments = boot;
+        segment_count = sizeof(boot) / sizeof(boot[0]);
+        label = "boot";
+    } else if (type == VIBE_BEEP_START) {
         segments = start;
         segment_count = sizeof(start) / sizeof(start[0]);
         label = "start";
@@ -154,7 +195,7 @@ static void play_button_beep(vibe_beep_t type)
     unsigned total_samples = 0;
     for (unsigned i = 0; i < segment_count; i++) total_samples += segments[i].samples;
     const unsigned duration_ms = (total_samples * 1000U) / BEEP_SAMPLE_RATE;
-    ESP_LOGI(TAG, "button chime %s (%ums, sine, volume=%u)", label, duration_ms, BEEP_VOLUME);
+    ESP_LOGI(TAG, "button chime %s (%ums, sine, level %u)", label, duration_ms, s_level);
     if (bsp_audio_set_format(BEEP_SAMPLE_RATE, 16, 1) != ESP_OK) {
         ESP_LOGW(TAG, "button %s beep format failed", label);
         return;
@@ -162,7 +203,7 @@ static void play_button_beep(vibe_beep_t type)
 
     // Keep headroom at both stages. Check the codec volume call explicitly so
     // a muted/reopened codec cannot make the cue disappear silently.
-    if (bsp_audio_set_volume(BEEP_VOLUME) != ESP_OK) {
+    if (bsp_audio_set_volume(s_level_volume[s_level]) != ESP_OK) {
         ESP_LOGW(TAG, "button %s beep volume failed", label);
     }
     int16_t pcm[64];
@@ -192,19 +233,22 @@ static void play_button_beep(vibe_beep_t type)
                 continue;
             }
 
-            // A short per-note envelope removes clicks at both note and gap
-            // boundaries. Keep this as a pure sine: the codec and speaker add
-            // enough character by themselves, while extra harmonics can push
+            // A bell rather than a beep: a 4 ms attack, then an exponential
+            // decay across the note, then a short fade so the tail never
+            // clicks. Flat-topped notes of the same length read as a buzz
+            // and were easy to miss. Still a pure sine: extra harmonics push
             // the small amplifier into audible distortion.
             const unsigned note_samples = segments[current].samples;
-            const unsigned envelope_samples = note_samples / 6U < 96U
-                ? (note_samples / 6U < 8U ? 8U : note_samples / 6U)
-                : 96U;
-            float gain = 1.0f;
-            if (local < envelope_samples) {
-                gain = (float)local / (float)envelope_samples;
-            } else if (local + envelope_samples > note_samples) {
-                gain = (float)(note_samples - local) / (float)envelope_samples;
+            const unsigned attack = 64U;
+            const unsigned fade = 48U;
+            float gain;
+            if (local < attack) {
+                gain = (float)local / (float)attack;
+            } else {
+                gain = expf(-2.4f * (float)(local - attack) / (float)note_samples);
+            }
+            if (local + fade > note_samples) {
+                gain *= (float)(note_samples - local) / (float)fade;
             }
             const float phase = 2.0f * BEEP_PI * (float)hz * (float)local /
                                 (float)BEEP_SAMPLE_RATE;
@@ -241,7 +285,9 @@ static void audio_task(void *arg)
         vibe_beep_t beep;
         // Play start before the first capture loop, or any cue while idle.
         if ((!capture_started || !s_recording) && take_pending_beep(&beep)) {
+            s_playing = true;
             play_button_beep(beep);
+            s_playing = false;
         }
 
         if (!s_recording) {
@@ -298,7 +344,9 @@ static void audio_task(void *arg)
         // This removes the old timing hole where a later transition could
         // replace the end cue before the audio task reached the idle loop.
         if (!s_recording && take_pending_beep(&beep)) {
+            s_playing = true;
             play_button_beep(beep);
+            s_playing = false;
         }
     }
 }
@@ -324,7 +372,8 @@ void vibe_audio_beep(vibe_beep_t type)
 {
     if (type == VIBE_BEEP_START || type == VIBE_BEEP_END ||
         type == VIBE_BEEP_EDIT || type == VIBE_BEEP_READY ||
-        type == VIBE_BEEP_SEND) {
+        type == VIBE_BEEP_SEND || type == VIBE_BEEP_BOOT ||
+        type == VIBE_BEEP_DISCONNECT || type == VIBE_BEEP_SLEEP) {
         portENTER_CRITICAL(&s_beep_mu);
         s_beep_pending |= (uint8_t)type;
         portEXIT_CRITICAL(&s_beep_mu);
@@ -332,6 +381,27 @@ void vibe_audio_beep(vibe_beep_t type)
                  type == VIBE_BEEP_START ? "start" :
                  type == VIBE_BEEP_END ? "end" :
                  type == VIBE_BEEP_EDIT ? "edit" :
-                 type == VIBE_BEEP_READY ? "ready" : "send", BEEP_VOLUME);
+                 type == VIBE_BEEP_READY ? "ready" :
+                 type == VIBE_BEEP_BOOT ? "boot" :
+                 type == VIBE_BEEP_DISCONNECT ? "disconnect" :
+                 type == VIBE_BEEP_SLEEP ? "sleep" : "send", s_level);
+    }
+}
+
+void vibe_audio_set_volume_level(uint8_t level)
+{
+    s_level = level < VIBE_VOLUME_LEVELS ? level : VIBE_VOLUME_LEVELS - 1U;
+}
+
+uint8_t vibe_audio_volume_level(void)
+{
+    return s_level;
+}
+
+void vibe_audio_drain(uint32_t timeout_ms)
+{
+    for (uint32_t waited = 0; waited < timeout_ms; waited += 20) {
+        if (!s_beep_pending && !s_playing) return;
+        vTaskDelay(pdMS_TO_TICKS(20));
     }
 }

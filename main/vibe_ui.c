@@ -55,7 +55,7 @@
 static SemaphoreHandle_t s_mu;
 static lv_obj_t *s_scr;
 static lv_obj_t *s_link_icon, *s_name;
-static lv_obj_t *s_batt_icon, *s_batt;
+static lv_obj_t *s_batt_icon, *s_batt, *s_vol_icon;
 static lv_obj_t *s_idle;           // hero group shown when not recording
 static lv_obj_t *s_halo, *s_ring, *s_mic, *s_bt;
 static lv_obj_t *s_title, *s_sub;
@@ -279,6 +279,12 @@ static void paint_status(const vibe_ui_model_t *m)
     set_text(s_batt_icon, m->charging ? LV_SYMBOL_CHARGE : battery_symbol(m->battery));
     set_fg(s_batt_icon, hue);
     set_fg(s_batt, m->charging ? VU_GREEN : VU_DIM);
+
+    // Cue volume, always in view: struck through when silent, one wave at
+    // the quiet levels, full at the loud ones.
+    set_text(s_vol_icon, m->volume == 0 ? LV_SYMBOL_MUTE
+                         : m->volume <= 2 ? LV_SYMBOL_VOLUME_MID : LV_SYMBOL_VOLUME_MAX);
+    set_fg(s_vol_icon, m->volume == 0 ? VU_FAINT : VU_DIM);
 }
 
 /// Which key starts dictation, read from the bindings, so the hint names the
@@ -560,6 +566,8 @@ static void build_status(void)
     lv_obj_set_width(s_batt, 34);
     lv_obj_align(s_batt, LV_ALIGN_TOP_RIGHT, -14, 12);
     lv_obj_align(s_batt_icon, LV_ALIGN_TOP_RIGHT, -52, 12);
+    s_vol_icon = text(s_scr, LV_SYMBOL_VOLUME_MID, &lv_font_montserrat_14, VU_DIM);
+    lv_obj_align(s_vol_icon, LV_ALIGN_TOP_RIGHT, -80, 12);
 
     fill(s_scr, 14, 36, 212, 1, 0, VU_LINE);
 }

@@ -1,5 +1,6 @@
 #include "vibe_ble.h"
 #include "vibe_ui.h"
+#include "vibe_audio.h"
 #include "vibe_app.h"
 #include "vibe_ota.h"
 
@@ -169,6 +170,15 @@ static int chr_access(uint16_t conn_handle, uint16_t attr_handle,
             if (n > sizeof(data)) n = sizeof(data);
             os_mbuf_copydata(ctxt->om, 4, n, data);
             vibe_ui_label_chunk(hdr[0], (uint16_t)(hdr[1] | (hdr[2] << 8)), data, n);
+        } else if (v == VIBE_CTRL_VOLUME && len >= 2) {
+            uint8_t b[2] = {0, 0};
+            os_mbuf_copydata(ctxt->om, 1, len >= 3 ? 2 : 1, b);
+            vibe_app_on_volume(b[0], (b[1] & VIBE_VOLUME_PREVIEW) != 0);
+        } else if (v == VIBE_CTRL_CUE && len >= 2) {
+            uint8_t cue = 0;
+            os_mbuf_copydata(ctxt->om, 1, 1, &cue);
+            if (cue == VIBE_CUE_SEND) vibe_audio_beep(VIBE_BEEP_SEND);
+            else if (cue == VIBE_CUE_EDIT) vibe_audio_beep(VIBE_BEEP_EDIT);
         } else if (v == VIBE_CTRL_LABEL_CLEAR && len >= 2) {
             uint8_t slot = 0;
             os_mbuf_copydata(ctxt->om, 1, 1, &slot);
@@ -481,6 +491,9 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         if (s_eco_adv_timer) esp_timer_stop(s_eco_adv_timer);
         vibe_app_on_audio_sub(false);
         vibe_app_on_ble_link(false);
+        // Losing the Mac is worth hearing, unless the device dropped it on
+        // purpose to go to sleep: that has its own cue.
+        if (!s_radio_down) vibe_audio_beep(VIBE_BEEP_DISCONNECT);
         if (!s_radio_down) {
             advertise();
             arm_eco_adv_timer();

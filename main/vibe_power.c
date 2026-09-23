@@ -4,6 +4,7 @@
 #include "bsp_battery.h"
 #include "bsp_display.h"
 #include "bsp_audio.h"
+#include "vibe_audio.h"
 #include "esp_log.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_sleep.h"
@@ -209,6 +210,12 @@ static void enter_deep_sleep(void)
         s_deep_sleep_failed = true;
         return;
     }
+
+    // Say so before going: the device goes dark and deaf, and without a cue
+    // it looks the same as having crashed. The cue has to finish first, since
+    // the codec is powered down right after.
+    vibe_audio_beep(VIBE_BEEP_SLEEP);
+    vibe_audio_drain(1500);
 
     // Deep sleep is a reboot-level transition, so close peripherals that do
     // not have a wake-time resume path. This also covers the fallback path

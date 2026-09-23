@@ -22,6 +22,8 @@ void vibe_app_on_audio_sub(bool sub);
 // Gesture-to-action bindings pushed by the bridge over the control channel.
 void vibe_app_on_actions(const uint8_t *actions, size_t len);
 void vibe_app_on_power_mode(uint8_t mode);
+// Cue volume from the Mac; stored so it holds before any Mac connects.
+void vibe_app_on_volume(uint8_t level, bool preview);
 void vibe_app_on_silence(void);
 void vibe_app_note_peak(uint8_t level);
 

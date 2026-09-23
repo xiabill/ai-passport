@@ -31,6 +31,7 @@ static bool s_swallow_click;
 
 static void apply(vibe_in_t in, uint32_t arg);
 static void actions_load(void);
+static void volume_load(void);
 
 static void publish_locked(void)
 {
@@ -41,6 +42,7 @@ static void publish_locked(void)
     m.linked = s_st.linked;
     m.audio_sub = s_st.audio_sub;
     m.power_mode = vibe_power_mode();
+    m.volume = vibe_audio_volume_level();
     m.last_event = s_last_event;
     m.battery = -1;
     m.battery_mv = -1;
@@ -74,14 +76,7 @@ static void apply(vibe_in_t in, uint32_t arg)
         vibe_ble_link_fast(false);
         vibe_power_note_activity();
     }
-    if (o.edit_action) vibe_audio_beep(VIBE_BEEP_EDIT);
     for (uint8_t i = 0; i < o.n_events; i++) {
-        // The send cue follows the event itself, so it sounds when the
-        // keystroke actually goes out.
-        if (o.ble_events[i] == VIBE_BLE_ENTER ||
-            o.ble_events[i] == VIBE_BLE_DOUBAO_STOP_SEND) {
-            vibe_audio_beep(VIBE_BEEP_SEND);
-        }
         // Gestures (0x20 | button << 2 | gesture) light their key on screen,
         // so a press that does not record still shows that it landed.
         const uint8_t ev = o.ble_events[i];
@@ -98,10 +93,14 @@ esp_err_t vibe_app_start(void)
 
     esp_err_t err = ESP_OK;
     actions_load();
+    volume_load();  // before the boot cue, so it plays at the chosen level
     vibe_power_init();
     vibe_ui_start();
     err = vibe_audio_start();
     if (err != ESP_OK) return err;
+    // Power-on and waking from deep sleep both come through here: the device
+    // says it is awake before it has found a Mac, then again once it has.
+    vibe_audio_beep(VIBE_BEEP_BOOT);
     err = vibe_ble_start();
     if (err != ESP_OK) return err;
     // Serves screen captures for the community publisher; a failure here must
@@ -157,9 +156,44 @@ void vibe_app_on_button(bsp_btn_t btn, bsp_btn_ev_t ev)
 
 #define VIBE_NVS_NS   "vibe"
 #define VIBE_NVS_KEY  "actions"
+#define VIBE_NVS_VOLUME "volume"
 
 // Bindings live in NVS so the keys still describe themselves after a power
 // cycle, instead of showing "--" until the bridge reconnects.
+static void volume_load(void)
+{
+    nvs_handle_t h;
+    if (nvs_open(VIBE_NVS_NS, NVS_READONLY, &h) != ESP_OK) return;
+    uint8_t level = 0;
+    if (nvs_get_u8(h, VIBE_NVS_VOLUME, &level) == ESP_OK) vibe_audio_set_volume_level(level);
+    nvs_close(h);
+}
+
+void vibe_app_on_volume(uint8_t level, bool preview)
+{
+    const uint8_t before = vibe_audio_volume_level();
+    vibe_audio_set_volume_level(level);
+    level = vibe_audio_volume_level();
+    if (level != before) {
+        nvs_handle_t h;
+        if (nvs_open(VIBE_NVS_NS, NVS_READWRITE, &h) == ESP_OK) {
+            nvs_set_u8(h, VIBE_NVS_VOLUME, level);
+            nvs_commit(h);
+            nvs_close(h);
+        }
+    }
+    if (preview) {
+        // The user is choosing: say where it is now, and let them hear it.
+        static const char *names[VIBE_VOLUME_LEVELS] = {
+            "提示音 静音", "提示音 小", "提示音 中", "提示音 大", "提示音 最大"};
+        vibe_ui_flash(names[level]);
+        vibe_audio_beep(VIBE_BEEP_READY);
+    }
+    xSemaphoreTake(s_mu, portMAX_DELAY);
+    publish_locked();
+    xSemaphoreGive(s_mu);
+}
+
 static void actions_load(void)
 {
     nvs_handle_t h;
