@@ -6,6 +6,10 @@
 
 ## Unreleased
 
+- Cues rebuilt: fixed the stacked attenuation that made them nearly silent, moved them up an octave with a bell envelope, added disconnect and sleep cues, and restored Return and delete cues by having the Mac request them.
+- Five-level cue volume, stored on the device and shown on its screen.
+- One-click install of a virtual microphone (BlackHole), verified against the published checksum.
+- Window fixed at 420 points wide (the earlier width never held), two-line gesture rows, redundant headers removed, rarely used settings folded away.
 - Fixed the device's audio playing out of the Mac's speakers: the output is bound directly and verified, stops if it cannot be, and is rechecked for drift.
 - Each take checks that something is listening to the virtual microphone, and says who is listening to what when nothing is.
 - The app is reorganised into keys, devices and general, with a status strip under the tabs; pressing a button lights its settings row; device battery is shown; duplicates removed and diagnostics folded away.
