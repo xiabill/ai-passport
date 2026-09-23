@@ -43,6 +43,7 @@ final class AppModel: ObservableObject {
     let mic = MicTest()
     let logFilter = LogFilter()
     let updater = Updater()
+    let micInstaller = VirtualMicInstaller()
     private(set) var ble: BLEClient!
 
     @Published var tab: AppTab = .keys
@@ -77,6 +78,7 @@ final class AppModel: ObservableObject {
     /// the 0.5 s UI tick.
     private static let envCheckSec: TimeInterval = 5
     private var appliedPowerMode: BridgePowerMode?
+    private var appliedVolume: Int?
     private var appliedButtons = ButtonMap.default
     private var wasStreaming = false
     private var listenerCheckAt: Date?
@@ -89,6 +91,8 @@ final class AppModel: ObservableObject {
         ble.autoReconnect = settings.current.autoReconnect
         ble.setPowerMode(settings.current.powerMode)
         appliedPowerMode = settings.current.powerMode
+        ble.setVolume(settings.current.cueVolume, preview: false)
+        appliedVolume = settings.current.cueVolume
         ble.onGesture = { [weak self] g, device in self?.handleGesture(g, from: device) }
         ble.onFirmwareVersion = { [weak self] v in self?.firmwareVersion = v }
         ble.onHandedOver = { [weak self] name in self?.notice("\(name) 已被另一台 Mac 接管") }
@@ -112,9 +116,12 @@ final class AppModel: ObservableObject {
         Log.sys("FoloVibe 已启动")
     }
 
-    /// Everything the setup guide checks is in place, so it can step aside.
+    /// Everything the setup guide is for is in place, so it can step aside.
+    /// Whether a device is connected is left out: the status strip already
+    /// says so, and every launch would otherwise flash the guide for the few
+    /// seconds a device takes to reconnect.
     var setupComplete: Bool {
-        axOK && bleSnap.bluetoothOn && bleSnap.subscribed && audioOK
+        axOK && bleSnap.bluetoothOn && audioOK
     }
 
     /// Refresh permission and device checks after the user returns from a
@@ -158,13 +165,23 @@ final class AppModel: ObservableObject {
                 applyAudio()
                 repairNote = "已把音频输出设为 \(pick)。请在语音软件里把麦克风也选成它。"
             } else {
-                Permissions.openBlackHoleDownload()
-                repairNote = "没有找到虚拟麦克风，已打开 BlackHole 安装页；装完点“再次检查”。"
+                installVirtualMic()
+                repairNote = "没有找到虚拟麦克风，正在安装 BlackHole…"
             }
             refreshChecks()
             return
         }
         repairNote = "检查完成，没有发现需要修复的项目。"
+    }
+
+    /// Installs a virtual microphone and routes the device's audio into it.
+    func installVirtualMic() {
+        micInstaller.install { [weak self] ok in
+            guard let self, ok else { return }
+            self.settings.current.outputDevice = VirtualMicInstaller.deviceName
+            self.applyAudio()
+            self.refreshChecks()
+        }
     }
 
     func applyAudio() {
@@ -225,8 +242,12 @@ final class AppModel: ObservableObject {
                 return
             }
             KeyTap.send(stroke)
+            // The device cannot tell a Return from any other key, so the Mac
+            // asks for the "sent" sound when that is what went out.
+            if stroke.isReturn { ble.cue(VibeProtocol.cueSend, on: device) }
         case .clear:
             KeyTap.tapClearAll()
+            ble.cue(VibeProtocol.cueEdit, on: device)
         }
     }
 
@@ -332,6 +353,12 @@ final class AppModel: ObservableObject {
             appliedButtons = settings.current.buttons
             ble.writeActions(settings.current.buttons.actionCodes)
             ble.writeLabels(renderedLabels())
+        }
+        if appliedVolume != settings.current.cueVolume {
+            appliedVolume = settings.current.cueVolume
+            // A change made here is the user choosing, so let them hear it.
+            ble.setVolume(settings.current.cueVolume, preview: true)
+            Log.sys("提示音音量：\(VibeProtocol.volumeLevels[settings.current.cueVolume])")
         }
         if appliedPowerMode != settings.current.powerMode {
             appliedPowerMode = settings.current.powerMode

@@ -5,6 +5,7 @@ struct SettingsView: View {
     @ObservedObject var model: AppModel
     @ObservedObject var store: SettingsStore
     @ObservedObject var updater: Updater
+    @ObservedObject var installer: VirtualMicInstaller
 
     let page: AppTab
 
@@ -13,6 +14,7 @@ struct SettingsView: View {
         self.page = page
         self.store = model.settings
         self.updater = model.updater
+        self.installer = model.micInstaller
     }
 
     var body: some View {
@@ -38,16 +40,6 @@ struct SettingsView: View {
     private var keysPage: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                PageHeader(
-                    title: "按键",
-                    subtitle: "给每个手势选一个动作和一个按键",
-                    trailing: AnyView(
-                        Button { store.reset() } label: {
-                            Label("恢复默认", systemImage: "arrow.counterclockwise")
-                        }
-                        .buttonStyle(.bordered))
-                )
-
                 if !model.setupComplete { SetupGuideView(model: model) }
 
                 ForEach(ButtonKey.allCases, id: \.self) { key in
@@ -61,59 +53,59 @@ struct SettingsView: View {
                     }
                 }
 
+                HStack {
+                    Spacer()
+                    Button("恢复默认按键") { store.current.buttons = .default }
+                        .buttonStyle(.link)
+                        .font(.caption)
+                }
             }
-            .frame(maxWidth: 920, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
+            .padding(12)
         }
     }
 
     private var devicesPage: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                PageHeader(
-                    title: "设备",
-                    subtitle: "连接、音频、功耗和固件",
-                    trailing: nil
-                )
-
-                SurfaceCard("连接设备", subtitle: "空闲的设备会自动连上；另一台 Mac 在用的，点「使用」切到本机") {
+                SurfaceCard("连接设备", subtitle: "空闲的自动连上；别的 Mac 在用的，点「使用」切过来") {
                     VStack(spacing: 15) {
                         deviceList
                         Divider()
-                        SettingRow("设备名前缀", subtitle: "默认 FoloVibe，填完整名字可只连某一台") {
-                            TextField("FoloVibe", text: prefixBinding)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 220)
-                        }
-                        SettingRow("音频输出设备", subtitle: "设备的声音送进这个虚拟麦克风，语音软件从这里听") {
+                        SettingRow("音频输出", subtitle: "语音软件也选它") {
                             HStack(spacing: 8) {
                                 Picker("输出设备", selection: outputBinding) {
                                     ForEach(audioDeviceOptions, id: \.self) { Text($0).tag($0) }
                                 }
                                 .labelsHidden()
-                                .frame(width: 220)
+                                .frame(width: 170)
                                 Button { model.refreshChecks() } label: {
                                     Image(systemName: "arrow.clockwise")
                                 }
                                 .help("刷新音频设备列表")
                             }
                         }
-                        if !model.audioOK {
-                            HStack(spacing: 8) {
-                                Label("未找到这个音频设备", systemImage: "exclamationmark.triangle.fill")
-                                    .font(.caption)
-                                    .foregroundStyle(.orange)
-                                Button("安装 BlackHole") { Permissions.openBlackHoleDownload() }
-                                Button("打开声音设置") { Permissions.openSound() }
+                        virtualMicHelp
+                    }
+                }
+
+                SurfaceCard("提示音", subtitle: "开机、连接、说话、发送、断开、休眠时设备发出的声音") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Picker("", selection: volumeBinding) {
+                            ForEach(0..<VibeProtocol.volumeLevels.count, id: \.self) { level in
+                                Text(VibeProtocol.volumeLevels[level]).tag(level)
                             }
                         }
-                        Divider()
-                        Toggle(isOn: autoReconnect) {
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text("断开后自动重连").font(.callout.weight(.medium))
-                                Text("设备重新出现时自动恢复连接").font(.caption).foregroundStyle(.secondary)
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        HStack {
+                            Text("改完会用新音量响一声")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Button("试听") {
+                                model.ble.setVolume(store.current.cueVolume, preview: true)
                             }
+                            .disabled(store.current.cueVolume == 0 || !model.bleSnap.subscribed)
                         }
                     }
                 }
@@ -138,7 +130,7 @@ struct SettingsView: View {
                         // Firmware follows the app: upgrade the Mac side first,
                         // then let it push the matching image to the device.
                         HStack(spacing: 10) {
-                            Text("设备固件 \(model.firmwareVersion)")
+                            Text(firmwareSummary)
                                 .font(.callout.weight(.medium))
                             Spacer()
                             if model.otaRunning {
@@ -166,9 +158,16 @@ struct SettingsView: View {
                         }
                     }
                 }
-                SurfaceCard("诊断", subtitle: "排查连接和音频问题时用") {
+                SurfaceCard("高级", subtitle: "一般不用动；排查连接或音频问题时再看") {
                     DisclosureGroup("展开") {
                         VStack(alignment: .leading, spacing: 8) {
+                            SettingRow("设备名前缀", subtitle: "填完整名字可只连某一台") {
+                                TextField("FoloVibe", text: prefixBinding)
+                                    .textFieldStyle(.roundedBorder)
+                                    .frame(width: 160)
+                            }
+                            Toggle("设备断开后自动重连", isOn: autoReconnect)
+                            Divider()
                             InfoRow(label: "音频包", value: "\(model.bleSnap.packets)")
                             InfoRow(label: "丢包", value: "\(model.bleSnap.lost)")
                             InfoRow(label: "MTU", value: "\(model.bleSnap.mtu)")
@@ -185,21 +184,13 @@ struct SettingsView: View {
                     .font(.callout)
                 }
             }
-            .frame(maxWidth: 920, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
+            .padding(12)
         }
     }
 
     private var generalPage: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                PageHeader(
-                    title: "通用",
-                    subtitle: "程序本身的设置",
-                    trailing: nil
-                )
-
                 SurfaceCard("程序更新", subtitle: "从 GitHub 获取最新版本") {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(spacing: 10) {
@@ -218,10 +209,12 @@ struct SettingsView: View {
                                 .disabled(model.updater.busy)
                             }
                         }
-                        Text(model.updater.status)
-                            .font(.caption)
-                            .foregroundStyle(model.updater.updateAvailable ? .orange : .secondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                        if !model.updater.status.hasPrefix("已是最新") {
+                            Text(model.updater.status)
+                                .font(.caption)
+                                .foregroundStyle(model.updater.updateAvailable ? .orange : .secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 }
 
@@ -255,75 +248,76 @@ struct SettingsView: View {
                     .font(.callout)
                 }
             }
-            .frame(maxWidth: 920, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
+            .padding(12)
         }
     }
 
-    /// One gesture on one button: what it does, which key it sends, and what
-    /// the device screen calls it. One line, so a button reads top to bottom.
+    /// One gesture on one button: what it does on the first line, and on the
+    /// second the key it sends and what the device screen calls it. Two lines
+    /// because the window is narrow; a gesture bound to nothing needs only one.
     @ViewBuilder
     private func gestureRow(_ key: ButtonKey, _ gesture: ButtonGesture) -> some View {
         let action = store.current.buttons.action(key, gesture)
         let stroke = store.current.buttons.stroke(key, gesture)
-        HStack(spacing: 10) {
-            Text(gesture.title)
-                .font(.callout.weight(.medium))
-                .frame(width: 42, alignment: .leading)
-
-            Menu {
-                Button("无") { bind(key, gesture, .none) }
-                Divider()
-                Button("语音输入（同时开始录音）") { bind(key, gesture, .voice) }
-                Button("全选并删除") { bind(key, gesture, .clear) }
-                Button("交给另一台 Mac") { bind(key, gesture, .handoff) }
-                Divider()
-                ForEach(KeyPreset.Group.allCases, id: \.self) { group in
-                    Menu(group.rawValue) {
-                        ForEach(KeyPreset.grouped(group)) { preset in
-                            Button("\(preset.title)   \(preset.stroke.label)") {
-                                store.current.buttons.bind(key, gesture, preset: preset.id)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Text(gesture.title)
+                    .font(.callout.weight(.medium))
+                    .frame(width: 36, alignment: .leading)
+                Menu {
+                    Button("无") { bind(key, gesture, .none) }
+                    Divider()
+                    Button("语音输入（同时开始录音）") { bind(key, gesture, .voice) }
+                    Button("全选并删除") { bind(key, gesture, .clear) }
+                    Button("交给另一台 Mac") { bind(key, gesture, .handoff) }
+                    Divider()
+                    ForEach(KeyPreset.Group.allCases, id: \.self) { group in
+                        Menu(group.rawValue) {
+                            ForEach(KeyPreset.grouped(group)) { preset in
+                                Button("\(preset.title)   \(preset.stroke.label)") {
+                                    store.current.buttons.bind(key, gesture, preset: preset.id)
+                                }
                             }
                         }
                     }
-                }
-                Divider()
-                Button("自定义按键…") {
-                    bind(key, gesture, .key)
-                    model.strokeTarget = GestureSlot(key: key, gesture: gesture)
-                }
-            } label: {
-                Text(menuTitle(key, gesture))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .frame(width: 190)
-
-            // The key itself, clickable when there is one to change.
-            if action.needsStroke {
-                Button {
-                    model.strokeTarget = GestureSlot(key: key, gesture: gesture)
+                    Divider()
+                    Button("自定义按键…") {
+                        bind(key, gesture, .key)
+                        model.strokeTarget = GestureSlot(key: key, gesture: gesture)
+                    }
                 } label: {
-                    Text(stroke?.display ?? "未设置")
-                        .font(.caption.monospaced())
-                        .frame(width: 104)
+                    Text(menuTitle(key, gesture))
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .controlSize(.small)
-                .help("点一下重新录制，可选按一下、连按两下或按住")
-            } else {
-                Text("—")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                    .frame(width: 104)
+                .frame(maxWidth: .infinity)
             }
-
-            TextField(placeholder(key, gesture, action), text: labelBinding(key, gesture))
-                .textFieldStyle(.roundedBorder)
-                .font(.caption)
-                .controlSize(.small)
-                .frame(width: 92)
-                .help("设备屏幕上显示的名字，留空用默认")
+            if action != .none {
+                HStack(spacing: 8) {
+                    Color.clear.frame(width: 36, height: 1)
+                    if action.needsStroke {
+                        Button {
+                            model.strokeTarget = GestureSlot(key: key, gesture: gesture)
+                        } label: {
+                            Label(stroke?.display ?? "设置按键", systemImage: "keyboard")
+                                .font(.caption.monospaced())
+                                .lineLimit(1)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .controlSize(.small)
+                        .help("点一下重新录制，可选按一下、连按两下或按住")
+                    } else {
+                        Spacer()
+                    }
+                    TextField(placeholder(key, gesture, action), text: labelBinding(key, gesture))
+                        .textFieldStyle(.roundedBorder)
+                        .font(.caption)
+                        .controlSize(.small)
+                        .frame(width: 104)
+                        .help("设备屏幕上显示的名字，留空用默认")
+                }
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         // Lights up when this gesture is pressed on the device, so what is
         // configured and what the button actually did can be checked at a
         // glance.
@@ -461,6 +455,64 @@ struct SettingsView: View {
 
     private var autoReconnect: Binding<Bool> {
         Binding(get: { store.current.autoReconnect }, set: { store.current.autoReconnect = $0 })
+    }
+
+    /// What to do when the chosen audio device is missing. With no virtual
+    /// microphone on the Mac at all, the only sensible thing is to install one.
+    @ViewBuilder
+    private var virtualMicHelp: some View {
+        let loopbacks = AudioOutput.loopbackDeviceNames()
+        if loopbacks.isEmpty || installer.busy || !installer.status.isEmpty {
+            VStack(alignment: .leading, spacing: 6) {
+                if loopbacks.isEmpty && !installer.busy {
+                    Label("这台 Mac 还没有虚拟麦克风，设备的声音没地方去",
+                          systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+                HStack(spacing: 8) {
+                    if loopbacks.isEmpty || installer.busy {
+                        Button {
+                            model.installVirtualMic()
+                        } label: {
+                            Label("一键安装虚拟麦克风", systemImage: "arrow.down.circle.fill")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(installer.busy)
+                    }
+                    if installer.busy { ProgressView().controlSize(.small) }
+                }
+                if !installer.status.isEmpty {
+                    Text(installer.status)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        } else if !model.audioOK {
+            HStack(spacing: 8) {
+                Label("找不到这个设备", systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                Button("改用 \(loopbacks[0])") {
+                    store.current.outputDevice = loopbacks[0]
+                }
+                .controlSize(.small)
+            }
+        }
+    }
+
+    /// Read from the devices themselves: the version arrives before a device
+    /// counts as ready, so a summary kept elsewhere could miss it.
+    private var firmwareSummary: String {
+        let versions = model.bleSnap.devices.filter(\.ready).map {
+            "\($0.name)  \($0.firmwareVersion.isEmpty ? "读取中" : $0.firmwareVersion)"
+        }
+        return versions.isEmpty ? "没有已连接的设备" : versions.joined(separator: "\n")
+    }
+
+    private var volumeBinding: Binding<Int> {
+        Binding(get: { store.current.cueVolume }, set: { store.current.cueVolume = $0 })
     }
 
     private var powerModeBinding: Binding<BridgePowerMode> {

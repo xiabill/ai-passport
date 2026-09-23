@@ -40,7 +40,8 @@ struct SetupGuideView: View {
                 symbol: "waveform",
                 tint: .purple,
                 ok: model.audioOK,
-                actionTitle: model.audioOK ? nil : "自动选择"),
+                actionTitle: model.audioOK ? nil
+                    : AudioOutput.loopbackDeviceNames().isEmpty ? "一键安装" : "自动选择"),
         ]
     }
 
@@ -48,7 +49,7 @@ struct SetupGuideView: View {
     /// install BlackHole when a working loopback device is already there.
     private var audioHint: String {
         let loopbacks = AudioOutput.loopbackDeviceNames()
-        if loopbacks.isEmpty { return "还没有虚拟麦克风，点右边前往安装 BlackHole" }
+        if loopbacks.isEmpty { return "这台 Mac 还没有虚拟麦克风，点右边一键安装" }
         return "点右边使用 \(loopbacks.joined(separator: "、"))"
     }
 
