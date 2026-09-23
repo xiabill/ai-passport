@@ -43,6 +43,10 @@ void vibe_ui_labels_reset(void);
 // worth one glance: the device changing hands, say.
 void vibe_ui_flash(const char *text);
 
+// A gesture was acted on; the key it belongs to lights up briefly so a press
+// that does not record still shows it landed.
+void vibe_ui_pulse(uint8_t gesture);
+
 #ifdef __cplusplus
 }
 #endif

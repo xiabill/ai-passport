@@ -17,6 +17,9 @@ bool vibe_ble_audio_subscribed(void);
 // `len` is VIBE_AUDIO_PKT_LEN for data, VIBE_AUDIO_HDR_LEN for EOS.
 esp_err_t vibe_ble_audio_send(const uint8_t *pkt, size_t len);
 esp_err_t vibe_ble_event_send(uint8_t ev);
+// Reports the battery to the Mac. Cheap to call often: only a change, or a new
+// link, actually goes out.
+void vibe_ble_battery_report(int percent, bool charging);
 
 void vibe_ble_stats(uint32_t *sent, uint32_t *dropped);
 const char *vibe_ble_name(void);

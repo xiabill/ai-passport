@@ -82,7 +82,11 @@ static void apply(vibe_in_t in, uint32_t arg)
             o.ble_events[i] == VIBE_BLE_DOUBAO_STOP_SEND) {
             vibe_audio_beep(VIBE_BEEP_SEND);
         }
-        vibe_ble_event_send(o.ble_events[i]);
+        // Gestures (0x20 | button << 2 | gesture) light their key on screen,
+        // so a press that does not record still shows that it landed.
+        const uint8_t ev = o.ble_events[i];
+        if ((ev & 0xE0U) == 0x20U) vibe_ui_pulse((uint8_t)(((ev >> 2) & 3U) * 3U + (ev & 3U)));
+        vibe_ble_event_send(ev);
     }
 }
 

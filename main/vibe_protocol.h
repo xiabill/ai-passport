@@ -38,6 +38,11 @@ extern "C" {
 // bare disconnect. Outside the gesture range (0x20..0x2B) and the legacy
 // events (1..11).
 #define VIBE_EV_HANDED_OVER 0x7EU
+// Battery report on the event channel: 0x7D, percent (0..100 or 0xFF unknown),
+// flags (bit 0 charging). Sent when either changes, and once per new link, so
+// the Mac can show every device's battery without polling.
+#define VIBE_EV_BATTERY     0x7DU
+#define VIBE_EV_BATTERY_CHARGING 0x01U
 
 #define VIBE_CTRL_POWER_MODE_STANDARD 0x80U
 #define VIBE_CTRL_POWER_MODE_ECO      0x81U
@@ -64,6 +69,13 @@ extern "C" {
 #define VIBE_LABEL_MAIN_H 20U
 #define VIBE_LABEL_ALT_W  44U
 #define VIBE_LABEL_ALT_H  16U
+// One extra label slot past the nine gestures: the name of the Mac the device
+// belongs to, drawn there for the same reason — Mac names are not limited to
+// the device font's few hundred characters.
+#define VIBE_LABEL_HOST_SLOT 9U
+#define VIBE_LABEL_HOST_W 150U
+#define VIBE_LABEL_HOST_H 16U
+#define VIBE_LABEL_SLOTS  10U
 
 // Raw gesture events. The device no longer decides what a button means; it
 // reports which button was pressed and how, and the bridge maps that to an

@@ -636,6 +636,27 @@ esp_err_t vibe_ble_audio_send(const uint8_t *pkt, size_t len)
     return notify_buf(s_audio_handle, pkt, len);
 }
 
+static int s_batt_sent = -2;          // -2: nothing sent on this link yet
+static bool s_batt_charging_sent;
+
+void vibe_ble_battery_report(int percent, bool charging)
+{
+    if (!s_event_sub) {
+        s_batt_sent = -2;   // resend once the next Mac subscribes
+        return;
+    }
+    if (percent == s_batt_sent && charging == s_batt_charging_sent) return;
+    const uint8_t msg[3] = {
+        VIBE_EV_BATTERY,
+        percent >= 0 && percent <= 100 ? (uint8_t)percent : 0xFF,
+        charging ? VIBE_EV_BATTERY_CHARGING : 0,
+    };
+    if (notify_buf(s_event_handle, msg, sizeof(msg)) == ESP_OK) {
+        s_batt_sent = percent;
+        s_batt_charging_sent = charging;
+    }
+}
+
 esp_err_t vibe_ble_event_send(uint8_t ev)
 {
     if (!s_event_sub) {

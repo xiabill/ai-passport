@@ -71,10 +71,15 @@ static vibe_charge_t s_charge;
 // drawn by LVGL tinted in the key's colour. Sized exactly per slot kind.
 static uint8_t s_lab_main[3][VIBE_LABEL_MAIN_W * VIBE_LABEL_MAIN_H];
 static uint8_t s_lab_alt[6][VIBE_LABEL_ALT_W * VIBE_LABEL_ALT_H];
-static lv_image_dsc_t s_lab_dsc[VIBE_GESTURE_COUNT];
-static volatile bool s_lab_ready[VIBE_GESTURE_COUNT];
-static volatile uint8_t s_lab_gen[VIBE_GESTURE_COUNT];   // bumped when a bitmap completes
-static uint8_t s_lab_shown_gen[VIBE_GESTURE_COUNT];
+static uint8_t s_lab_host[VIBE_LABEL_HOST_W * VIBE_LABEL_HOST_H];
+static lv_image_dsc_t s_lab_dsc[VIBE_LABEL_SLOTS];
+static volatile bool s_lab_ready[VIBE_LABEL_SLOTS];
+static volatile uint8_t s_lab_gen[VIBE_LABEL_SLOTS];   // bumped when a bitmap completes
+static uint8_t s_lab_shown_gen[VIBE_LABEL_SLOTS];
+static lv_obj_t *s_host_img;
+// The key that just fired, lit for a moment; see vibe_ui_pulse().
+static volatile uint8_t s_pulse = 0xFF;
+static volatile int64_t s_pulse_until_us;
 static lv_obj_t *s_key_img[3], *s_key_alt_img[3][2];
 static lv_timer_t *s_timer;
 static vibe_ui_model_t s_live;
@@ -249,10 +254,18 @@ static const char *battery_symbol(int pct)
 
 // --- painting ----------------------------------------------------------------
 
+static void show_label(lv_obj_t *img, uint8_t slot, bool on, lv_color_t color);
+static lv_obj_t *label_image(lv_obj_t *parent, int x, int y);
+
 static void paint_status(const vibe_ui_model_t *m)
 {
     set_fg(s_link_icon, m->linked ? VU_BLUE : VU_FAINT);
-    set_text(s_name, vibe_ble_name());
+    // Whose device this is matters more than the device's own name, which
+    // moves to the footer. Until a Mac says who it is, fall back to the name.
+    const bool host = m->linked && s_lab_ready[VIBE_LABEL_HOST_SLOT];
+    set_text(s_name, m->linked ? "已连接" : vibe_ble_name());
+    show(s_name, !host);
+    show_label(s_host_img, VIBE_LABEL_HOST_SLOT, host, lv_color_hex(VU_DIM));
 
     char line[24];
     if (m->battery >= 0) snprintf(line, sizeof(line), "%d%%", m->battery);
@@ -266,6 +279,24 @@ static void paint_status(const vibe_ui_model_t *m)
     set_text(s_batt_icon, m->charging ? LV_SYMBOL_CHARGE : battery_symbol(m->battery));
     set_fg(s_batt_icon, hue);
     set_fg(s_batt, m->charging ? VU_GREEN : VU_DIM);
+}
+
+/// Which key starts dictation, read from the bindings, so the hint names the
+/// key instead of saying "a key". Falls back when nothing records.
+static const char *voice_hint(const vibe_ui_model_t *m)
+{
+    static const char *keys[3] = {"上", "中", "下"};
+    static const char *ges[3] = {"", "双击", "长按"};
+    static char buf[32];
+    for (uint8_t g = 0; g < 3; g++) {
+        for (uint8_t b = 0; b < 3; b++) {
+            if (VIBE_ACT_RECORDS(m->actions[b * 3U + g])) {
+                snprintf(buf, sizeof(buf), "%s按%s键说话", ges[g], keys[b]);
+                return buf;
+            }
+        }
+    }
+    return "按下按键开始说话";
 }
 
 static void paint_idle_hero(const vibe_ui_model_t *m)
@@ -296,12 +327,17 @@ static void paint_idle_hero(const vibe_ui_model_t *m)
         snprintf(sub, sizeof(sub), "充电中");
     } else if (offline) {
         snprintf(sub, sizeof(sub), "在 Mac 上打开 FoloVibe");
+    } else if (m->battery >= 0 && m->battery <= 15) {
+        snprintf(sub, sizeof(sub), "电量低 请充电");
     } else if (m->phase == VIBE_PHASE_IDLE && m->audio_sub) {
-        snprintf(sub, sizeof(sub), "按下按键开始说话");
+        snprintf(sub, sizeof(sub), "%s", voice_hint(m));
     } else {
         snprintf(sub, sizeof(sub), "正在准备音频");
     }
     set_text(s_sub, sub);
+    const bool low = !m->charging && m->battery >= 0 && m->battery <= 15
+                     && !(s_flash[0] && esp_timer_get_time() < s_flash_until_us);
+    set_fg(s_sub, low ? VU_RED : VU_DIM);
 
     set_border_c(s_ring, lv_color_hex(accent));
     set_bg_c(s_ring, tint(accent, LV_OPA_10));
@@ -366,6 +402,7 @@ static void show_label(lv_obj_t *img, uint8_t slot, bool on, lv_color_t color)
 
 static void paint_keys(const vibe_ui_model_t *m)
 {
+    const bool pulsing = s_pulse < VIBE_GESTURE_COUNT && esp_timer_get_time() < s_pulse_until_us;
     static const uint8_t wire[3] = {VIBE_BTN_UP, VIBE_BTN_MID, VIBE_BTN_DOWN};
     static const uint8_t alt[2] = {VIBE_GES_DOUBLE, VIBE_GES_LONG};
     const bool live = m->linked && (m->phase == VIBE_PHASE_IDLE || m->phase == VIBE_PHASE_RECORDING);
@@ -395,8 +432,14 @@ static void paint_keys(const vibe_ui_model_t *m)
             label = "--";
             fg = bar = lv_color_hex(VU_FAINT);
         } else if (m->phase == VIBE_PHASE_RECORDING && VIBE_ACT_RECORDS(action)) {
-            // The other input method is ignored while one is recording.
+            // Another recording key is ignored while one is recording.
             fg = bar = lv_color_hex(VU_FAINT);
+        } else if (pulsing && s_pulse / 3U == b) {
+            // Just pressed: the card lights in the colour of what fired, so a
+            // press that sends a key rather than recording still shows.
+            const uint32_t fired = action_color(m->actions[s_pulse]);
+            card = tint(fired, LV_OPA_40);
+            edge = bar = lv_color_hex(fired);
         } else {
             card = tint(hue, LV_OPA_10);
         }
@@ -422,7 +465,10 @@ static void paint_keys(const vibe_ui_model_t *m)
             const char *name = a == VIBE_ACT_NONE ? "--"
                              : a == VIBE_ACT_ASK ? "提问" : action_title(a);
             set_text(s_key_alt[i][k], name);
-            const uint32_t alt_fg = live && a != VIBE_ACT_NONE ? VU_DIM : VU_FAINT;
+            const bool fired = pulsing && s_pulse == b * 3U + alt[k];
+            const uint32_t alt_fg = fired ? VU_TEXT
+                                  : live && a != VIBE_ACT_NONE ? VU_DIM : VU_FAINT;
+            set_fg(s_key_tag[i][k], fired ? VU_TEXT : VU_FAINT);
             set_fg(s_key_alt[i][k], alt_fg);
             const uint8_t slot = b * 3U + alt[k];
             const bool custom = alts && s_lab_ready[slot];
@@ -446,8 +492,11 @@ static void paint(const vibe_ui_model_t *m)
     paint_keys(m);
 
     char line[48];
-    snprintf(line, sizeof(line), "%s  " LV_SYMBOL_BULLET "  %s",
-             power_mode_title(m->power_mode), short_version());
+    // The device's own name lives here now; the status line names the Mac.
+    const char *name = vibe_ble_name();
+    const char *dash = strchr(name, '-');
+    snprintf(line, sizeof(line), "%s  " LV_SYMBOL_BULLET "  %s  " LV_SYMBOL_BULLET "  %s",
+             dash ? dash + 1 : name, power_mode_title(m->power_mode), short_version());
     set_text(s_foot, line);
 }
 
@@ -479,6 +528,7 @@ static void on_tick(lv_timer_t *timer)
         m.charging = s_live.charging;
         m.charge_minutes = s_live.charge_minutes;
         xSemaphoreGive(s_mu);
+        vibe_ble_battery_report(m.battery, m.charging);
     }
     paint(&m);
 
@@ -499,6 +549,7 @@ static void build_status(void)
     lv_obj_set_pos(s_link_icon, 14, 12);
     s_name = text(s_scr, "FoloVibe", &ui_font_cjk_14, VU_DIM);
     lv_obj_set_pos(s_name, 32, 12);
+    s_host_img = label_image(s_scr, 32, 12);
 
     s_batt = text(s_scr, "--", &ui_font_cjk_14, VU_DIM);
     lv_obj_align(s_batt, LV_ALIGN_TOP_RIGHT, -14, 12);
@@ -587,17 +638,24 @@ static lv_obj_t *label_image(lv_obj_t *parent, int x, int y)
 
 static void init_label_slots(void)
 {
-    for (uint8_t slot = 0; slot < VIBE_GESTURE_COUNT; slot++) {
-        const bool main = slot % 3U == VIBE_GES_CLICK;
+    for (uint8_t slot = 0; slot < VIBE_LABEL_SLOTS; slot++) {
         lv_image_dsc_t *d = &s_lab_dsc[slot];
         memset(d, 0, sizeof(*d));
         d->header.magic = LV_IMAGE_HEADER_MAGIC;
         d->header.cf = LV_COLOR_FORMAT_A8;
-        d->header.w = main ? VIBE_LABEL_MAIN_W : VIBE_LABEL_ALT_W;
-        d->header.h = main ? VIBE_LABEL_MAIN_H : VIBE_LABEL_ALT_H;
+        if (slot == VIBE_LABEL_HOST_SLOT) {
+            d->header.w = VIBE_LABEL_HOST_W;
+            d->header.h = VIBE_LABEL_HOST_H;
+            d->data = s_lab_host;
+        } else {
+            const bool main = slot % 3U == VIBE_GES_CLICK;
+            d->header.w = main ? VIBE_LABEL_MAIN_W : VIBE_LABEL_ALT_W;
+            d->header.h = main ? VIBE_LABEL_MAIN_H : VIBE_LABEL_ALT_H;
+            d->data = main ? s_lab_main[slot / 3U]
+                           : s_lab_alt[(slot / 3U) * 2U + (slot % 3U) - 1U];
+        }
         d->header.stride = d->header.w;
         d->data_size = d->header.w * d->header.h;
-        d->data = main ? s_lab_main[slot / 3U] : s_lab_alt[(slot / 3U) * 2U + (slot % 3U) - 1U];
     }
 }
 
@@ -696,7 +754,7 @@ void vibe_ui_set(const vibe_ui_model_t *model)
 
 void vibe_ui_label_chunk(uint8_t slot, uint16_t off, const uint8_t *data, uint16_t len)
 {
-    if (slot >= VIBE_GESTURE_COUNT || !s_lab_dsc[slot].data) return;
+    if (slot >= VIBE_LABEL_SLOTS || !s_lab_dsc[slot].data) return;
     const uint32_t size = s_lab_dsc[slot].data_size;
     if (off >= size) return;
     if (len > size - off) len = (uint16_t)(size - off);
@@ -711,16 +769,23 @@ void vibe_ui_label_chunk(uint8_t slot, uint16_t off, const uint8_t *data, uint16
 
 void vibe_ui_label_clear(uint8_t slot)
 {
-    if (slot < VIBE_GESTURE_COUNT) s_lab_ready[slot] = false;
+    if (slot < VIBE_LABEL_SLOTS) s_lab_ready[slot] = false;
 }
 
 void vibe_ui_labels_reset(void)
 {
-    for (uint8_t i = 0; i < VIBE_GESTURE_COUNT; i++) s_lab_ready[i] = false;
+    for (uint8_t i = 0; i < VIBE_LABEL_SLOTS; i++) s_lab_ready[i] = false;
 }
 
 void vibe_ui_flash(const char *text)
 {
     snprintf(s_flash, sizeof(s_flash), "%s", text ? text : "");
     s_flash_until_us = esp_timer_get_time() + 5000000;  // five seconds
+}
+
+void vibe_ui_pulse(uint8_t gesture)
+{
+    if (gesture >= VIBE_GESTURE_COUNT) return;
+    s_pulse = gesture;
+    s_pulse_until_us = esp_timer_get_time() + 600000;  // long enough to see
 }
