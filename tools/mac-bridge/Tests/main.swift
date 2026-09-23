@@ -72,6 +72,22 @@ do {
 }
 
 do {
+    // Cue volume defaults to the loudness the cues always had, and an older
+    // settings file without it lands there too rather than on silence.
+    expect(BridgeSettings.default.cueVolume == 2, "cue volume defaults to medium")
+    let older = try? JSONDecoder().decode(BridgeSettings.self, from: Data("{}".utf8))
+    expect(older?.cueVolume == 2, "missing volume reads as medium, not silent")
+    expect(VibeProtocol.volumeLevels.count == 5, "five volume levels, matching the firmware")
+}
+
+do {
+    // Only a bare Return earns the "sent" sound: Option+Return breaks a line.
+    expect(KeyPreset.find("return")?.stroke.isReturn == true, "Return is a send")
+    expect(KeyPreset.find("newline")?.stroke.isReturn == false, "Option+Return is not")
+    expect(KeyPreset.find("copy")?.stroke.isReturn == false, "nor is anything else")
+}
+
+do {
     // A key with no name of its own is still named on the device: the preset
     // it matches, else the key itself, never a bare "custom".
     var map = ButtonMap()

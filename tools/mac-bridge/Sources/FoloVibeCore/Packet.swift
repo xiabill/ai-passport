@@ -41,13 +41,20 @@ public enum VibeProtocol {
     /// "I mean to use this device." A device already in use only switches to
     /// a new connection that sends this; see VIBE_CTRL_CLAIM.
     public static let ctrlClaim: UInt8 = 0x95
+    /// Ask the device to play a cue; see VIBE_CTRL_CUE.
+    public static let ctrlCue: UInt8 = 0x97
+    public static let cueSend: UInt8 = 1
+    public static let cueEdit: UInt8 = 2
+    /// Cue volume: 0x98, level, flags (bit 0: play a sample now).
+    public static let ctrlVolume: UInt8 = 0x98
+    public static let volumeLevels = ["静音", "小", "中", "大", "最大"]
     /// The device says it is leaving for another Mac; see VIBE_EV_HANDED_OVER.
     public static let eventHandedOver: UInt8 = 0x7E
     /// Battery report: 0x7D, percent (0xFF unknown), flags (bit 0 charging).
     public static let eventBattery: UInt8 = 0x7D
     /// Label slot past the nine gestures that carries this Mac's name.
     public static let labelHostSlot: UInt8 = 9
-    public static let labelHost = (width: 150, height: 16)
+    public static let labelHost = (width: 108, height: 16)
     /// Bitmap sizes per slot kind; must match VIBE_LABEL_* in vibe_protocol.h.
     public static let labelMain = (width: 64, height: 20)
     public static let labelAlt = (width: 44, height: 16)

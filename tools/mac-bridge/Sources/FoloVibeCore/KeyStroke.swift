@@ -67,6 +67,10 @@ public struct KeyStroke: Codable, Equatable, Hashable {
         try c.encode(isMedia, forKey: .isMedia)
     }
 
+    /// Return on its own, the key that sends a message. Option+Return breaks a
+    /// line instead, so it does not count.
+    public var isReturn: Bool { !isMedia && keyCode == 0x24 && modifiers == 0 }
+
     /// True when the shortcut is a modifier key by itself, like Right Option.
     /// Those have to be held and released rather than typed.
     public var isModifierOnly: Bool { Self.modifierKeyCodes.contains(keyCode) }

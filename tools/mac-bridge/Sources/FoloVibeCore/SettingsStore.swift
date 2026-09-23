@@ -39,6 +39,9 @@ public struct BridgeSettings: Equatable, Codable {
     public var startHidden: Bool
     public var autoReconnect: Bool
     public var powerMode: BridgePowerMode
+    /// How loud the device's cues are, 0 (silent) to 4. Lives on the device
+    /// too, so it holds before any Mac connects.
+    public var cueVolume: Int
 
     public init(
         devicePrefix: String,
@@ -47,7 +50,8 @@ public struct BridgeSettings: Equatable, Codable {
         launchAtLogin: Bool = false,
         startHidden: Bool = false,
         autoReconnect: Bool = true,
-        powerMode: BridgePowerMode = .standard
+        powerMode: BridgePowerMode = .standard,
+        cueVolume: Int = 2
     ) {
         self.devicePrefix = devicePrefix
         self.outputDevice = outputDevice
@@ -56,6 +60,7 @@ public struct BridgeSettings: Equatable, Codable {
         self.startHidden = startHidden
         self.autoReconnect = autoReconnect
         self.powerMode = powerMode
+        self.cueVolume = cueVolume
     }
 
     public static let `default` = BridgeSettings(
@@ -65,7 +70,7 @@ public struct BridgeSettings: Equatable, Codable {
 
     private enum CodingKeys: String, CodingKey {
         case devicePrefix, outputDevice, buttons
-        case launchAtLogin, startHidden, autoReconnect, powerMode
+        case launchAtLogin, startHidden, autoReconnect, powerMode, cueVolume
         // Retired: the app no longer knows about particular input methods, so
         // their keys live on the gestures that send them. Decoded once, to
         // carry an existing setup across, then never written again.
@@ -84,6 +89,7 @@ public struct BridgeSettings: Equatable, Codable {
         startHidden = try c.decodeIfPresent(Bool.self, forKey: .startHidden) ?? d.startHidden
         autoReconnect = try c.decodeIfPresent(Bool.self, forKey: .autoReconnect) ?? d.autoReconnect
         powerMode = try c.decodeIfPresent(BridgePowerMode.self, forKey: .powerMode) ?? d.powerMode
+        cueVolume = try c.decodeIfPresent(Int.self, forKey: .cueVolume) ?? d.cueVolume
 
         let talk = try c.decodeIfPresent(String.self, forKey: .talkKey)
         let doubao = try c.decodeIfPresent(String.self, forKey: .doubaoKey)
@@ -105,6 +111,7 @@ public struct BridgeSettings: Equatable, Codable {
         try c.encode(startHidden, forKey: .startHidden)
         try c.encode(autoReconnect, forKey: .autoReconnect)
         try c.encode(powerMode, forKey: .powerMode)
+        try c.encode(cueVolume, forKey: .cueVolume)
     }
 
     /// The keys the old settings could name, by the label they were stored as.

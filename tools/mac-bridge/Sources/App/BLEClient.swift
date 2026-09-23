@@ -92,6 +92,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     private let lock = NSLock()
     private var snap = Snapshot()
     private var desiredPowerMode: BridgePowerMode = .standard
+    private var desiredVolume: Int = 2
     private var handoffUntil = Date.distantPast
     private var desiredActions = [UInt8]()
     /// Rendered custom labels by wire slot; nil means "use the built-in name".
@@ -126,6 +127,34 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
     // MARK: - Writes, broadcast to every ready device
 
     private var readyLinks: [Link] { links.values.filter(\.ready) }
+
+    /// Plays a cue on one device, or on every ready one when none is named.
+    /// Used for the sounds only the Mac can decide on, like a Return going out.
+    func cue(_ cue: UInt8, on device: UUID? = nil) {
+        queue.async { [self] in
+            let targets = device.flatMap { links[$0] }.map { [$0] } ?? readyLinks
+            for l in targets where l.ready {
+                guard let c = l.control else { continue }
+                l.peripheral.writeValue(Data([VibeProtocol.ctrlCue, cue]), for: c, type: .withoutResponse)
+            }
+        }
+    }
+
+    /// Sets cue volume on every device. A preview makes each one play a
+    /// sample at the new level; a plain sync on connect stays quiet.
+    func setVolume(_ level: Int, preview: Bool) {
+        queue.async { [self] in
+            desiredVolume = level
+            for l in readyLinks { writeVolume(l, preview: preview) }
+        }
+    }
+
+    private func writeVolume(_ l: Link, preview: Bool = false) {
+        guard let c = l.control else { return }
+        let level = UInt8(max(0, min(4, desiredVolume)))
+        l.peripheral.writeValue(Data([VibeProtocol.ctrlVolume, level, preview ? 1 : 0]),
+                                for: c, type: .withoutResponse)
+    }
 
     func setPowerMode(_ mode: BridgePowerMode) {
         queue.async { [self] in
@@ -600,6 +629,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             publish()
             Log.ble("\(l.name) 已就绪（共 \(readyLinks.count) 台）")
             writePowerMode(l)
+            writeVolume(l)
             writeActions(l)
             writeLabels(l)
             if claiming.remove(l.peripheral.identifier) != nil {
