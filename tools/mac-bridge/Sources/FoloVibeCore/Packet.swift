@@ -43,6 +43,11 @@ public enum VibeProtocol {
     public static let ctrlClaim: UInt8 = 0x95
     /// The device says it is leaving for another Mac; see VIBE_EV_HANDED_OVER.
     public static let eventHandedOver: UInt8 = 0x7E
+    /// Battery report: 0x7D, percent (0xFF unknown), flags (bit 0 charging).
+    public static let eventBattery: UInt8 = 0x7D
+    /// Label slot past the nine gestures that carries this Mac's name.
+    public static let labelHostSlot: UInt8 = 9
+    public static let labelHost = (width: 150, height: 16)
     /// Bitmap sizes per slot kind; must match VIBE_LABEL_* in vibe_protocol.h.
     public static let labelMain = (width: 64, height: 20)
     public static let labelAlt = (width: 44, height: 16)

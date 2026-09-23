@@ -142,10 +142,8 @@ public struct ButtonMap: Codable, Equatable {
         strokes = try c.decodeIfPresent([String: KeyStroke].self, forKey: .strokes) ?? [:]
         labels = try c.decodeIfPresent([String: String].self, forKey: .labels) ?? [:]
         for (slot, value) in raw {
-            guard let preset = ButtonAction.legacyPreset(value), strokes[slot] == nil else {
-                continue
-            }
-            strokes[slot] = preset.stroke
+            guard let preset = ButtonAction.legacyPreset(value) else { continue }
+            if strokes[slot] == nil { strokes[slot] = preset.stroke }
             if labels[slot] == nil { labels[slot] = preset.short }
         }
     }
@@ -189,6 +187,15 @@ public struct ButtonMap: Codable, Equatable {
     /// And "ask anything" was the dictation key followed by Space, which a
     /// single stroke cannot express; the base key is the closest honest thing.
     private func spaced(_ s: KeyStroke) -> KeyStroke { s }
+
+    /// What the device should call a gesture: the user's own label, else the
+    /// preset's short name, else the key itself. A key without a name would
+    /// otherwise show a generic "custom" that says nothing about what it does.
+    public func screenName(_ key: ButtonKey, _ gesture: ButtonGesture) -> String? {
+        if let own = label(key, gesture) { return own }
+        guard action(key, gesture) == .key, let s = stroke(key, gesture) else { return nil }
+        return KeyPreset.matching(s)?.short ?? s.label
+    }
 
     /// Wire slot for a gesture: button * 3 + gesture, as the firmware counts.
     public static func wireSlot(_ key: ButtonKey, _ gesture: ButtonGesture) -> UInt8 {

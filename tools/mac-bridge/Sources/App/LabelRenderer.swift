@@ -6,8 +6,20 @@ import FoloVibeCore
 /// hundred characters its firmware uses, so any text it did not ship with
 /// would otherwise render as boxes.
 enum LabelRenderer {
+    enum Kind { case main, alt, host }
+
     static func render(_ text: String, main: Bool) -> Data {
-        let (w, h) = main ? VibeProtocol.labelMain : VibeProtocol.labelAlt
+        render(text, kind: main ? .main : .alt)
+    }
+
+    static func render(_ text: String, kind: Kind) -> Data {
+        let (w, h): (Int, Int)
+        switch kind {
+        case .main: (w, h) = VibeProtocol.labelMain
+        case .alt: (w, h) = VibeProtocol.labelAlt
+        case .host: (w, h) = VibeProtocol.labelHost
+        }
+        let main = kind == .main
         let weight: NSFont.Weight = main ? .semibold : .medium
         var size: CGFloat = main ? 16 : 14
         var attr = attributed(text, size, weight)
@@ -38,7 +50,7 @@ enum LabelRenderer {
         var out = Data(count: w * h)
         guard maxX >= minX else { return out }
         let inkW = maxX - minX + 1, inkH = maxY - minY + 1
-        let dx = main ? (w - inkW) / 2 : w - inkW
+        let dx = kind == .host ? 0 : main ? (w - inkW) / 2 : w - inkW
         let dy = (h - inkH) / 2
         out.withUnsafeMutableBytes { dst in
             let d = dst.bindMemory(to: UInt8.self)

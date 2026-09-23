@@ -72,6 +72,20 @@ do {
 }
 
 do {
+    // A key with no name of its own is still named on the device: the preset
+    // it matches, else the key itself, never a bare "custom".
+    var map = ButtonMap()
+    map.set(.mid, .click, .key)
+    map.setStroke(.mid, .click, KeyStroke(keyCode: 0x24, modifiers: 0, label: "↩"))
+    expect(map.screenName(.mid, .click) == "发送", "Return is named after its preset")
+    map.setStroke(.mid, .click, KeyStroke(keyCode: 0x23, modifiers: KeyStroke.command | KeyStroke.shift, label: "⇧⌘P"))
+    expect(map.screenName(.mid, .click) == "⇧⌘P", "an unknown key is named by itself")
+    map.setLabel(.mid, .click, "命令")
+    expect(map.screenName(.mid, .click) == "命令", "the user's own name wins")
+    expect(ButtonMap().screenName(.up, .click) == nil, "nothing bound, nothing named")
+}
+
+do {
     // Presets are just named strokes, so picking one fills the same field the
     // recorder would — and names the key on the device at the same time.
     var map = ButtonMap()

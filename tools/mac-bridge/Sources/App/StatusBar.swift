@@ -48,9 +48,15 @@ final class StatusBar: NSObject, NSMenuDelegate {
         let m = AppModel.shared
         let snap = m.bleSnap
         item.button?.toolTip = snap.streaming ? "FoloVibe Bridge · 正在输入" : "FoloVibe Bridge · \(snap.phase)"
-        phaseItem.title = "设备：\(snap.phase)  \(snap.deviceName)"
+        let ready = snap.devices.filter(\.ready)
+        phaseItem.title = ready.isEmpty
+            ? "设备：\(snap.phase)"
+            : "设备：" + ready.map { d in
+                d.battery.map { "\(d.name) \($0)%\(d.charging ? "⚡" : "")" } ?? d.name
+            }.joined(separator: "  ")
         lastActionItem.title = "最近：\(m.lastAction)"
-        if !m.axOK { problemItem.title = "辅助功能未开" }
+        if !m.listenerWarning.isEmpty { problemItem.title = "没有软件在听虚拟麦克风" }
+        else if !m.axOK { problemItem.title = "辅助功能未开" }
         else if !m.audioOK { problemItem.title = "未找到音频设备" }
         else { problemItem.title = "检查项正常" }
         handoffItem.title = snap.handoffPaused ? "恢复自动连接" : "释放设备给另一台 Mac"

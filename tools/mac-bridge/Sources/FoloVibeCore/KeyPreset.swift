@@ -34,6 +34,15 @@ public struct KeyPreset: Identifiable, Equatable {
 
     public static func find(_ id: String) -> KeyPreset? { all.first { $0.id == id } }
 
+    /// The preset a recorded stroke happens to be, if any. How it is sent does
+    /// not matter here: a double-pressed Return is still Return.
+    public static func matching(_ s: KeyStroke) -> KeyPreset? {
+        all.first {
+            $0.stroke.keyCode == s.keyCode && $0.stroke.modifiers == s.modifiers
+                && $0.stroke.isMedia == s.isMedia
+        }
+    }
+
     public static func grouped(_ group: Group) -> [KeyPreset] { all.filter { $0.group == group } }
 
     public static let all: [KeyPreset] = [

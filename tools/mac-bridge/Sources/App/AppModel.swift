@@ -4,22 +4,25 @@ import FoloVibeCore
 import Foundation
 
 enum AppTab: String, CaseIterable, Hashable {
-    case status = "状态"
-    case settings = "设置"
+    case keys = "按键"
+    case devices = "设备"
+    case general = "通用"
 
     var title: String { rawValue }
 
     var subtitle: String {
         switch self {
-        case .status: return "连接与运行状态"
-        case .settings: return "按键与设备偏好"
+        case .keys: return "三个按钮各自的单击、双击、长按"
+        case .devices: return "连接、音频、功耗和固件"
+        case .general: return "程序更新、启动方式和日志"
         }
     }
 
     var symbol: String {
         switch self {
-        case .status: return "rectangle.3.group"
-        case .settings: return "slider.horizontal.3"
+        case .keys: return "button.programmable"
+        case .devices: return "antenna.radiowaves.left.and.right"
+        case .general: return "gearshape"
         }
     }
 }
@@ -42,7 +45,7 @@ final class AppModel: ObservableObject {
     let updater = Updater()
     private(set) var ble: BLEClient!
 
-    @Published var tab: AppTab = .status
+    @Published var tab: AppTab = .keys
     @Published var bleSnap = BLEClient.Snapshot()
     @Published var audioPeak: Int = 0
     @Published var axOK = false
@@ -51,6 +54,13 @@ final class AppModel: ObservableObject {
     @Published var lastAction = "—"
     /// A device changing hands, worth a line on screen for a short while.
     @Published var handoffNotice = ""
+    /// Set when a take found nothing listening to the virtual device, which
+    /// is what quietly broke dictation for a long time. Empty when fine.
+    @Published var listenerWarning = ""
+    /// Who was listening on the last take, for the status line.
+    @Published var listenerApps = ""
+    /// The grid cell whose gesture just fired, lit briefly in settings.
+    @Published var firedSlot: GestureSlot?
     /// Which grid slot is currently recording a shortcut.
     @Published var strokeTarget: GestureSlot?
     @Published var firmwareVersion = "—"
@@ -68,6 +78,8 @@ final class AppModel: ObservableObject {
     private static let envCheckSec: TimeInterval = 5
     private var appliedPowerMode: BridgePowerMode?
     private var appliedButtons = ButtonMap.default
+    private var wasStreaming = false
+    private var listenerCheckAt: Date?
 
     private init() {}
 
@@ -98,6 +110,11 @@ final class AppModel: ObservableObject {
             self?.tick()
         }
         Log.sys("FoloVibe 已启动")
+    }
+
+    /// Everything the setup guide checks is in place, so it can step aside.
+    var setupComplete: Bool {
+        axOK && bleSnap.bluetoothOn && bleSnap.subscribed && audioOK
     }
 
     /// Refresh permission and device checks after the user returns from a
@@ -186,6 +203,11 @@ final class AppModel: ObservableObject {
         let shown = action.needsStroke ? (stroke?.display ?? "未录制快捷键") : action.title
         lastAction = action == .none ? "\(gesture.title)（未绑定）" : "\(gesture.title) → \(shown)"
         Log.key(lastAction)
+        let slot = GestureSlot(key: gesture.key, gesture: gesture.gesture)
+        firedSlot = slot
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+            if self?.firedSlot == slot { self?.firedSlot = nil }
+        }
 
         switch action {
         case .none:
@@ -218,13 +240,43 @@ final class AppModel: ObservableObject {
                 // updateValue, not subscript assignment: assigning a nil
                 // Data? through the subscript deletes the key instead of
                 // storing "no label", and the slot would never be cleared.
-                out.updateValue(settings.current.buttons.label(key, gesture).map {
+                out.updateValue(settings.current.buttons.screenName(key, gesture).map {
                     LabelRenderer.render($0, main: gesture == .click)
                 }, forKey: slot)
             }
         }
+        // Which Mac the device belongs to, for its status line. Drawn here for
+        // the same reason as the labels: Mac names are rarely plain ASCII.
+        out[VibeProtocol.labelHostSlot] = LabelRenderer.render(Self.macName, kind: .host)
         return out
     }
+
+    /// Looks at who is recording while the device talks, and says so when
+    /// nobody is listening to the virtual device.
+    private func checkListeners() {
+        guard let listeners = AudioListeners.current() else { return }
+        let target = settings.current.outputDevice
+        let hearing = listeners.filter { l in
+            l.devices.contains { $0.localizedCaseInsensitiveContains(target) }
+        }
+        if !hearing.isEmpty {
+            listenerWarning = ""
+            listenerApps = hearing.map(\.app).joined(separator: "、")
+            return
+        }
+        listenerApps = ""
+        if listeners.isEmpty {
+            listenerWarning = "说话时没有软件在录音：语音软件可能没有被唤起，检查这个手势录的快捷键"
+        } else {
+            let who = listeners.map { "\($0.app) 在听 \($0.devices.joined(separator: "、"))" }
+            listenerWarning = who.joined(separator: "；") + "。没有软件在听 \(target)，"
+                + "把语音软件的麦克风改成它"
+        }
+        Log.audio(listenerWarning)
+    }
+
+    /// The name the user gave this Mac, as shown in Sharing settings.
+    static let macName: String = Host.current().localizedName ?? "这台 Mac"
 
     private func notice(_ text: String) {
         handoffNotice = text
@@ -289,6 +341,14 @@ final class AppModel: ObservableObject {
 
         bleSnap = ble.snapshot
         audioPeak = audio.peak
+        // A dictation app takes a moment to open its microphone after the
+        // shortcut, so look a little after the take starts, not at once.
+        if bleSnap.streaming && !wasStreaming { listenerCheckAt = Date().addingTimeInterval(2) }
+        wasStreaming = bleSnap.streaming
+        if let at = listenerCheckAt, Date() >= at {
+            listenerCheckAt = nil
+            if bleSnap.streaming { checkListeners() }
+        }
         if Date().timeIntervalSince(lastEnvCheck) >= Self.envCheckSec {
             lastEnvCheck = Date()
             refreshChecks()

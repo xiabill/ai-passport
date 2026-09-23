@@ -6,18 +6,41 @@ struct SettingsView: View {
     @ObservedObject var store: SettingsStore
     @ObservedObject var updater: Updater
 
-    init(model: AppModel) {
+    let page: AppTab
+
+    init(model: AppModel, page: AppTab) {
         self.model = model
+        self.page = page
         self.store = model.settings
         self.updater = model.updater
     }
 
     var body: some View {
+        Group {
+            switch page {
+            case .keys: keysPage
+            case .devices: devicesPage
+            case .general: generalPage
+            }
+        }
+        .sheet(item: $model.strokeTarget) { slot in
+            StrokeCaptureSheet(
+                title: slot.title,
+                current: store.current.buttons.stroke(slot.key, slot.gesture)
+            ) { stroke in
+                store.current.buttons.setStroke(slot.key, slot.gesture, stroke)
+            }
+        }
+    }
+
+    /// The three buttons, each with its three gestures. The setup guide only
+    /// appears here while something still needs doing.
+    private var keysPage: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 PageHeader(
-                    title: "设置",
-                    subtitle: "给每个手势配一个动作和一个快捷键",
+                    title: "按键",
+                    subtitle: "给每个手势选一个动作和一个按键",
                     trailing: AnyView(
                         Button { store.reset() } label: {
                             Label("恢复默认", systemImage: "arrow.counterclockwise")
@@ -25,7 +48,7 @@ struct SettingsView: View {
                         .buttonStyle(.bordered))
                 )
 
-                SetupGuideView(model: model)
+                if !model.setupComplete { SetupGuideView(model: model) }
 
                 ForEach(ButtonKey.allCases, id: \.self) { key in
                     SurfaceCard(key.title, subtitle: keySummary(key)) {
@@ -37,6 +60,22 @@ struct SettingsView: View {
                         }
                     }
                 }
+
+            }
+            .frame(maxWidth: 920, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+        }
+    }
+
+    private var devicesPage: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                PageHeader(
+                    title: "设备",
+                    subtitle: "连接、音频、功耗和固件",
+                    trailing: nil
+                )
 
                 SurfaceCard("连接设备", subtitle: "空闲的设备会自动连上；另一台 Mac 在用的，点「使用」切到本机") {
                     VStack(spacing: 15) {
@@ -94,31 +133,8 @@ struct SettingsView: View {
                     }
                 }
 
-                SurfaceCard("软件更新", subtitle: "从 GitHub 获取最新版本") {
+                SurfaceCard("设备固件", subtitle: "程序先升级，再用它把配套固件推给设备") {
                     VStack(alignment: .leading, spacing: 10) {
-                        HStack(spacing: 10) {
-                            Text("当前版本 \(model.updater.currentVersion)")
-                                .font(.callout.weight(.medium))
-                            Spacer()
-                            Button { model.updater.check() } label: {
-                                Label("检查更新", systemImage: "arrow.clockwise")
-                            }
-                            .disabled(model.updater.busy)
-                            if model.updater.updateAvailable {
-                                Button { model.updater.installUpdate() } label: {
-                                    Label("升级并重启", systemImage: "arrow.down.circle.fill")
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .disabled(model.updater.busy)
-                            }
-                        }
-                        Text(model.updater.status)
-                            .font(.caption)
-                            .foregroundStyle(model.updater.updateAvailable ? .orange : .secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Divider()
-
                         // Firmware follows the app: upgrade the Mac side first,
                         // then let it push the matching image to the device.
                         HStack(spacing: 10) {
@@ -148,6 +164,64 @@ struct SettingsView: View {
                                 .font(.caption)
                                 .foregroundStyle(.orange)
                         }
+                    }
+                }
+                SurfaceCard("诊断", subtitle: "排查连接和音频问题时用") {
+                    DisclosureGroup("展开") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            InfoRow(label: "音频包", value: "\(model.bleSnap.packets)")
+                            InfoRow(label: "丢包", value: "\(model.bleSnap.lost)")
+                            InfoRow(label: "MTU", value: "\(model.bleSnap.mtu)")
+                            InfoRow(label: "最近一包", value: model.bleSnap.lastPacketHex.isEmpty ? "—" : model.bleSnap.lastPacketHex)
+                            HStack(spacing: 10) {
+                                Button("播放测试音") { model.playAudioTest() }
+                                Button(model.mic.isArmed ? "取消录音测试" : "录一段回放") { model.toggleMicTest() }
+                                Button("重新连接") { model.ble.reconnect() }
+                            }
+                            Text(model.audioTestNote).font(.caption).foregroundStyle(.secondary)
+                        }
+                        .padding(.top, 6)
+                    }
+                    .font(.callout)
+                }
+            }
+            .frame(maxWidth: 920, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+        }
+    }
+
+    private var generalPage: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                PageHeader(
+                    title: "通用",
+                    subtitle: "程序本身的设置",
+                    trailing: nil
+                )
+
+                SurfaceCard("程序更新", subtitle: "从 GitHub 获取最新版本") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 10) {
+                            Text("当前版本 \(model.updater.currentVersion)")
+                                .font(.callout.weight(.medium))
+                            Spacer()
+                            Button { model.updater.check() } label: {
+                                Label("检查更新", systemImage: "arrow.clockwise")
+                            }
+                            .disabled(model.updater.busy)
+                            if model.updater.updateAvailable {
+                                Button { model.updater.installUpdate() } label: {
+                                    Label("升级并重启", systemImage: "arrow.down.circle.fill")
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .disabled(model.updater.busy)
+                            }
+                        }
+                        Text(model.updater.status)
+                            .font(.caption)
+                            .foregroundStyle(model.updater.updateAvailable ? .orange : .secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
 
@@ -184,14 +258,6 @@ struct SettingsView: View {
             .frame(maxWidth: 920, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
-        }
-        .sheet(item: $model.strokeTarget) { slot in
-            StrokeCaptureSheet(
-                title: slot.title,
-                current: store.current.buttons.stroke(slot.key, slot.gesture)
-            ) { stroke in
-                store.current.buttons.setStroke(slot.key, slot.gesture, stroke)
-            }
         }
     }
 
@@ -251,13 +317,23 @@ struct SettingsView: View {
                     .frame(width: 104)
             }
 
-            TextField(action.deviceTitle, text: labelBinding(key, gesture))
+            TextField(placeholder(key, gesture, action), text: labelBinding(key, gesture))
                 .textFieldStyle(.roundedBorder)
                 .font(.caption)
                 .controlSize(.small)
                 .frame(width: 92)
                 .help("设备屏幕上显示的名字，留空用默认")
         }
+        // Lights up when this gesture is pressed on the device, so what is
+        // configured and what the button actually did can be checked at a
+        // glance.
+        .padding(.vertical, 3)
+        .padding(.horizontal, 6)
+        .background(
+            model.firedSlot == GestureSlot(key: key, gesture: gesture)
+                ? Color.accentColor.opacity(0.18) : .clear,
+            in: RoundedRectangle(cornerRadius: 7))
+        .animation(.easeOut(duration: 0.25), value: model.firedSlot)
     }
 
     /// What the menu shows now: the preset's name when it is one, otherwise
@@ -266,10 +342,7 @@ struct SettingsView: View {
         let action = store.current.buttons.action(key, gesture)
         guard action == .key else { return action.title }
         if let stroke = store.current.buttons.stroke(key, gesture),
-            let preset = KeyPreset.all.first(where: {
-                $0.stroke.keyCode == stroke.keyCode && $0.stroke.modifiers == stroke.modifiers
-                    && $0.stroke.isMedia == stroke.isMedia
-            })
+            let preset = KeyPreset.matching(stroke)
         {
             return preset.title
         }
@@ -286,6 +359,15 @@ struct SettingsView: View {
                 ?? (action == .key ? menuTitle(key, gesture) : action.title)
             return "\(gesture.title) \(name)"
         }.joined(separator: "   ")
+    }
+
+    /// Shows what the device will print when the field is left empty.
+    private func placeholder(_ key: ButtonKey, _ gesture: ButtonGesture,
+                             _ action: ButtonAction) -> String {
+        guard action == .key, let s = store.current.buttons.stroke(key, gesture) else {
+            return action.deviceTitle
+        }
+        return KeyPreset.matching(s)?.short ?? s.label
     }
 
     private func bind(_ key: ButtonKey, _ gesture: ButtonGesture, _ action: ButtonAction) {
@@ -343,6 +425,7 @@ struct SettingsView: View {
         } else {
             parts.append("空闲")
         }
+        if let b = d.battery { parts.append(d.charging ? "电量 \(b)% 充电中" : "电量 \(b)%") }
         if let rssi = d.rssi { parts.append("信号 \(rssi)") }
         if !d.firmwareVersion.isEmpty { parts.append(d.firmwareVersion) }
         return parts.joined(separator: " · ")

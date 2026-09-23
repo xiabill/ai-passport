@@ -8,6 +8,8 @@ struct RootView: View {
         VStack(spacing: 0) {
             header
             Divider()
+            statusStrip
+            Divider()
             detail
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(nsColor: .windowBackgroundColor))
@@ -75,11 +77,85 @@ struct RootView: View {
         .help(model.bleSnap.deviceName)
     }
 
+    /// What used to be a whole status page, as one line that is always in
+    /// view: each device with its battery, anything that needs attention, and
+    /// the last thing a button did.
+    private var statusStrip: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 12) {
+                if model.bleSnap.devices.filter(\.ready).isEmpty {
+                    Label("没有已连接的设备", systemImage: "antenna.radiowaves.left.and.right.slash")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(model.bleSnap.devices.filter(\.ready), id: \.id) { d in
+                        deviceChip(d)
+                    }
+                }
+                Spacer(minLength: 8)
+                if model.lastAction != "—" {
+                    Text("最近：\(model.lastAction)")
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .font(.caption)
+            if !model.handoffNotice.isEmpty {
+                strip(model.handoffNotice, "arrow.left.arrow.right.circle.fill", .blue)
+            }
+            if !model.listenerWarning.isEmpty {
+                strip(model.listenerWarning, "exclamationmark.triangle.fill", .orange)
+            } else if !model.audioOK {
+                strip("找不到音频设备 \(model.settings.current.outputDevice)，到「设备」页换一个",
+                      "exclamationmark.triangle.fill", .orange)
+            } else if !model.axOK {
+                strip("辅助功能没开，按键发不出去", "exclamationmark.triangle.fill", .orange)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func deviceChip(_ d: BLEClient.Device) -> some View {
+        HStack(spacing: 5) {
+            Circle().fill(model.bleSnap.streaming ? Color.red : .green).frame(width: 7, height: 7)
+            Text(d.name).fontWeight(.medium)
+            if let b = d.battery {
+                Image(systemName: batterySymbol(b, d.charging))
+                    .foregroundStyle(d.charging ? .green : b <= 15 ? .red : .secondary)
+                Text("\(b)%").monospacedDigit()
+                    .foregroundStyle(b <= 15 && !d.charging ? .red : .secondary)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(Color.primary.opacity(0.05), in: Capsule())
+    }
+
+    private func batterySymbol(_ pct: Int, _ charging: Bool) -> String {
+        if charging { return "battery.100percent.bolt" }
+        switch pct {
+        case 75...: return "battery.100percent"
+        case 50..<75: return "battery.75percent"
+        case 25..<50: return "battery.50percent"
+        case 10..<25: return "battery.25percent"
+        default: return "battery.0percent"
+        }
+    }
+
+    private func strip(_ text: String, _ symbol: String, _ tint: Color) -> some View {
+        Label(text, systemImage: symbol)
+            .font(.caption)
+            .foregroundStyle(tint)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
     @ViewBuilder
     private var detail: some View {
         switch model.tab {
-        case .status: StatusView(model: model)
-        case .settings: SettingsView(model: model)
+        case .keys: SettingsView(model: model, page: .keys)
+        case .devices: SettingsView(model: model, page: .devices)
+        case .general: SettingsView(model: model, page: .general)
         }
     }
 

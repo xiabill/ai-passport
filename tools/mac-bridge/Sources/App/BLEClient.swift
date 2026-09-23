@@ -13,6 +13,9 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         var connected: Bool
         /// The device says another Mac is using it. Only a click takes it over.
         var busyElsewhere: Bool
+        /// Percent, or nil until the device has reported.
+        var battery: Int? = nil
+        var charging = false
     }
 
     /// The aggregate fields keep their old meaning with more than one device:
@@ -56,6 +59,8 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         var rssi: Int?
         var firmware = ""
         var lastSeq: UInt16?
+        var battery: Int?
+        var charging = false
 
         init(_ peripheral: CBPeripheral, name: String) {
             self.peripheral = peripheral
@@ -419,7 +424,7 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
         var devices = all.map {
             Device(id: $0.peripheral.identifier, name: $0.name, rssi: $0.rssi,
                    firmwareVersion: $0.firmware, ready: $0.ready, connected: $0.connected,
-                   busyElsewhere: false)
+                   busyElsewhere: false, battery: $0.battery, charging: $0.charging)
         }
         // Advertising stops once a device is connected anywhere, so a device
         // missing for a while has either gone or been taken by another Mac.
@@ -644,6 +649,19 @@ final class BLEClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate 
             Log.ble("\(l.name) 设备固件 \(l.firmware)")
             let summary = snapshot.firmwareVersion
             DispatchQueue.main.async { self.onFirmwareVersion?(summary) }
+            return
+        }
+        if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
+            data.first == VibeProtocol.eventBattery, data.count >= 3
+        {
+            let pct = Int(data[data.startIndex + 1])
+            let wasLow = (l.battery ?? 100) <= 15
+            l.battery = pct <= 100 ? pct : nil
+            l.charging = data[data.startIndex + 2] & 0x01 != 0
+            publish()
+            if let b = l.battery, b <= 15, !l.charging, !wasLow {
+                Log.ble("\(l.name) 电量低：\(b)%")
+            }
             return
         }
         if characteristic.uuid == CBUUID(string: VibeProtocol.eventUUID),
