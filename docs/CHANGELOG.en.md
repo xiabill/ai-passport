@@ -6,6 +6,10 @@
 
 ## Unreleased
 
+- Fixed the device's audio playing out of the Mac's speakers: the output is bound directly and verified, stops if it cannot be, and is rechecked for drift.
+- Each take checks that something is listening to the virtual microphone, and says who is listening to what when nothing is.
+- The app is reorganised into keys, devices and general, with a status strip under the tabs; pressing a button lights its settings row; device battery is shown; duplicates removed and diagnostics folded away.
+- Device screen: names the Mac it belongs to, answers every press, names the dictation key, warns on low battery and reports battery to the Mac; unnamed keys show their preset or the key itself.
 - The Mac app no longer revolves around particular input methods: the state watching, re-pressing, microphone rewriting and their settings are gone. A gesture now says which key to send and how, with 27 presets, custom recording (including a bare modifier) and tap/double/hold delivery; the layout follows the hardware, one card per button. Existing setups migrate.
 - Fixed the device sticking on "transcribing": the state depended on the input-method watching that was removed, and the device cannot know when transcription ends, so stopping a take returns to ready.
 - Four pages became two, with logs folded into settings, and the setup guide four steps.
