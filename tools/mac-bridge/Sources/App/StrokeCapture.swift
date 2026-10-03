@@ -89,6 +89,59 @@ struct StrokeCaptureSheet: View {
     }
 }
 
+/// Renames what a gesture prints on the device screen.
+///
+/// It used to be a text field sitting in every binding row, nine of them, each
+/// showing the action's own name as placeholder. That is a name most people
+/// never change, and paying a field for it in every row is what made the grid
+/// unreadable — so it is now somewhere you go to deliberately.
+struct StrokeLabelSheet: View {
+    let title: String
+    let placeholder: String
+    let onSave: (String?) -> Void
+
+    @State private var text: String
+    @Environment(\.dismiss) private var dismiss
+
+    init(title: String, placeholder: String, current: String?,
+         onSave: @escaping (String?) -> Void) {
+        self.title = title
+        self.placeholder = placeholder
+        self.onSave = onSave
+        _text = State(initialValue: current ?? "")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.headline)
+            Text("设备屏幕上显示的名字，留空则用默认名称。")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            TextField(placeholder, text: $text)
+                .textFieldStyle(.roundedBorder)
+                .frame(width: 250)
+                .onSubmit(commit)
+            HStack {
+                Spacer()
+                Button("取消") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button("保存") { commit() }
+                    .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding(20)
+    }
+
+    private func commit() {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        onSave(trimmed.isEmpty ? nil : trimmed)
+        dismiss()
+    }
+}
+
 /// Holds what has been pressed so far. A plain @State would be reset by the
 /// recorder view rebuilding on every keystroke.
 private final class StrokeDraft: ObservableObject {

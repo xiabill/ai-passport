@@ -33,6 +33,16 @@ struct SettingsView: View {
                 store.current.buttons.setStroke(slot.key, slot.gesture, stroke)
             }
         }
+        .sheet(item: $model.labelTarget) { slot in
+            let action = store.current.buttons.action(slot.key, slot.gesture)
+            StrokeLabelSheet(
+                title: "设备屏幕名称 · \(slot.title)",
+                placeholder: placeholder(slot.key, slot.gesture, action),
+                current: store.current.buttons.label(slot.key, slot.gesture)
+            ) { label in
+                store.current.buttons.setLabel(slot.key, slot.gesture, label)
+            }
+        }
     }
 
     /// The three buttons, each with its three gestures. The setup guide only
@@ -42,16 +52,15 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 12) {
                 if !model.setupComplete { SetupGuideView(model: model) }
 
-                ForEach(ButtonKey.allCases, id: \.self) { key in
-                    SurfaceCard(key.title, subtitle: keySummary(key)) {
-                        VStack(spacing: 10) {
-                            ForEach(ButtonGesture.allCases, id: \.self) { gesture in
-                                gestureRow(key, gesture)
-                                if gesture != ButtonGesture.allCases.last { Divider() }
-                            }
-                        }
-                    }
+                bindingMatrix
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(Color.primary.opacity(0.10), lineWidth: 1)
                 }
+                .shadow(color: .black.opacity(0.06), radius: 7, y: 3)
 
                 HStack {
                     Spacer()
@@ -62,6 +71,118 @@ struct SettingsView: View {
             }
             .padding(12)
         }
+    }
+
+    /// The nine bindings as a matrix: a row per button, a column per gesture.
+    ///
+    /// A gesture used to take two rows — the action on one, the key and the name
+    /// the device prints on the other — so nine of them ran to eighteen and
+    /// pushed the last buttons off the screen. It also repeated each button's
+    /// whole configuration in the card's subtitle, directly above the rows
+    /// showing the same thing. A row and a column say the same facts once each.
+    private var bindingMatrix: some View {
+        VStack(spacing: 7) {
+            HStack(spacing: 7) {
+                Color.clear.frame(width: 44, height: 1)
+                ForEach(ButtonGesture.allCases, id: \.self) { gesture in
+                    Text(gesture.title)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            ForEach(ButtonKey.allCases, id: \.self) { key in
+                HStack(spacing: 7) {
+                    Text(key.title)
+                        .font(.callout.weight(.semibold))
+                        .frame(width: 44, alignment: .leading)
+                    ForEach(ButtonGesture.allCases, id: \.self) { gesture in
+                        bindingCell(key, gesture)
+                    }
+                }
+            }
+        }
+    }
+
+    /// One binding. The key is the thing worth reading at a glance, so it goes
+    /// first in a monospaced face; what the gesture does sits under it. Clicking
+    /// the cell is how either is changed.
+    private func bindingCell(_ key: ButtonKey, _ gesture: ButtonGesture) -> some View {
+        let action = store.current.buttons.action(key, gesture)
+        let fired = model.firedSlot == GestureSlot(key: key, gesture: gesture)
+        let custom = store.current.buttons.label(key, gesture)
+
+        return Menu {
+            Button("无") { bind(key, gesture, .none) }
+            Divider()
+            Button("语音输入（同时开始录音）") { bind(key, gesture, .voice) }
+            Button("全选并删除") { bind(key, gesture, .clear) }
+            Button("交给另一台 Mac") { bind(key, gesture, .handoff) }
+            Divider()
+            ForEach(KeyPreset.Group.allCases, id: \.self) { group in
+                Menu(group.rawValue) {
+                    ForEach(KeyPreset.grouped(group)) { preset in
+                        Button("\(preset.title)   \(preset.stroke.label)") {
+                            store.current.buttons.bind(key, gesture, preset: preset.id)
+                        }
+                    }
+                }
+            }
+            Divider()
+            Button("自定义按键…") {
+                bind(key, gesture, .key)
+                model.strokeTarget = GestureSlot(key: key, gesture: gesture)
+            }
+            if action.needsStroke {
+                Button("重新录制按键…") {
+                    model.strokeTarget = GestureSlot(key: key, gesture: gesture)
+                }
+            }
+            Divider()
+            Button(custom == nil ? "改设备屏幕名称…" : "改设备屏幕名称…　\(custom!)") {
+                model.labelTarget = GestureSlot(key: key, gesture: gesture)
+            }
+        } label: {
+            VStack(spacing: 2) {
+                keyCap(action, stroke: store.current.buttons.stroke(key, gesture))
+                Text(menuTitle(key, gesture))
+                    .font(.caption2)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 3)
+            .background(
+                fired ? Color.accentColor.opacity(0.22) : Color.primary.opacity(0.05),
+                in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(
+                        fired ? Color.accentColor.opacity(0.55) : Color.primary.opacity(0.07),
+                        lineWidth: 1)
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        }
+        .menuStyle(.borderlessButton)
+        .buttonStyle(.plain)
+        .help("\(key.title) · \(gesture.title)：\(menuTitle(key, gesture))")
+        .animation(.easeOut(duration: 0.25), value: model.firedSlot)
+    }
+
+    /// The shortcut a gesture sends, or a dash when the action needs no key.
+    private func keyCap(_ action: ButtonAction, stroke: KeyStroke?) -> some View {
+        Group {
+            if action.needsStroke, let s = stroke {
+                Text(s.display)
+                    .foregroundStyle(.primary)
+            } else {
+                Text("—").foregroundStyle(.tertiary)
+            }
+        }
+        .font(.system(.caption, design: .monospaced).weight(.semibold))
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
     }
 
     private var devicesPage: some View {
@@ -252,84 +373,6 @@ struct SettingsView: View {
         }
     }
 
-    /// One gesture on one button: what it does on the first line, and on the
-    /// second the key it sends and what the device screen calls it. Two lines
-    /// because the window is narrow; a gesture bound to nothing needs only one.
-    @ViewBuilder
-    private func gestureRow(_ key: ButtonKey, _ gesture: ButtonGesture) -> some View {
-        let action = store.current.buttons.action(key, gesture)
-        let stroke = store.current.buttons.stroke(key, gesture)
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
-                Text(gesture.title)
-                    .font(.callout.weight(.medium))
-                    .frame(width: 36, alignment: .leading)
-                Menu {
-                    Button("无") { bind(key, gesture, .none) }
-                    Divider()
-                    Button("语音输入（同时开始录音）") { bind(key, gesture, .voice) }
-                    Button("全选并删除") { bind(key, gesture, .clear) }
-                    Button("交给另一台 Mac") { bind(key, gesture, .handoff) }
-                    Divider()
-                    ForEach(KeyPreset.Group.allCases, id: \.self) { group in
-                        Menu(group.rawValue) {
-                            ForEach(KeyPreset.grouped(group)) { preset in
-                                Button("\(preset.title)   \(preset.stroke.label)") {
-                                    store.current.buttons.bind(key, gesture, preset: preset.id)
-                                }
-                            }
-                        }
-                    }
-                    Divider()
-                    Button("自定义按键…") {
-                        bind(key, gesture, .key)
-                        model.strokeTarget = GestureSlot(key: key, gesture: gesture)
-                    }
-                } label: {
-                    Text(menuTitle(key, gesture))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .frame(maxWidth: .infinity)
-            }
-            if action != .none {
-                HStack(spacing: 8) {
-                    Color.clear.frame(width: 36, height: 1)
-                    if action.needsStroke {
-                        Button {
-                            model.strokeTarget = GestureSlot(key: key, gesture: gesture)
-                        } label: {
-                            Label(stroke?.display ?? "设置按键", systemImage: "keyboard")
-                                .font(.caption.monospaced())
-                                .lineLimit(1)
-                                .frame(maxWidth: .infinity)
-                        }
-                        .controlSize(.small)
-                        .help("点一下重新录制，可选按一下、连按两下或按住")
-                    } else {
-                        Spacer()
-                    }
-                    TextField(placeholder(key, gesture, action), text: labelBinding(key, gesture))
-                        .textFieldStyle(.roundedBorder)
-                        .font(.caption)
-                        .controlSize(.small)
-                        .frame(width: 104)
-                        .help("设备屏幕上显示的名字，留空用默认")
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        // Lights up when this gesture is pressed on the device, so what is
-        // configured and what the button actually did can be checked at a
-        // glance.
-        .padding(.vertical, 3)
-        .padding(.horizontal, 6)
-        .background(
-            model.firedSlot == GestureSlot(key: key, gesture: gesture)
-                ? Color.accentColor.opacity(0.18) : .clear,
-            in: RoundedRectangle(cornerRadius: 7))
-        .animation(.easeOut(duration: 0.25), value: model.firedSlot)
-    }
-
     /// What the menu shows now: the preset's name when it is one, otherwise
     /// the action.
     private func menuTitle(_ key: ButtonKey, _ gesture: ButtonGesture) -> String {
@@ -343,19 +386,7 @@ struct SettingsView: View {
         return "自定义按键"
     }
 
-    /// A one-line summary under the button's name, so the card says what the
-    /// button does without being unfolded.
-    private func keySummary(_ key: ButtonKey) -> String {
-        ButtonGesture.allCases.map { gesture -> String in
-            let action = store.current.buttons.action(key, gesture)
-            if action == .none { return "\(gesture.title) —" }
-            let name = store.current.buttons.label(key, gesture)
-                ?? (action == .key ? menuTitle(key, gesture) : action.title)
-            return "\(gesture.title) \(name)"
-        }.joined(separator: "   ")
-    }
-
-    /// Shows what the device will print when the field is left empty.
+    /// Shows what the device will print when the name is left empty.
     private func placeholder(_ key: ButtonKey, _ gesture: ButtonGesture,
                              _ action: ButtonAction) -> String {
         guard action == .key, let s = store.current.buttons.stroke(key, gesture) else {
@@ -423,12 +454,6 @@ struct SettingsView: View {
         if let rssi = d.rssi { parts.append("信号 \(rssi)") }
         if !d.firmwareVersion.isEmpty { parts.append(d.firmwareVersion) }
         return parts.joined(separator: " · ")
-    }
-
-    private func labelBinding(_ key: ButtonKey, _ gesture: ButtonGesture) -> Binding<String> {
-        Binding(
-            get: { store.current.buttons.label(key, gesture) ?? "" },
-            set: { store.current.buttons.setLabel(key, gesture, $0) })
     }
 
     private func actionBinding(_ key: ButtonKey, _ gesture: ButtonGesture) -> Binding<ButtonAction> {
